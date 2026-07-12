@@ -1,0 +1,139 @@
+# REST API 契约
+
+| 项目 | 内容 |
+| --- | --- |
+| 来源 | `spec.md` 功能需求和 `architecture.md` 技术决策 |
+| API 风格 | REST/JSON |
+| 契约格式 | OpenAPI 3.2 |
+| 基础路径 | `/api/v1` |
+| 认证方式 | Supabase Auth access token，使用 `Authorization: Bearer <token>` |
+| 状态 | Draft |
+| 更新时间 | 2026-07-11 |
+
+## 1. 通用约定
+
+### 1.1 请求
+
+- 使用 JSON 请求体时，`Content-Type: application/json`。
+- 受保护接口必须携带 Supabase Auth access token。
+- Route Handler 应从服务端会话中读取用户身份，并结合业务权限和 PostgreSQL RLS 校验访问。
+- 日期使用 `YYYY-MM-DD`，时间使用 ISO 8601 格式。
+- 列表接口统一使用 `page`、`size`、`sort`、`keyword` 和模块筛选字段。
+- 业务编号由后端生成，客户端不直接指定主键。
+
+### 1.2 成功响应
+
+```json
+{
+  "code": "OK",
+  "message": "success",
+  "data": {},
+  "traceId": "01J..."
+}
+```
+
+列表响应：
+
+```json
+{
+  "code": "OK",
+  "message": "success",
+  "data": {
+    "items": [],
+    "page": 1,
+    "size": 20,
+    "total": 0
+  },
+  "traceId": "01J..."
+}
+```
+
+### 1.3 错误响应
+
+```json
+{
+  "code": "SAMPLE_NOT_FOUND",
+  "message": "样品不存在",
+  "data": null,
+  "traceId": "01J..."
+}
+```
+
+HTTP 状态建议：`400` 参数错误、`401` 未认证、`403` 无权限、`404` 资源不存在、`409` 状态冲突、`500` 服务异常。
+
+## 2. 认证接口
+
+| 方法 | 路径 | 角色 | 需求 |
+| --- | --- | --- | --- |
+| POST | `/auth/login` | 匿名 | `FR-AUTH-001` |
+| POST | `/auth/logout` | 登录用户 | `FR-AUTH-001` |
+| GET | `/auth/me` | 登录用户 | `FR-AUTH-002` |
+| PUT | `/auth/password` | 登录用户 | `FR-AUTH-007` |
+
+## 3. 基础数据接口
+
+| 方法 | 路径 | 角色 | 需求 |
+| --- | --- | --- | --- |
+| GET/POST | `/projects` | 管理员、负责人 | `FR-TASK-001～002` |
+| GET/PATCH | `/projects/{id}` | 管理员、负责人 | `FR-TASK-001～002` |
+| GET/POST | `/users` | 系统管理员 | `FR-AUTH-003` |
+| GET/POST | `/methods` | 实验室管理员 | `FR-METHOD-001～004` |
+| GET/POST | `/instruments` | 实验室管理员 | `FR-EQUIP-001～006` |
+| GET/POST | `/inventory/items` | 实验室管理员 | `FR-INVENTORY-001～006` |
+
+## 4. 样品接口
+
+| 方法 | 路径 | 角色 | 需求 |
+| --- | --- | --- | --- |
+| GET | `/samples` | 按权限 | `FR-SAMPLE-004` |
+| POST | `/samples` | 管理员、实验人员 | `FR-SAMPLE-001～003` |
+| GET | `/samples/{id}` | 按权限 | `FR-SAMPLE-004` |
+| PATCH | `/samples/{id}` | 管理员、实验人员 | `FR-SAMPLE-001～008` |
+| POST | `/samples/{id}/flows` | 管理员、实验人员 | `FR-SAMPLE-005～006` |
+| GET | `/samples/{id}/flows` | 按权限 | `FR-SAMPLE-005～006` |
+
+## 5. 任务接口
+
+| 方法 | 路径 | 角色 | 需求 |
+| --- | --- | --- | --- |
+| GET | `/tasks` | 按权限 | `FR-TASK-009` |
+| POST | `/tasks` | 管理员、负责人 | `FR-TASK-001～002` |
+| GET | `/tasks/{id}` | 按权限 | `FR-TASK-004～006` |
+| PATCH | `/tasks/{id}` | 管理员、负责人、执行人 | `FR-TASK-004～006` |
+| POST | `/tasks/{id}/assignments` | 管理员、负责人 | `FR-TASK-003、007` |
+| POST | `/tasks/{id}/transition` | 按状态授权 | `BR-001～005` |
+| GET | `/tasks/{id}/history` | 按权限 | `FR-TASK-004`、`FR-AUDIT-005` |
+
+## 6. 数据、审核和报告接口
+
+| 方法 | 路径 | 角色 | 需求 |
+| --- | --- | --- | --- |
+| POST | `/tasks/{id}/data` | 实验人员 | `FR-DATA-001～005` |
+| GET | `/tasks/{id}/data` | 按权限 | `FR-DATA-005` |
+| POST | `/tasks/{id}/data/import` | 实验人员 | `FR-DATA-006` |
+| POST | `/tasks/{id}/reviews` | 负责人/教师 | `FR-REVIEW-001～006` |
+| GET | `/tasks/{id}/reviews` | 按权限 | `FR-REVIEW-001～006` |
+| POST | `/tasks/{id}/reports` | 管理员、负责人 | `FR-REPORT-001～002` |
+| GET | `/reports` | 按权限 | `FR-REPORT-003` |
+| GET | `/reports/{id}` | 按权限 | `FR-REPORT-003～006` |
+| POST | `/reports/{id}/publish` | 管理员、负责人 | `FR-REPORT-004～006` |
+
+## 7. 看板与日志接口
+
+| 方法 | 路径 | 角色 | 需求 |
+| --- | --- | --- | --- |
+| GET | `/dashboard/overview` | 按权限 | `FR-DASH-001～005` |
+| GET | `/dashboard/task-statistics` | 按权限 | `FR-DASH-002` |
+| GET | `/dashboard/inventory-alerts` | 管理员 | `FR-DASH-004` |
+| GET | `/audit-logs` | 系统管理员、授权管理员 | `FR-AUDIT-001～004` |
+| GET | `/trace/{objectType}/{id}` | 按权限 | `FR-AUDIT-005` |
+
+## 8. 状态冲突
+
+以下情况返回 `409`：
+
+- 对已归档任务修改业务数据。
+- 对不存在或已处置样品继续流转。
+- 对未审核通过的任务生成正式报告。
+- 领用数量超过库存可用数量。
+- 使用已停用的方法或设备创建新任务。

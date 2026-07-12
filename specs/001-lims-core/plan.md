@@ -1,0 +1,104 @@
+# 核心系统实现计划
+
+| 项目 | 内容 |
+| --- | --- |
+| 来源 Spec | `specs/001-lims-core/spec.md` |
+| 状态 | Approved（技术方案已切换） |
+| 版本 | v0.1 |
+| 技术栈 | 待确定 |
+
+> 本文件是从核心 Spec 派生的技术计划，不得在这里新增未经确认的功能需求。技术栈确认后，应补充架构图、部署方式和技术决策记录。
+
+## 1. 实现原则
+
+- 先完成一条可运行的业务闭环，再扩展资源和智能化功能。
+- 每个实现阶段都应能够独立演示和验证。
+- 先建立稳定的数据模型，再实现页面和复杂统计。
+- 使用模拟数据或文件导入替代真实仪器集成。
+- 所有实现任务通过需求 ID 追踪到 `spec.md`。
+
+## 2. 建议的实现切片
+
+### Slice 1：基础框架与权限
+
+对应需求：`FR-AUTH-*`、`FR-SETTING-*`、`NFR-SEC-*`
+
+- 项目基础结构
+- 用户、角色和权限
+- 登录、退出和路由保护
+- 基础布局和导航
+- 系统基础参数
+
+### Slice 2：样品与任务主流程
+
+对应需求：`FR-SAMPLE-*`、`FR-TASK-*`、`FR-PER-*`
+
+- 科研项目和任务登记
+- 样品登记、唯一编号和状态
+- 样品流转
+- 任务分配和任务状态
+- 实验人员基础档案
+
+### Slice 3：实验数据、审核与报告
+
+对应需求：`FR-METHOD-*`、`FR-DATA-*`、`FR-REVIEW-*`、`FR-REPORT-*`
+
+- 实验方法和版本
+- 原始数据和处理数据
+- 实验结果录入
+- 审核、退回和审核意见
+- 报告生成、版本和归档
+
+### Slice 4：实验室资源管理
+
+对应需求：`FR-EQUIP-*`、`FR-INVENTORY-*`、`FR-ENV-*`
+
+- 仪器设备档案
+- 设备维护和校准记录
+- 试剂耗材库存
+- 环境记录和阈值提醒
+
+### Slice 5：追溯、统计与交付
+
+对应需求：`FR-AUDIT-*`、`FR-DASH-*`、`NFR-BACKUP-001`
+
+- 操作日志
+- 报告到样品、任务、数据和审核的追溯
+- 数据看板和基础统计
+- 数据备份恢复说明
+- 测试、部署和演示数据
+
+## 3. 技术决策待办
+
+- [x] 确定全栈框架：Next.js App Router + TypeScript
+- [x] 确定 UI：shadcn/ui + Tailwind CSS
+- [x] 确定数据服务：Supabase
+- [x] 确定数据库：Supabase PostgreSQL
+- [x] 确定认证和权限：Supabase Auth + PostgreSQL RLS + 服务端授权
+- [x] 确定文件附件存储：Supabase Storage
+- [x] 确定 API 边界：Next.js Route Handlers + REST/JSON + OpenAPI
+- [x] 确定部署方式：Vercel 或自托管 Next.js，Supabase 托管项目
+- [x] 确定实际依赖版本和测试框架：Node.js 24.1.0、Next.js 16.2.10、React 19.2.4、TypeScript 5.9.3、Vitest 4.1.10、Playwright Test 1.61.1
+- [x] 配置工程验证命令：lint、Vitest、Playwright Test 和 `next build --webpack`
+- [x] 接入 Supabase CLI 与项目级只读 MCP 配置：用于迁移、类型生成和 AI 辅助查询
+- [x] 执行首个远程数据库迁移并核验核心表：远程版本 `202607120001`
+- [x] 建立 Git 分支、提交、版本、发布和回滚规约
+
+## 4. 设计产物
+
+- [x] 系统上下文图
+- [x] 分层架构图
+- [ ] 模块依赖图
+- [x] 数据库 ER 图
+- [x] 核心状态流转图
+- [x] API 接口设计
+- [x] 页面导航和原型清单
+- [x] 部署结构图
+
+详细设计文件：
+
+- [architecture.md](architecture.md)：架构和技术决策
+- [data-model.md](data-model.md)：字段、约束和索引
+- [ui.md](ui.md)：页面导航和权限
+- [api-contract.md](api-contract.md)：REST API 契约
+- [contracts/openapi.yaml](contracts/openapi.yaml)：OpenAPI 契约初稿

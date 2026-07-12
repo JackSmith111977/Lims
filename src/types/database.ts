@@ -1,0 +1,1395 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5"
+  }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+  public: {
+    Tables: {
+      attachment: {
+        Row: {
+          content_type: string
+          file_name: string
+          file_size: number
+          id: number
+          object_id: string
+          object_type: string
+          storage_path: string
+          uploaded_at: string
+          uploaded_by: string
+        }
+        Insert: {
+          content_type: string
+          file_name: string
+          file_size: number
+          id?: number
+          object_id: string
+          object_type: string
+          storage_path: string
+          uploaded_at?: string
+          uploaded_by: string
+        }
+        Update: {
+          content_type?: string
+          file_name?: string
+          file_size?: number
+          id?: number
+          object_id?: string
+          object_type?: string
+          storage_path?: string
+          uploaded_at?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attachment_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audit_log: {
+        Row: {
+          action: string
+          after_json: Json | null
+          before_json: Json | null
+          id: number
+          ip_address: unknown
+          object_id: string
+          object_type: string
+          occurred_at: string
+          operator_id: string | null
+        }
+        Insert: {
+          action: string
+          after_json?: Json | null
+          before_json?: Json | null
+          id?: number
+          ip_address?: unknown
+          object_id: string
+          object_type: string
+          occurred_at?: string
+          operator_id?: string | null
+        }
+        Update: {
+          action?: string
+          after_json?: Json | null
+          before_json?: Json | null
+          id?: number
+          ip_address?: unknown
+          object_id?: string
+          object_type?: string
+          occurred_at?: string
+          operator_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_log_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      environment_record: {
+        Row: {
+          collected_at: string
+          id: number
+          laboratory_id: number
+          metric: string
+          recorded_by: string | null
+          source_type: string
+          status: string
+          threshold_max: number | null
+          threshold_min: number | null
+          unit: string
+          value: number
+        }
+        Insert: {
+          collected_at: string
+          id?: number
+          laboratory_id: number
+          metric: string
+          recorded_by?: string | null
+          source_type: string
+          status?: string
+          threshold_max?: number | null
+          threshold_min?: number | null
+          unit: string
+          value: number
+        }
+        Update: {
+          collected_at?: string
+          id?: number
+          laboratory_id?: number
+          metric?: string
+          recorded_by?: string | null
+          source_type?: string
+          status?: string
+          threshold_max?: number | null
+          threshold_min?: number | null
+          unit?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "environment_record_laboratory_id_fkey"
+            columns: ["laboratory_id"]
+            isOneToOne: false
+            referencedRelation: "lab_laboratory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "environment_record_recorded_by_fkey"
+            columns: ["recorded_by"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      experiment_data: {
+        Row: {
+          collected_at: string
+          created_at: string
+          data_type: string
+          id: number
+          instrument_id: number | null
+          metric_name: string
+          processed_value: number | null
+          raw_value: number | null
+          recorded_by: string
+          remark: string | null
+          sample_id: number
+          source_type: string
+          task_id: number
+          unit: string | null
+        }
+        Insert: {
+          collected_at: string
+          created_at?: string
+          data_type: string
+          id?: number
+          instrument_id?: number | null
+          metric_name: string
+          processed_value?: number | null
+          raw_value?: number | null
+          recorded_by: string
+          remark?: string | null
+          sample_id: number
+          source_type: string
+          task_id: number
+          unit?: string | null
+        }
+        Update: {
+          collected_at?: string
+          created_at?: string
+          data_type?: string
+          id?: number
+          instrument_id?: number | null
+          metric_name?: string
+          processed_value?: number | null
+          raw_value?: number | null
+          recorded_by?: string
+          remark?: string | null
+          sample_id?: number
+          source_type?: string
+          task_id?: number
+          unit?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "experiment_data_instrument_id_fkey"
+            columns: ["instrument_id"]
+            isOneToOne: false
+            referencedRelation: "instrument"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "experiment_data_recorded_by_fkey"
+            columns: ["recorded_by"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "experiment_data_sample_id_fkey"
+            columns: ["sample_id"]
+            isOneToOne: false
+            referencedRelation: "sample"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "experiment_data_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "experiment_task"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      experiment_method: {
+        Row: {
+          created_at: string
+          detection_limit: number | null
+          document_id: number | null
+          effective_at: string | null
+          expired_at: string | null
+          id: number
+          method_code: string
+          name: string
+          scope: string | null
+          status: string
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          created_at?: string
+          detection_limit?: number | null
+          document_id?: number | null
+          effective_at?: string | null
+          expired_at?: string | null
+          id?: number
+          method_code: string
+          name: string
+          scope?: string | null
+          status?: string
+          updated_at?: string
+          version: string
+        }
+        Update: {
+          created_at?: string
+          detection_limit?: number | null
+          document_id?: number | null
+          effective_at?: string | null
+          expired_at?: string | null
+          id?: number
+          method_code?: string
+          name?: string
+          scope?: string | null
+          status?: string
+          updated_at?: string
+          version?: string
+        }
+        Relationships: []
+      }
+      experiment_report: {
+        Row: {
+          archived_at: string | null
+          generated_at: string
+          generated_by: string
+          id: number
+          published_at: string | null
+          report_code: string
+          status: string
+          storage_path: string | null
+          task_id: number
+          version_no: number
+        }
+        Insert: {
+          archived_at?: string | null
+          generated_at?: string
+          generated_by: string
+          id?: number
+          published_at?: string | null
+          report_code: string
+          status?: string
+          storage_path?: string | null
+          task_id: number
+          version_no: number
+        }
+        Update: {
+          archived_at?: string | null
+          generated_at?: string
+          generated_by?: string
+          id?: number
+          published_at?: string | null
+          report_code?: string
+          status?: string
+          storage_path?: string | null
+          task_id?: number
+          version_no?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "experiment_report_generated_by_fkey"
+            columns: ["generated_by"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "experiment_report_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "experiment_task"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      experiment_task: {
+        Row: {
+          created_at: string
+          id: number
+          method_id: number
+          name: string
+          planned_end: string | null
+          planned_start: string | null
+          priority: string
+          project_id: number
+          remark: string | null
+          status: string
+          task_code: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          method_id: number
+          name: string
+          planned_end?: string | null
+          planned_start?: string | null
+          priority?: string
+          project_id: number
+          remark?: string | null
+          status?: string
+          task_code: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          method_id?: number
+          name?: string
+          planned_end?: string | null
+          planned_start?: string | null
+          priority?: string
+          project_id?: number
+          remark?: string | null
+          status?: string
+          task_code?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "experiment_task_method_id_fkey"
+            columns: ["method_id"]
+            isOneToOne: false
+            referencedRelation: "experiment_method"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "experiment_task_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "research_project"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instrument: {
+        Row: {
+          commissioned_at: string | null
+          created_at: string
+          id: number
+          instrument_code: string
+          location: string | null
+          manufacturer: string | null
+          model: string | null
+          name: string
+          next_calibration_at: string | null
+          owner_id: string | null
+          status: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          commissioned_at?: string | null
+          created_at?: string
+          id?: number
+          instrument_code: string
+          location?: string | null
+          manufacturer?: string | null
+          model?: string | null
+          name: string
+          next_calibration_at?: string | null
+          owner_id?: string | null
+          status?: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          commissioned_at?: string | null
+          created_at?: string
+          id?: number
+          instrument_code?: string
+          location?: string | null
+          manufacturer?: string | null
+          model?: string | null
+          name?: string
+          next_calibration_at?: string | null
+          owner_id?: string | null
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instrument_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instrument_maintenance: {
+        Row: {
+          attachment_id: number | null
+          id: number
+          instrument_id: number
+          maintenance_type: string
+          next_due_on: string | null
+          occurred_on: string
+          operator_id: string
+          remark: string | null
+          result: string | null
+        }
+        Insert: {
+          attachment_id?: number | null
+          id?: number
+          instrument_id: number
+          maintenance_type: string
+          next_due_on?: string | null
+          occurred_on: string
+          operator_id: string
+          remark?: string | null
+          result?: string | null
+        }
+        Update: {
+          attachment_id?: number | null
+          id?: number
+          instrument_id?: number
+          maintenance_type?: string
+          next_due_on?: string | null
+          occurred_on?: string
+          operator_id?: string
+          remark?: string | null
+          result?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instrument_maintenance_instrument_id_fkey"
+            columns: ["instrument_id"]
+            isOneToOne: false
+            referencedRelation: "instrument"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instrument_maintenance_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory_item: {
+        Row: {
+          batch_no: string | null
+          created_at: string
+          expiry_date: string | null
+          id: number
+          item_code: string
+          location: string | null
+          manufacturer: string | null
+          name: string
+          quantity: number
+          status: string
+          storage_condition: string | null
+          type: string
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          batch_no?: string | null
+          created_at?: string
+          expiry_date?: string | null
+          id?: number
+          item_code: string
+          location?: string | null
+          manufacturer?: string | null
+          name: string
+          quantity?: number
+          status?: string
+          storage_condition?: string | null
+          type: string
+          unit: string
+          updated_at?: string
+        }
+        Update: {
+          batch_no?: string | null
+          created_at?: string
+          expiry_date?: string | null
+          id?: number
+          item_code?: string
+          location?: string | null
+          manufacturer?: string | null
+          name?: string
+          quantity?: number
+          status?: string
+          storage_condition?: string | null
+          type?: string
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      inventory_transaction: {
+        Row: {
+          id: number
+          item_id: number
+          occurred_at: string
+          operator_id: string
+          quantity: number
+          remark: string | null
+          task_id: number | null
+          transaction_type: string
+        }
+        Insert: {
+          id?: number
+          item_id: number
+          occurred_at?: string
+          operator_id: string
+          quantity: number
+          remark?: string | null
+          task_id?: number | null
+          transaction_type: string
+        }
+        Update: {
+          id?: number
+          item_id?: number
+          occurred_at?: string
+          operator_id?: string
+          quantity?: number
+          remark?: string | null
+          task_id?: number | null
+          transaction_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_transaction_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_item"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_transaction_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_transaction_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "experiment_task"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lab_department: {
+        Row: {
+          code: string
+          created_at: string
+          id: number
+          laboratory_id: number
+          name: string
+          parent_id: number | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: number
+          laboratory_id: number
+          name: string
+          parent_id?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: number
+          laboratory_id?: number
+          name?: string
+          parent_id?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lab_department_laboratory_id_fkey"
+            columns: ["laboratory_id"]
+            isOneToOne: false
+            referencedRelation: "lab_laboratory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lab_department_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "lab_department"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lab_laboratory: {
+        Row: {
+          code: string
+          created_at: string
+          id: number
+          location: string | null
+          manager_id: string | null
+          name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: number
+          location?: string | null
+          manager_id?: string | null
+          name: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: number
+          location?: string | null
+          manager_id?: string | null
+          name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lab_laboratory_manager_fk"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      research_project: {
+        Row: {
+          created_at: string
+          description: string | null
+          end_date: string | null
+          id: number
+          name: string
+          owner_id: string
+          project_code: string
+          start_date: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: number
+          name: string
+          owner_id: string
+          project_code: string
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: number
+          name?: string
+          owner_id?: string
+          project_code?: string
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "research_project_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      result_review: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: number
+          result: string
+          reviewed_at: string
+          reviewer_id: string
+          task_id: number
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: number
+          result: string
+          reviewed_at?: string
+          reviewer_id: string
+          task_id: number
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: number
+          result?: string
+          reviewed_at?: string
+          reviewer_id?: string
+          task_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "result_review_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "result_review_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "experiment_task"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sample: {
+        Row: {
+          batch_no: string | null
+          created_at: string
+          id: number
+          name: string
+          project_id: number
+          quantity: number
+          registered_at: string
+          sample_code: string
+          source: string | null
+          specification: string | null
+          status: string
+          storage_condition: string | null
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          batch_no?: string | null
+          created_at?: string
+          id?: number
+          name: string
+          project_id: number
+          quantity: number
+          registered_at?: string
+          sample_code: string
+          source?: string | null
+          specification?: string | null
+          status?: string
+          storage_condition?: string | null
+          unit: string
+          updated_at?: string
+        }
+        Update: {
+          batch_no?: string | null
+          created_at?: string
+          id?: number
+          name?: string
+          project_id?: number
+          quantity?: number
+          registered_at?: string
+          sample_code?: string
+          source?: string | null
+          specification?: string | null
+          status?: string
+          storage_condition?: string | null
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sample_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "research_project"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sample_flow: {
+        Row: {
+          from_status: string | null
+          handover_to: string | null
+          id: number
+          location: string | null
+          node: string
+          occurred_at: string
+          operator_id: string
+          remark: string | null
+          sample_id: number
+          to_status: string
+        }
+        Insert: {
+          from_status?: string | null
+          handover_to?: string | null
+          id?: number
+          location?: string | null
+          node: string
+          occurred_at?: string
+          operator_id: string
+          remark?: string | null
+          sample_id: number
+          to_status: string
+        }
+        Update: {
+          from_status?: string | null
+          handover_to?: string | null
+          id?: number
+          location?: string | null
+          node?: string
+          occurred_at?: string
+          operator_id?: string
+          remark?: string | null
+          sample_id?: number
+          to_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sample_flow_handover_to_fkey"
+            columns: ["handover_to"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sample_flow_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sample_flow_sample_id_fkey"
+            columns: ["sample_id"]
+            isOneToOne: false
+            referencedRelation: "sample"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sys_permission: {
+        Row: {
+          action: string
+          code: string
+          id: number
+          name: string
+          resource: string
+        }
+        Insert: {
+          action: string
+          code: string
+          id?: number
+          name: string
+          resource: string
+        }
+        Update: {
+          action?: string
+          code?: string
+          id?: number
+          name?: string
+          resource?: string
+        }
+        Relationships: []
+      }
+      sys_role: {
+        Row: {
+          code: string
+          created_at: string
+          id: number
+          name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: number
+          name: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: number
+          name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      sys_role_permission: {
+        Row: {
+          permission_id: number
+          role_id: number
+        }
+        Insert: {
+          permission_id: number
+          role_id: number
+        }
+        Update: {
+          permission_id?: number
+          role_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sys_role_permission_permission_id_fkey"
+            columns: ["permission_id"]
+            isOneToOne: false
+            referencedRelation: "sys_permission"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sys_role_permission_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "sys_role"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sys_user: {
+        Row: {
+          created_at: string
+          department_id: number | null
+          email: string | null
+          id: string
+          last_login_at: string | null
+          real_name: string
+          status: string
+          updated_at: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          department_id?: number | null
+          email?: string | null
+          id: string
+          last_login_at?: string | null
+          real_name: string
+          status?: string
+          updated_at?: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          department_id?: number | null
+          email?: string | null
+          id?: string
+          last_login_at?: string | null
+          real_name?: string
+          status?: string
+          updated_at?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sys_user_department_fk"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "lab_department"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sys_user_role: {
+        Row: {
+          role_id: number
+          user_id: string
+        }
+        Insert: {
+          role_id: number
+          user_id: string
+        }
+        Update: {
+          role_id?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sys_user_role_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "sys_role"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sys_user_role_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_assignee: {
+        Row: {
+          assigned_at: string
+          assigned_by: string
+          id: number
+          task_id: number
+          unassigned_at: string | null
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by: string
+          id?: number
+          task_id: number
+          unassigned_at?: string | null
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string
+          id?: number
+          task_id?: number
+          unassigned_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_assignee_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_assignee_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "experiment_task"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_assignee_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_resource: {
+        Row: {
+          id: number
+          quantity: number | null
+          resource_id: number
+          resource_type: string
+          task_id: number
+          unit: string | null
+        }
+        Insert: {
+          id?: number
+          quantity?: number | null
+          resource_id: number
+          resource_type: string
+          task_id: number
+          unit?: string | null
+        }
+        Update: {
+          id?: number
+          quantity?: number | null
+          resource_id?: number
+          resource_type?: string
+          task_id?: number
+          unit?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_resource_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "experiment_task"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_sample: {
+        Row: {
+          sample_id: number
+          task_id: number
+        }
+        Insert: {
+          sample_id: number
+          task_id: number
+        }
+        Update: {
+          sample_id?: number
+          task_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_sample_sample_id_fkey"
+            columns: ["sample_id"]
+            isOneToOne: false
+            referencedRelation: "sample"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_sample_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "experiment_task"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_status_history: {
+        Row: {
+          from_status: string | null
+          id: number
+          occurred_at: string
+          operator_id: string
+          remark: string | null
+          task_id: number
+          to_status: string
+        }
+        Insert: {
+          from_status?: string | null
+          id?: number
+          occurred_at?: string
+          operator_id: string
+          remark?: string | null
+          task_id: number
+          to_status: string
+        }
+        Update: {
+          from_status?: string | null
+          id?: number
+          occurred_at?: string
+          operator_id?: string
+          remark?: string | null
+          task_id?: number
+          to_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_status_history_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_status_history_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "experiment_task"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      has_permission: { Args: { _permission_code: string }; Returns: boolean }
+      has_role: { Args: { _role_code: string }; Returns: boolean }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
+  public: {
+    Enums: {},
+  },
+} as const

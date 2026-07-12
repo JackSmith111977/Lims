@@ -1,0 +1,41 @@
+{
+  "name": "lims-system",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
+    "start": "next start",
+    "lint": "eslint",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test --pass-with-no-tests",
+    "supabase:status": "supabase status",
+    "supabase:migrations": "supabase migration list",
+    "supabase:dry-run": "supabase db push --dry-run",
+    "supabase:push": "supabase db push",
+    "supabase:types": "supabase gen types typescript --linked",
+    "check:versioning": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/sdd/check-versioning.ps1"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.12.0",
+    "@supabase/supabase-js": "^2.110.2",
+    "next": "16.2.10",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.1",
+    "@supabase/cli-windows-x64": "^2.109.1",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.10",
+    "supabase": "^2.109.1",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vitest": "^4.1.10"
+  }
+}

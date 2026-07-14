@@ -15,8 +15,8 @@
 | GB/T 40343—2021：设施和环境管理 | `FR-ENV-001～006` | 环境记录、阈值提醒和接口扩展 | `AC-RESOURCE-001` |
 | GB/T 40343—2021：用户管理和权限控制 | `FR-AUTH-001～007` | 认证、角色、权限和授权记录；[`design-auth-admin.md`](design-auth-admin.md) | `AC-AUTH-001`；`REV-AUTH-001` 正向/负向集成验收 |
 | GB/T 40343—2021：基础设置 | `FR-SETTING-001～003` | 实验室、部门、实验组、通用分类、计量单位和系统参数；[`design-settings.md`](design-settings.md) | T-105B 集成测试和设置管理审查 |
-| GB/T 40343—2021：任务登记 | `FR-TASK-001～002` | 科研项目、实验任务、有效方法引用和已有样品关联；[`design-task-registration.md`](design-task-registration.md) | T-202 集成测试和 `REV-TASK-REG-001` |
-| GB/T 40343—2021：样品登记 | `FR-SAMPLE-001～003`、`AC-SAMPLE-001` | 样品基础字段、唯一编号、项目绑定和任务/方法关联；[`design-sample-registration.md`](design-sample-registration.md) | T-203 集成测试和 `REV-SAMPLE-REG-001` |
+| GB/T 40343—2021：任务登记 | `FR-TASK-001～002` | 科研项目、实验任务、有效方法引用和已有样品关联；[`design-task-registration.md`](design-task-registration.md) | T-202/T-206 集成测试和 `REV-TASK-REG-001` |
+| GB/T 40343—2021：样品登记 | `FR-SAMPLE-001～003`、`AC-SAMPLE-001` | 样品基础字段、唯一编号、项目绑定和任务/方法关联；[`design-sample-registration.md`](design-sample-registration.md) | T-203/T-206 集成测试和 `REV-SAMPLE-REG-001` |
 | GB/T 40343—2021：样品流转 | `FR-SAMPLE-004～006`、`AC-SAMPLE-002`、`BR-003`、`BR-005` | 样品状态机、物流事件、当前位置、事务流转和审计；[`design-sample-flow.md`](design-sample-flow.md) | T-204 集成测试和 `REV-SAMPLE-FLOW-001` |
 | GB/T 40343—2021：任务分配与执行 | `FR-TASK-003～006`、`FR-TASK-008`、`FR-PER-002`、`FR-PER-004`、`BR-001～005` | 个人/实验组分配、任务状态机、状态历史、执行人权限和审计；[`design-task-flow.md`](design-task-flow.md) | T-205 集成测试和 `REV-TASK-FLOW-001` |
 | GB/T 40343—2021：系统安全 | `FR-AUDIT-001～006`、`NFR-SEC-*` | 日志、备份、恢复和数据保护 | `AC-AUDIT-001` |

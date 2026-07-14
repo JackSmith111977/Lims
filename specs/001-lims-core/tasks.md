@@ -74,7 +74,7 @@
   - [x] T-205C [S] 实现任务分配、状态流转和状态历史 API（Files：`src/lib/server/task-flow.ts`、`src/app/api/v1/tasks/[id]/assignments`、`transition`、`history`；Verify：服务端校验和远程集成）
   - [x] T-205D [P] 实现任务详情的分配、状态操作和历史时间线（Files：`src/components/task-registration`、`src/app/tasks`；Depends：T-205C；Verify：生产构建和未认证 E2E）
   - [x] T-205E [S] 完成集成测试、对抗性审查和一致性门禁（Depends：T-205B～D；Verify：远程临时数据清理、全量质量门禁；Review：`REV-TASK-FLOW-001`）
-- [ ] T-206 编写样品和任务主流程测试（Spec：AC-SAMPLE-001～002、AC-TASK-001）
+- [x] T-206 编写样品和任务主流程测试（Spec：AC-SAMPLE-001～002、AC-TASK-001；Files：`scripts/integration/sample-task-main-flow.mjs`、`package.json`；Verify：`npm run test:integration` 远程临时夹具自动清理）
 
 ## 4. 数据、审核与报告
 

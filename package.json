@@ -9,6 +9,7 @@
     "lint": "eslint",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
+    "test:integration": "node scripts/integration/sample-task-main-flow.mjs",
     "test:e2e": "playwright test --pass-with-no-tests",
     "supabase:status": "supabase status",
     "supabase:migrations": "supabase migration list",

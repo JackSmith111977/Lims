@@ -5,7 +5,7 @@
 | 来源 Spec | `specs/001-lims-core/spec.md` |
 | 状态 | Approved（技术方案已切换） |
 | 版本 | v0.1 |
-| 技术栈 | 待确定 |
+| 技术栈 | Next.js App Router + TypeScript + Tailwind CSS + Supabase |
 
 > 本文件是从核心 Spec 派生的技术计划，不得在这里新增未经确认的功能需求。技术栈确认后，应补充架构图、部署方式和技术决策记录。
 
@@ -83,6 +83,11 @@
 - [x] 接入 Supabase CLI 与项目级只读 MCP 配置：用于迁移、类型生成和 AI 辅助查询
 - [x] 执行首个远程数据库迁移并核验核心表：远程版本 `202607120001`
 - [x] 建立 Git 分支、提交、版本、发布和回滚规约
+- [x] 建立用户与角色管理设计边界和 T-105A/T-105B 任务拆分
+- [x] 确认基础设置统一模型：组织结构、通用分类、计量单位和系统参数（DES-SETTING-001）
+- [x] 确认实验室人员档案模型、能力记录和任务状态读取边界（DES-PERSONNEL-001）
+- [x] 确认科研项目、实验任务登记和后续分配/状态机的模块边界（DES-TASK-REGISTRATION-001）
+- [x] 确认样品登记、编号生成和项目/任务/方法关联边界（DES-SAMPLE-REGISTRATION-001）
 
 ## 4. 设计产物
 
@@ -98,6 +103,11 @@
 详细设计文件：
 
 - [architecture.md](architecture.md)：架构和技术决策
+- [design-auth-admin.md](design-auth-admin.md)：用户与角色管理设计
+- [design-settings.md](design-settings.md)：基础设置管理设计
+- [design-personnel.md](design-personnel.md)：实验室人员档案设计
+- [design-task-registration.md](design-task-registration.md)：科研项目与实验任务登记设计
+- [design-sample-registration.md](design-sample-registration.md)：样品登记与唯一编号设计
 - [data-model.md](data-model.md)：字段、约束和索引
 - [ui.md](ui.md)：页面导航和权限
 - [api-contract.md](api-contract.md)：REST API 契约

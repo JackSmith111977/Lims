@@ -30,13 +30,26 @@
 | `password_hash` | — | — | 密码由 Supabase Auth 管理，业务库不保存 |
 | `real_name` | VARCHAR(64) | NOT NULL | 姓名 |
 | `department_id` | BIGINT | FK, NULL | 所属部门 |
+| `position_id` | BIGINT | FK, NULL | 当前岗位 |
 | `status` | VARCHAR(16) | NOT NULL | ACTIVE/INACTIVE |
+| `availability_status` | VARCHAR(32) | NOT NULL | AVAILABLE/ON_LEAVE/QUALIFICATION_SUSPENDED/UNAVAILABLE |
+| `availability_note` | VARCHAR(255) | NULL | 可用状态说明 |
+| `availability_until` | DATE | NULL | 预计恢复日期 |
 | `email` | VARCHAR(128) | NULL | 邮箱 |
 | `last_login_at` | TIMESTAMPTZ | NULL | 最近登录时间 |
 | `created_at` | TIMESTAMPTZ | NOT NULL | 创建时间 |
 | `updated_at` | TIMESTAMPTZ | NOT NULL | 更新时间 |
 
-### 2.2 `sys_role`、`sys_permission`
+### 2.2 人员岗位与能力记录
+
+- `sys_position(id, code, name, description, status, created_at, updated_at)`：岗位字典，`code` 唯一。
+- `sys_user_skill(id, user_id, skill_name, level, verified_at, expires_at, notes, created_at, updated_at)`：技能记录，`(user_id, skill_name)` 唯一。
+- `sys_user_qualification(id, user_id, qualification_name, certificate_no, status, issued_at, expires_at, notes, created_at, updated_at)`：资质记录，状态为 `ACTIVE/SUSPENDED/EXPIRED`。
+- `sys_user_training(id, user_id, training_name, provider, completed_at, expires_at, result, notes, created_at, updated_at)`：培训记录。
+
+`sys_user.status` 表示账户登录状态，`availability_status` 表示业务可用状态，两者不可混用。人员任务状态按需从 `task_assignee` 和 `experiment_task` 聚合，不在人员表中复制。
+
+### 2.3 `sys_role`、`sys_permission`
 
 - `sys_role(id, code, name, status, created_at, updated_at)`。
 - `sys_permission(id, code, name, resource, action)`。
@@ -59,7 +72,21 @@
 
 约束：同一实验室内 `code` 唯一；`parent_id` 不得形成循环。
 
-### 3.3 `research_project`
+### 3.3 `lab_group`
+
+`id`、`laboratory_id`、`code`、`name`、`leader_id`、`status`、`created_at`、`updated_at`。
+
+约束：同一实验室内 `code` 唯一；停用实验室或实验组不能作为新业务数据的有效归属。
+
+### 3.4 基础设置表
+
+- `sys_category(id, category_type, code, name, parent_id, description, sort_order, status, created_at, updated_at)`：统一承载项目、样品、任务、设备和资源分类；`category_type + code` 唯一，父节点必须属于同一类型。
+- `sys_unit(id, code, name, symbol, dimension, sort_order, status, created_at, updated_at)`：计量单位字典，`code` 唯一。
+- `sys_parameter(id, code, name, value_type, value_json, description, status, created_at, updated_at)`：运行时系统参数，`value_type` 为 STRING/NUMBER/BOOLEAN/JSON；禁止保存密码、密钥和令牌。
+
+所有基础设置表启用 RLS，写操作要求 `settings.manage`，停用优先于物理删除，变更写入 `audit_log`。
+
+### 3.5 `research_project`
 
 | 字段 | 类型 | 约束 | 说明 |
 | --- | --- | --- | --- |
@@ -91,7 +118,7 @@
 | `status` | VARCHAR(16) | NOT NULL | REGISTERED/PROCESSING/PROCESSED/ARCHIVED/DISPOSED |
 | `registered_at` | TIMESTAMPTZ | NOT NULL | 登记时间 |
 
-约束：数量不得小于 0；归档或处置样品不得直接进入新任务；样品编号不可复用。
+约束：数量不得小于 0 且最多保留 6 位小数；归档或处置样品不得直接进入新任务；样品编号唯一。T-203 通过 `task_sample` 关联任务，再由 `experiment_task.method_id` 展开方法，不新增 `sample_method` 重复关系表；样品状态由 T-204 流转接口维护。
 
 ### 4.2 `sample_flow`
 
@@ -124,12 +151,16 @@
 
 约束：计划结束不得早于计划开始；已归档任务只允许查看和追溯。
 
+登记接口只允许创建和修改上述基本字段，任务 `status` 由 T-205 状态机负责；`method_id` 必须引用有效方法版本，`task_sample` 新增关联必须属于同一项目。
+
 ### 5.2 任务关联表
 
 - `task_sample(task_id, sample_id)`：任务与样品多对多，联合主键。
 - `task_assignee(id, task_id, user_id(UUID), assigned_by(UUID), assigned_at(TIMESTAMPTZ), unassigned_at(TIMESTAMPTZ))`：任务分配历史。
 - `task_resource(id, task_id, resource_type, resource_id, quantity, unit)`：任务使用设备或资源的关联。
 - `task_status_history(id, task_id, from_status, to_status, operator_id, remark, occurred_at)`：任务状态历史。
+
+人员任务状态查询使用 `task_assignee` 的当前有效分配（`unassigned_at is null`）关联 `experiment_task.status`，只读，不改变任务分配事实。
 
 ### 5.3 `experiment_data`
 
@@ -208,6 +239,6 @@
 
 - [x] 根据 Supabase PostgreSQL 生成数据库 migration 脚本：`supabase/migrations/202607120001_initial_schema.sql`。
 - [x] 在演示 Supabase 项目执行 migration 并记录结果：远程迁移版本 `202607120001`，`sys_user` 核心表 REST 查询返回 HTTP 200。
-- [ ] 确认状态值字典和错误码。
+- [x] 确认状态值字典和错误码：设置状态 ACTIVE/INACTIVE，API 错误码见 `design-settings.md`。
 - [ ] 确认是否使用软删除字段。
 - [ ] 根据 API 查询场景复核索引。

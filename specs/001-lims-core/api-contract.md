@@ -77,6 +77,13 @@ HTTP 状态建议：`400` 参数错误、`401` 未认证、`403` 无权限、`40
 | GET/POST | `/projects` | 管理员、负责人 | `FR-TASK-001～002` |
 | GET/PATCH | `/projects/{id}` | 管理员、负责人 | `FR-TASK-001～002` |
 | GET/POST | `/users` | 系统管理员 | `FR-AUTH-003` |
+| PATCH | `/users/{id}` | 系统管理员 | `FR-AUTH-003`、`FR-AUTH-005` |
+| POST | `/users/{id}/roles` | 系统管理员 | `FR-AUTH-004～006` |
+| GET/POST | `/roles` | 系统管理员 | `FR-AUTH-004` |
+| PATCH | `/roles/{id}` | 系统管理员 | `FR-AUTH-004` |
+| POST | `/roles/{id}/permissions` | 系统管理员 | `FR-AUTH-004～006` |
+| GET/POST/PATCH | `/settings/laboratories`、`/settings/departments`、`/settings/groups` | 设置管理员 | `FR-SETTING-001` |
+| GET/POST/PATCH | `/settings/categories`、`/settings/units`、`/settings/parameters` | 设置管理员 | `FR-SETTING-002～003` |
 | GET/POST | `/methods` | 实验室管理员 | `FR-METHOD-001～004` |
 | GET/POST | `/instruments` | 实验室管理员 | `FR-EQUIP-001～006` |
 | GET/POST | `/inventory/items` | 实验室管理员 | `FR-INVENTORY-001～006` |
@@ -85,14 +92,23 @@ HTTP 状态建议：`400` 参数错误、`401` 未认证、`403` 无权限、`40
 
 | 方法 | 路径 | 角色 | 需求 |
 | --- | --- | --- | --- |
-| GET | `/samples` | 按权限 | `FR-SAMPLE-004` |
-| POST | `/samples` | 管理员、实验人员 | `FR-SAMPLE-001～003` |
-| GET | `/samples/{id}` | 按权限 | `FR-SAMPLE-004` |
-| PATCH | `/samples/{id}` | 管理员、实验人员 | `FR-SAMPLE-001～008` |
+| GET | `/samples` | `sample.read` | `FR-SAMPLE-001～004` |
+| POST | `/samples` | `sample.manage` | `FR-SAMPLE-001～003` |
+| GET | `/samples/{id}` | `sample.read` | `FR-SAMPLE-001～004` |
+| PATCH | `/samples/{id}` | `sample.manage`，关联任务需 `task.manage` | `FR-SAMPLE-001～003` |
 | POST | `/samples/{id}/flows` | 管理员、实验人员 | `FR-SAMPLE-005～006` |
 | GET | `/samples/{id}/flows` | 按权限 | `FR-SAMPLE-005～006` |
 
-## 5. 任务接口
+## 5. 项目接口
+
+| 方法 | 路径 | 角色 | 需求 |
+| --- | --- | --- | --- |
+| GET | `/projects` | `project.read` | `FR-TASK-001` |
+| POST | `/projects` | `project.manage` | `FR-TASK-001` |
+| GET | `/projects/{id}` | `project.read` | `FR-TASK-001～002` |
+| PATCH | `/projects/{id}` | `project.manage` | `FR-TASK-001` |
+
+## 5.1 任务接口
 
 | 方法 | 路径 | 角色 | 需求 |
 | --- | --- | --- | --- |
@@ -103,6 +119,20 @@ HTTP 状态建议：`400` 参数错误、`401` 未认证、`403` 无权限、`40
 | POST | `/tasks/{id}/assignments` | 管理员、负责人 | `FR-TASK-003、007` |
 | POST | `/tasks/{id}/transition` | 按状态授权 | `BR-001～005` |
 | GET | `/tasks/{id}/history` | 按权限 | `FR-TASK-004`、`FR-AUDIT-005` |
+
+## 5.2 人员档案接口
+
+| 方法 | 路径 | 角色 | 需求 |
+| --- | --- | --- | --- |
+| GET | `/personnel` | `resource.read` | `FR-PER-001～004` |
+| GET | `/personnel/{id}` | `resource.read` | `FR-PER-001～004` |
+| PATCH | `/personnel/{id}` | `resource.manage` | `FR-PER-001、FR-PER-004` |
+| GET/POST | `/personnel/{id}/skills` | `resource.read/manage` | `FR-PER-003` |
+| PATCH/DELETE | `/personnel/{id}/skills/{recordId}` | `resource.manage` | `FR-PER-003` |
+| GET/POST | `/personnel/{id}/qualifications` | `resource.read/manage` | `FR-PER-003～004` |
+| PATCH/DELETE | `/personnel/{id}/qualifications/{recordId}` | `resource.manage` | `FR-PER-003～004` |
+| GET/POST | `/personnel/{id}/training` | `resource.read/manage` | `FR-PER-003` |
+| PATCH/DELETE | `/personnel/{id}/training/{recordId}` | `resource.manage` | `FR-PER-003` |
 
 ## 6. 数据、审核和报告接口
 

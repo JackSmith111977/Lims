@@ -34,13 +34,34 @@
 - [x] T-104A 实现登录态读取和 `/dashboard` 路由保护（Spec：FR-AUTH-002）
 - [x] T-104 实现角色、权限和路由保护（Spec：FR-AUTH-002～005）
 - [ ] T-105 实现用户、角色和基础设置管理（Spec：FR-AUTH-003～004、FR-SETTING-001～003）
+  - [x] T-105A 实现用户与角色管理页面、API、授权 RPC 和审计记录（Spec：FR-AUTH-003～006、FR-AUTH-005、NFR-SEC-001～002；设计：DES-AUTH-001；正向用户创建、普通用户越权和停用用户负向集成验收已通过，临时测试数据已清理）
+  - [x] T-105B 实现实验室、部门、基础分类和系统参数管理（Spec：FR-SETTING-001～003；设计：DES-SETTING-001；全量正向/未认证负向验收通过，临时数据已清理）
+    - [x] T-105B1 [S] 实现组织结构数据模型、RLS、API 和审计（Spec：FR-SETTING-001；Depends：T-105A；Files：supabase/migrations、src/lib/server、src/app/api/v1/settings；实验室新增/查询/停用集成验收通过）
+    - [x] T-105B2 [P] 实现通用分类、计量单位和系统参数数据模型与 API（Spec：FR-SETTING-002～003；Depends：T-105B1 契约；Files：supabase/migrations、src/lib/server、src/app/api/v1/settings；共享动态路由和类型校验已实现）
+    - [x] T-105B3 [P] 实现基础设置页面和表单校验（Spec：FR-SETTING-001～003；Depends：T-105B1、T-105B2；Files：src/app/admin/settings、src/components/settings；页面和未认证负向 E2E 已通过）
+    - [x] T-105B4 [S] 集成测试、对抗性审查和远程迁移验收（Spec：FR-SETTING-001～003、NFR-SEC-001～002；Depends：T-105B1～B3；全量设置资源新增/列表/停用通过）
 - [ ] T-106 编写登录、越权和用户状态测试（Spec：AC-AUTH-001、NFR-SEC-001）
 
 ## 3. 样品与任务主流程
 
-- [ ] T-201 实现实验室人员档案（Spec：FR-PER-001～004）
-- [ ] T-202 实现科研项目和任务登记（Spec：FR-TASK-001～002）
-- [ ] T-203 实现样品登记和唯一编号（Spec：FR-SAMPLE-001～003）
+- [x] T-201 [S] 实现实验室人员档案（Spec：FR-PER-001～004；设计：DES-PERSONNEL-001；Depends：T-105B；Integration：T-205 复用任务状态摘要；REV-PERSONNEL-001 已关闭 P0/P1）
+  - [x] T-201A [S] 锁定人员、岗位、技能、资质和培训数据契约（Files：specs/001-lims-core/design-personnel.md、data-model.md、api-contract.md、contracts/openapi.yaml）
+  - [x] T-201B [S] 创建岗位和人员能力记录 migration、RLS、审计约束（Files：supabase/migrations、src/types/database.ts；Verify：远程迁移和 RLS 负向测试）
+  - [x] T-201C [S] 实现人员档案与任务状态 API（Files：src/lib/server/personnel.ts、src/app/api/v1/personnel；Verify：API 单元/集成测试）
+  - [x] T-201D [P] 实现人员列表/详情和能力记录界面（Files：src/app/personnel、src/components/personnel；Depends：T-201C；Verify：未认证 E2E、生产构建和真实会话路由渲染）
+  - [x] T-201E [S] 完成集成测试、对抗性审查和一致性门禁（Depends：T-201B～D；Verify：全量质量门禁、临时数据清理；Review：REV-PERSONNEL-001）
+- [x] T-202 [S] 实现科研项目和任务登记（Spec：FR-TASK-001～002；设计：DES-TASK-REGISTRATION-001；Depends：T-201；Integration：T-203/204/205 复用项目/任务契约；REV-TASK-REG-001 已关闭 P0/P1）
+  - [x] T-202A [S] 锁定项目、任务、方法引用和样品关联边界（Files：specs/001-lims-core/design-task-registration.md、data-model.md、api-contract.md、contracts/openapi.yaml）
+  - [x] T-202B [S] 扩展项目/任务审计权限并实现服务端校验（Files：supabase/migrations、src/lib/server/task-registration.ts；Verify：单元测试和数据库约束）
+  - [x] T-202C [S] 实现项目与任务列表/详情/创建/修改 API（Files：src/app/api/v1/projects、src/app/api/v1/tasks；Verify：API 正负向集成）
+  - [x] T-202D [P] 实现项目与任务登记页面和筛选交互（Files：src/app/projects、src/app/tasks、src/components/task-registration；Depends：T-202C；Verify：生产 build 和页面 E2E）
+  - [x] T-202E [S] 完成集成测试、对抗性审查和一致性门禁（Depends：T-202B～D；Verify：远程临时夹具清理和全量质量门禁；Review：REV-TASK-REG-001）
+- [x] T-203 [S] 实现样品登记和唯一编号（Spec：FR-SAMPLE-001～003、AC-SAMPLE-001；设计：DES-SAMPLE-REGISTRATION-001；Depends：T-202；Integration：T-204/206 复用样品关联契约；REV-SAMPLE-REG-001 已关闭 P0/P1）
+  - [x] T-203A [S] 锁定样品字段、编号生成和任务/方法关联边界（Files：specs/001-lims-core/design-sample-registration.md、data-model.md、api-contract.md、contracts/openapi.yaml）
+  - [x] T-203B [S] 实现样品登记服务、编号唯一性、关联校验、RLS 审计支持（Files：supabase/migrations、src/lib/server/sample-registration.ts；Verify：单元测试和数据库约束）
+  - [x] T-203C [S] 实现样品列表/详情/创建/修改 API（Files：src/app/api/v1/samples；Verify：API 正负向集成）
+  - [x] T-203D [P] 实现样品登记页面和筛选交互（Files：src/app/samples、src/components/sample-registration；Depends：T-203C；Verify：生产 build 和未认证 E2E）
+  - [x] T-203E [S] 完成集成测试、对抗性审查和一致性门禁（Depends：T-203B～D；Verify：远程临时夹具清理和全量质量门禁；Review：REV-SAMPLE-REG-001）
 - [ ] T-204 实现样品状态和流转记录（Spec：FR-SAMPLE-004～006）
 - [ ] T-205 实现任务分配和任务状态流转（Spec：FR-TASK-003～006、BR-001～005）
 - [ ] T-206 编写样品和任务主流程测试（Spec：AC-SAMPLE-001～002、AC-TASK-001）

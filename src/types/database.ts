@@ -684,6 +684,54 @@ export type Database = {
           },
         ]
       }
+      lab_group: {
+        Row: {
+          code: string
+          created_at: string
+          id: number
+          laboratory_id: number
+          leader_id: string | null
+          name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: number
+          laboratory_id: number
+          leader_id?: string | null
+          name: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: number
+          laboratory_id?: number
+          leader_id?: string | null
+          name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lab_group_laboratory_id_fkey"
+            columns: ["laboratory_id"]
+            isOneToOne: false
+            referencedRelation: "lab_laboratory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lab_group_leader_id_fkey"
+            columns: ["leader_id"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lab_laboratory: {
         Row: {
           code: string
@@ -937,6 +985,89 @@ export type Database = {
           },
         ]
       }
+      sys_category: {
+        Row: {
+          category_type: string
+          code: string
+          created_at: string
+          description: string | null
+          id: number
+          name: string
+          parent_id: number | null
+          sort_order: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          category_type: string
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: number
+          name: string
+          parent_id?: number | null
+          sort_order?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          category_type?: string
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: number
+          name?: string
+          parent_id?: number | null
+          sort_order?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sys_category_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "sys_category"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sys_parameter: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          id: number
+          name: string
+          status: string
+          updated_at: string
+          value_json: Json
+          value_type: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: number
+          name: string
+          status?: string
+          updated_at?: string
+          value_json: Json
+          value_type: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: number
+          name?: string
+          status?: string
+          updated_at?: string
+          value_json?: Json
+          value_type?: string
+        }
+        Relationships: []
+      }
       sys_permission: {
         Row: {
           action: string
@@ -958,6 +1089,36 @@ export type Database = {
           id?: number
           name?: string
           resource?: string
+        }
+        Relationships: []
+      }
+      sys_position: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          id: number
+          name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: number
+          name: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: number
+          name?: string
+          status?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -1018,35 +1179,83 @@ export type Database = {
           },
         ]
       }
+      sys_unit: {
+        Row: {
+          code: string
+          created_at: string
+          dimension: string | null
+          id: number
+          name: string
+          sort_order: number
+          status: string
+          symbol: string | null
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          dimension?: string | null
+          id?: number
+          name: string
+          sort_order?: number
+          status?: string
+          symbol?: string | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          dimension?: string | null
+          id?: number
+          name?: string
+          sort_order?: number
+          status?: string
+          symbol?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sys_user: {
         Row: {
+          availability_note: string | null
+          availability_status: string
+          availability_until: string | null
           created_at: string
           department_id: number | null
           email: string | null
           id: string
           last_login_at: string | null
+          position_id: number | null
           real_name: string
           status: string
           updated_at: string
           username: string
         }
         Insert: {
+          availability_note?: string | null
+          availability_status?: string
+          availability_until?: string | null
           created_at?: string
           department_id?: number | null
           email?: string | null
           id: string
           last_login_at?: string | null
+          position_id?: number | null
           real_name: string
           status?: string
           updated_at?: string
           username: string
         }
         Update: {
+          availability_note?: string | null
+          availability_status?: string
+          availability_until?: string | null
           created_at?: string
           department_id?: number | null
           email?: string | null
           id?: string
           last_login_at?: string | null
+          position_id?: number | null
           real_name?: string
           status?: string
           updated_at?: string
@@ -1058,6 +1267,60 @@ export type Database = {
             columns: ["department_id"]
             isOneToOne: false
             referencedRelation: "lab_department"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sys_user_position_fk"
+            columns: ["position_id"]
+            isOneToOne: false
+            referencedRelation: "sys_position"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sys_user_qualification: {
+        Row: {
+          certificate_no: string | null
+          created_at: string
+          expires_at: string | null
+          id: number
+          issued_at: string | null
+          notes: string | null
+          qualification_name: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          certificate_no?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: number
+          issued_at?: string | null
+          notes?: string | null
+          qualification_name: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          certificate_no?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: number
+          issued_at?: string | null
+          notes?: string | null
+          qualification_name?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sys_user_qualification_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
             referencedColumns: ["id"]
           },
         ]
@@ -1085,6 +1348,97 @@ export type Database = {
           },
           {
             foreignKeyName: "sys_user_role_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sys_user_skill: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: number
+          level: string | null
+          notes: string | null
+          skill_name: string
+          updated_at: string
+          user_id: string
+          verified_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: number
+          level?: string | null
+          notes?: string | null
+          skill_name: string
+          updated_at?: string
+          user_id: string
+          verified_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: number
+          level?: string | null
+          notes?: string | null
+          skill_name?: string
+          updated_at?: string
+          user_id?: string
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sys_user_skill_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sys_user_training: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          expires_at: string | null
+          id: number
+          notes: string | null
+          provider: string | null
+          result: string | null
+          training_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: number
+          notes?: string | null
+          provider?: string | null
+          result?: string | null
+          training_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: number
+          notes?: string | null
+          provider?: string | null
+          result?: string | null
+          training_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sys_user_training_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "sys_user"
@@ -1258,6 +1612,25 @@ export type Database = {
     Functions: {
       has_permission: { Args: { _permission_code: string }; Returns: boolean }
       has_role: { Args: { _role_code: string }; Returns: boolean }
+      record_audit_event: {
+        Args: {
+          _action: string
+          _after_json?: Json
+          _before_json?: Json
+          _object_id: string
+          _object_type: string
+          _required_permission: string
+        }
+        Returns: undefined
+      }
+      set_role_permissions: {
+        Args: { _permission_codes: string[]; _role_id: number }
+        Returns: undefined
+      }
+      set_user_roles: {
+        Args: { _role_codes: string[]; _target_user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

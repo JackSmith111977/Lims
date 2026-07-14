@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { LogoutButton } from "@/components/auth/logout-button";
-import { getCurrentRoles, ROLE_NAMES } from "@/lib/auth/permissions";
+import { getCurrentRoles, hasPermission, ROLE_NAMES } from "@/lib/auth/permissions";
 import { hasPublicSupabaseEnv } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 
@@ -26,7 +26,27 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
+  const { data: profile } = await supabase
+    .from("sys_user")
+    .select("status")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (profile?.status === "INACTIVE") {
+    await supabase.auth.signOut();
+    redirect("/login?error=user_inactive");
+  }
+
   const roles = await getCurrentRoles(supabase);
+  const [canManageUsers, canManageRoles, canManageSettings, canReadPersonnel, canReadProjects, canReadTasks, canReadSamples] = await Promise.all([
+    hasPermission(supabase, "auth.user.manage"),
+    hasPermission(supabase, "auth.role.manage"),
+    hasPermission(supabase, "settings.manage"),
+    hasPermission(supabase, "resource.read"),
+    hasPermission(supabase, "project.read"),
+    hasPermission(supabase, "task.read"),
+    hasPermission(supabase, "sample.read"),
+  ]);
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
@@ -48,7 +68,7 @@ export default async function DashboardPage() {
           <p className="text-sm font-medium text-blue-300">已登录</p>
           <h2 className="mt-3 text-3xl font-semibold tracking-tight">欢迎进入实验室工作台</h2>
           <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-300">
-            当前已完成登录态识别和路由保护。角色、权限和业务模块将在数据库迁移验证后接入。
+            当前已完成登录态识别、路由保护和基础角色权限接入。用户、角色和权限管理已开放给授权管理员。
           </p>
           <div className="mt-6 flex flex-wrap gap-2">
             {roles.length > 0 ? roles.map((role) => (
@@ -70,6 +90,41 @@ export default async function DashboardPage() {
           <Link className="text-blue-600 hover:text-blue-700" href="/login">
             登录页
           </Link>
+          {canManageUsers ? (
+            <Link className="text-blue-600 hover:text-blue-700" href="/admin/users">
+              用户管理
+            </Link>
+          ) : null}
+          {canManageRoles ? (
+            <Link className="text-blue-600 hover:text-blue-700" href="/admin/roles">
+              角色与权限
+            </Link>
+          ) : null}
+          {canManageSettings ? (
+            <Link className="text-blue-600 hover:text-blue-700" href="/admin/settings">
+              基础设置
+            </Link>
+          ) : null}
+          {canReadPersonnel ? (
+            <Link className="text-blue-600 hover:text-blue-700" href="/personnel">
+              人员档案
+            </Link>
+          ) : null}
+          {canReadProjects ? (
+            <Link className="text-blue-600 hover:text-blue-700" href="/projects">
+              科研项目
+            </Link>
+          ) : null}
+          {canReadTasks ? (
+            <Link className="text-blue-600 hover:text-blue-700" href="/tasks">
+              实验任务
+            </Link>
+          ) : null}
+          {canReadSamples ? (
+            <Link className="text-blue-600 hover:text-blue-700" href="/samples">
+              样品登记
+            </Link>
+          ) : null}
         </div>
       </section>
     </main>

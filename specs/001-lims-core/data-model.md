@@ -124,7 +124,7 @@
 
 `id`、`sample_id`、`from_status`、`to_status`、`node`、`operator_id(UUID)`、`location`、`handover_to(UUID)`、`remark`、`occurred_at(TIMESTAMPTZ)`。
 
-约束：每次状态变更必须有操作人和时间；`sample_id` 建立索引。
+约束：`node` 取 `COLLECT`、`DISTRIBUTE`、`TRANSFER`、`PROCESS`、`ARCHIVE`、`DISPOSE`；`PROCESS` 仅允许 `REGISTERED → PROCESSING` 或 `PROCESSING → PROCESSED`，`ARCHIVE` 和 `DISPOSE` 仅允许从 `PROCESSED` 出发，物流节点不改变状态；`ARCHIVED` 和 `DISPOSED` 为终态。每条记录必须由数据库事务写入操作人、时间、前后状态；交接人必须是 ACTIVE 用户；`sample_id` 建立索引。浏览器端只读，写入通过服务端状态流转函数完成。
 
 ### 4.3 `experiment_method`
 

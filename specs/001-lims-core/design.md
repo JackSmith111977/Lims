@@ -157,16 +157,18 @@ stateDiagram-v2
 
 ```mermaid
 stateDiagram-v2
-    [*] --> 待登记
-    待登记 --> 已登记
-    已登记 --> 待处理
-    待处理 --> 处理中
-    处理中 --> 已处理
-    已处理 --> 已归档
-    已处理 --> 已处置
+    [*] --> 已登记
+    已登记 --> 处理中: PROCESS
+    处理中 --> 已处理: PROCESS
+    已处理 --> 已归档: ARCHIVE
+    已处理 --> 已处置: DISPOSE
     已归档 --> [*]
     已处置 --> [*]
 ```
+
+样品表只保存当前状态：`REGISTERED`（已登记）、`PROCESSING`（处理中）、`PROCESSED`（已处理）、`ARCHIVED`（已归档）和 `DISPOSED`（已处置）。采集、分发和转移是物流事件，不新增持久化状态；它们通过 `sample_flow` 记录 `from_status = to_status`。`PROCESS`、`ARCHIVE` 和 `DISPOSE` 才会推动状态变化，所有节点都必须记录操作人、时间、位置和说明（交接时记录交接人）。
+
+状态变化与流转记录必须在同一数据库事务中完成。客户端只能提交节点和事件信息，当前状态、目标状态、操作人和发生时间由服务端根据行锁和状态机推导，避免并发请求覆盖状态或伪造审计信息。具体约束见 [`design-sample-flow.md`](design-sample-flow.md)。
 
 ## 4. 核心数据库 ER 图
 

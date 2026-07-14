@@ -694,6 +694,53 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+  /samples/{id}/flows:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Samples]
+      summary: 查询样品流转记录
+      operationId: listSampleFlows
+      responses:
+        '200':
+          description: 流转记录
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseSampleFlows'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [Samples]
+      summary: 登记样品流转
+      operationId: createSampleFlow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SampleFlowRequest'
+      responses:
+        '201':
+          description: 流转登记成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseSampleFlow'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
   /tasks:
     get:
       tags: [Tasks]
@@ -1156,6 +1203,30 @@ components:
         source: { type: string, maxLength: 128, nullable: true }
         storageCondition: { type: string, maxLength: 255, nullable: true }
         taskIds: { type: array, items: { type: integer, format: int64 } }
+    SampleFlowRequest:
+      type: object
+      required: [node]
+      properties:
+        node:
+          type: string
+          enum: [COLLECT, DISTRIBUTE, TRANSFER, PROCESS, ARCHIVE, DISPOSE]
+        location: { type: string, maxLength: 128, nullable: true }
+        handoverTo: { type: string, format: uuid, nullable: true }
+        remark: { type: string, maxLength: 2000, nullable: true }
+    SampleFlow:
+      type: object
+      required: [id, sampleId, toStatus, node, operatorId, occurredAt]
+      properties:
+        id: { type: integer, format: int64 }
+        sampleId: { type: integer, format: int64 }
+        fromStatus: { type: string, nullable: true }
+        toStatus: { type: string }
+        node: { type: string }
+        operatorId: { type: string, format: uuid }
+        location: { type: string, nullable: true }
+        handoverTo: { type: string, format: uuid, nullable: true }
+        remark: { type: string, nullable: true }
+        occurredAt: { type: string, format: date-time }
     Sample:
       type: object
       properties:
@@ -1173,6 +1244,7 @@ components:
         registeredAt: { type: string, format: date-time }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
+        currentLocation: { type: string, nullable: true }
         project: { type: object, nullable: true }
         tasks: { type: array, items: { type: object } }
     TaskCreateRequest:
@@ -1312,6 +1384,20 @@ components:
         code: { type: string }
         message: { type: string }
         data: { type: array, items: { $ref: '#/components/schemas/Sample' } }
+        traceId: { type: string }
+    ApiResponseSampleFlow:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { $ref: '#/components/schemas/SampleFlow' }
+        traceId: { type: string }
+    ApiResponseSampleFlows:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { type: array, items: { $ref: '#/components/schemas/SampleFlow' } }
         traceId: { type: string }
     ApiResponseTask:
       type: object

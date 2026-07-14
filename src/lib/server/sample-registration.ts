@@ -3,6 +3,7 @@ import { randomBytes } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { hasPermission } from "@/lib/auth/permissions";
+import { SAMPLE_FLOW_NODES, type SampleFlowNode } from "@/lib/sample-flow";
 import {
   AdminApiError,
   optionalText,
@@ -10,14 +11,17 @@ import {
   requireId,
   requireObject,
   requireText,
+  requireUuid,
 } from "@/lib/server/admin";
 import type { Database, Json } from "@/types/database";
 
 export const SAMPLE_FIELDS = "id, sample_code, project_id, name, specification, batch_no, quantity, unit, source, storage_condition, status, registered_at, created_at, updated_at";
 
 const SAMPLE_STATUSES = ["REGISTERED", "PROCESSING", "PROCESSED", "ARCHIVED", "DISPOSED"] as const;
+export { SAMPLE_FLOW_NODES } from "@/lib/sample-flow";
 
 type SampleRow = Database["public"]["Tables"]["sample"]["Row"];
+type SampleFlowRow = Database["public"]["Tables"]["sample_flow"]["Row"];
 
 type ProjectSummary = { id: number; projectCode: string; name: string; status: string };
 type MethodSummary = { id: number; methodCode: string; name: string; version: string; status: string };
@@ -43,11 +47,25 @@ export type SampleView = {
   source: string | null;
   storageCondition: string | null;
   status: string;
+  currentLocation: string | null;
   registeredAt: string;
   createdAt: string;
   updatedAt: string;
   project: ProjectSummary | null;
   tasks: SampleTaskView[];
+};
+
+export type SampleFlowView = {
+  id: number;
+  sampleId: number;
+  fromStatus: string | null;
+  toStatus: string;
+  node: string;
+  operatorId: string;
+  location: string | null;
+  handoverTo: string | null;
+  remark: string | null;
+  occurredAt: string;
 };
 
 function parseSampleStatus(value: unknown) {
@@ -56,6 +74,29 @@ function parseSampleStatus(value: unknown) {
     throw new AdminApiError(400, "INVALID_SAMPLE_STATUS", "样品状态不受支持。");
   }
   return String(value);
+}
+
+export function parseFlowNode(value: unknown) {
+  const node = requireText(value, "node", 64).toUpperCase();
+  if (!SAMPLE_FLOW_NODES.includes(node as SampleFlowNode)) {
+    throw new AdminApiError(400, "INVALID_FLOW_NODE", "流转节点不受支持。");
+  }
+  return node as SampleFlowNode;
+}
+
+export function buildFlowPayload(bodyValue: unknown) {
+  const body = requireObject(bodyValue);
+  for (const field of ["fromStatus", "toStatus", "operatorId", "occurredAt"]) {
+    if (body[field] !== undefined) {
+      throw new AdminApiError(400, "INVALID_FLOW_FIELD", `${field} 由服务端生成。`);
+    }
+  }
+  return {
+    node: parseFlowNode(body.node),
+    location: body.location === null ? null : optionalText(body.location, "location", 128) ?? null,
+    handoverTo: body.handoverTo === null || body.handoverTo === undefined ? null : requireUuid(String(body.handoverTo)),
+    remark: body.remark === null ? null : optionalText(body.remark, "remark", 2000) ?? null,
+  };
 }
 
 function parseSampleIdList(value: unknown) {
@@ -117,7 +158,7 @@ export function buildSamplePayload(bodyValue: unknown, update = false) {
   return { payload, taskIds };
 }
 
-function serializeSample(row: SampleRow, project: ProjectSummary | null, tasks: SampleTaskView[]): SampleView {
+function serializeSample(row: SampleRow, project: ProjectSummary | null, tasks: SampleTaskView[], currentLocation: string | null): SampleView {
   return {
     id: row.id,
     sampleCode: row.sample_code,
@@ -130,6 +171,7 @@ function serializeSample(row: SampleRow, project: ProjectSummary | null, tasks: 
     source: row.source,
     storageCondition: row.storage_condition,
     status: row.status,
+    currentLocation,
     registeredAt: row.registered_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -199,7 +241,19 @@ async function loadSampleReferences(supabase: SupabaseClient<Database>, rows: Sa
 async function buildSampleViews(supabase: SupabaseClient<Database>, rows: SampleRow[]) {
   if (rows.length === 0) return [];
   const { projectMap, tasksBySample } = await loadSampleReferences(supabase, rows);
-  return rows.map((row) => serializeSample(row, projectMap.get(row.project_id) ?? null, tasksBySample.get(row.id) ?? []));
+  const { data: locationRows, error: locationError } = await supabase
+    .from("sample_flow")
+    .select("sample_id, location, occurred_at, id")
+    .in("sample_id", rows.map((row) => row.id))
+    .not("location", "is", null)
+    .order("occurred_at", { ascending: false })
+    .order("id", { ascending: false });
+  if (locationError) throw new AdminApiError(500, "SAMPLE_FLOW_LOOKUP_FAILED", "无法读取样品位置。");
+  const locationMap = new Map<number, string>();
+  for (const row of (locationRows ?? []) as Array<{ sample_id: number; location: string | null }>) {
+    if (row.location && !locationMap.has(row.sample_id)) locationMap.set(row.sample_id, row.location);
+  }
+  return rows.map((row) => serializeSample(row, projectMap.get(row.project_id) ?? null, tasksBySample.get(row.id) ?? [], locationMap.get(row.id) ?? null));
 }
 
 export async function loadSamples(supabase: SupabaseClient<Database>, filters: { keyword?: string | null; status?: string | null; projectId?: number | null } = {}) {
@@ -221,6 +275,96 @@ export async function loadSampleDetail(supabase: SupabaseClient<Database>, idVal
   if (!data) throw new AdminApiError(404, "SAMPLE_NOT_FOUND", "样品不存在。");
   const views = await buildSampleViews(supabase, [data as unknown as SampleRow]);
   return views[0];
+}
+
+function serializeFlow(row: SampleFlowRow): SampleFlowView {
+  return {
+    id: row.id,
+    sampleId: row.sample_id,
+    fromStatus: row.from_status,
+    toStatus: row.to_status,
+    node: row.node,
+    operatorId: row.operator_id,
+    location: row.location,
+    handoverTo: row.handover_to,
+    remark: row.remark,
+    occurredAt: row.occurred_at,
+  };
+}
+
+export async function loadSampleFlows(supabase: SupabaseClient<Database>, idValue: string) {
+  const sampleId = requireId(idValue);
+  const { data: sample, error: sampleError } = await supabase
+    .from("sample")
+    .select("id")
+    .eq("id", sampleId)
+    .maybeSingle();
+  if (sampleError) throw new AdminApiError(500, "SAMPLE_LOOKUP_FAILED", "无法读取样品。");
+  if (!sample) throw new AdminApiError(404, "SAMPLE_NOT_FOUND", "样品不存在。");
+  const { data, error } = await supabase
+    .from("sample_flow")
+    .select("id, sample_id, from_status, to_status, node, operator_id, location, handover_to, remark, occurred_at")
+    .eq("sample_id", sampleId)
+    .order("occurred_at", { ascending: false })
+    .order("id", { ascending: false });
+  if (error) throw new AdminApiError(500, "SAMPLE_FLOW_LOOKUP_FAILED", "无法读取样品流转记录。");
+  return ((data ?? []) as unknown as SampleFlowRow[]).map(serializeFlow);
+}
+
+function mapFlowRpcError(error: { code?: string; message?: string }) {
+  const message = error.message ?? "";
+  if (error.code === "42501" || message.includes("Flow permission denied")) {
+    return new AdminApiError(403, "FORBIDDEN", "当前用户没有执行样品流转的权限。");
+  }
+  if (error.code === "P0002" || message.includes("Sample not found")) {
+    return new AdminApiError(404, "SAMPLE_NOT_FOUND", "样品不存在。");
+  }
+  if (message.includes("Handover user inactive")) {
+    return new AdminApiError(409, "HANDOVER_USER_INACTIVE", "交接用户不存在、已停用或不可用。");
+  }
+  if (message.includes("Invalid sample flow transition")) {
+    return new AdminApiError(409, "INVALID_SAMPLE_TRANSITION", "当前样品状态不允许执行该流转节点。");
+  }
+  if (message.includes("Invalid flow node")) {
+    return new AdminApiError(400, "INVALID_FLOW_NODE", "流转节点不受支持。");
+  }
+  return new AdminApiError(500, "SAMPLE_FLOW_FAILED", "样品流转失败。");
+}
+
+function serializeRpcFlow(value: unknown): SampleFlowView {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new AdminApiError(500, "SAMPLE_FLOW_FAILED", "样品流转返回结果无效。");
+  }
+  const row = value as Record<string, unknown>;
+  if (typeof row.id !== "number" || typeof row.sampleId !== "number" || typeof row.node !== "string" || typeof row.toStatus !== "string" || typeof row.operatorId !== "string" || typeof row.occurredAt !== "string") {
+    throw new AdminApiError(500, "SAMPLE_FLOW_FAILED", "样品流转返回结果无效。");
+  }
+  return {
+    id: row.id,
+    sampleId: row.sampleId,
+    fromStatus: typeof row.fromStatus === "string" ? row.fromStatus : null,
+    toStatus: row.toStatus,
+    node: row.node,
+    operatorId: row.operatorId,
+    location: typeof row.location === "string" ? row.location : null,
+    handoverTo: typeof row.handoverTo === "string" ? row.handoverTo : null,
+    remark: typeof row.remark === "string" ? row.remark : null,
+    occurredAt: row.occurredAt,
+  };
+}
+
+export async function recordSampleFlow(supabase: SupabaseClient<Database>, idValue: string, bodyValue: unknown) {
+  const sampleId = requireId(idValue);
+  const payload = buildFlowPayload(bodyValue);
+  const { data, error } = await supabase.rpc("transition_sample_flow", {
+    _sample_id: sampleId,
+    _node: payload.node,
+    _location: payload.location ?? undefined,
+    _handover_to: payload.handoverTo ?? undefined,
+    _remark: payload.remark ?? undefined,
+  });
+  if (error) throw mapFlowRpcError(error);
+  return serializeRpcFlow(data);
 }
 
 async function validateProject(supabase: SupabaseClient<Database>, projectId: number) {

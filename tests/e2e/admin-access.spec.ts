@@ -70,4 +70,10 @@ test("unauthenticated users cannot open or call sample registration", async ({ p
   await expect(response.json()).resolves.toEqual({
     error: { code: "AUTH_REQUIRED", message: "请先登录。" },
   });
+
+  const flowsResponse = await request.get("/api/v1/samples/1/flows");
+  expect(flowsResponse.status()).toBe(401);
+  await expect(flowsResponse.json()).resolves.toEqual({
+    error: { code: "AUTH_REQUIRED", message: "请先登录。" },
+  });
 });

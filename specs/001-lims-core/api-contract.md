@@ -96,8 +96,10 @@ HTTP 状态建议：`400` 参数错误、`401` 未认证、`403` 无权限、`40
 | POST | `/samples` | `sample.manage` | `FR-SAMPLE-001～003` |
 | GET | `/samples/{id}` | `sample.read` | `FR-SAMPLE-001～004` |
 | PATCH | `/samples/{id}` | `sample.manage`，关联任务需 `task.manage` | `FR-SAMPLE-001～003` |
-| POST | `/samples/{id}/flows` | 管理员、实验人员 | `FR-SAMPLE-005～006` |
-| GET | `/samples/{id}/flows` | 按权限 | `FR-SAMPLE-005～006` |
+| POST | `/samples/{id}/flows` | `sample.manage` | `FR-SAMPLE-005～006` |
+| GET | `/samples/{id}/flows` | `sample.read` | `FR-SAMPLE-004～006` |
+
+`POST /samples/{id}/flows` 请求体为 `{ node, location?, handoverTo?, remark? }`。`node` 取 `COLLECT`、`DISTRIBUTE`、`TRANSFER`、`PROCESS`、`ARCHIVE`、`DISPOSE`；请求不得提交 `fromStatus`、`toStatus`、`operatorId` 或 `occurredAt`。服务端基于当前状态机推导前后状态并原子写入 `sample`、`sample_flow` 和审计记录；非法节点、非法状态转换或终态继续流转返回 `409`。GET 按 `occurredAt desc, id desc` 返回节点、前后状态、操作人、交接人、位置、说明和时间。
 
 ## 5. 项目接口
 

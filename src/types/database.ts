@@ -1612,6 +1612,16 @@ export type Database = {
     Functions: {
       has_permission: { Args: { _permission_code: string }; Returns: boolean }
       has_role: { Args: { _role_code: string }; Returns: boolean }
+      transition_sample_flow: {
+        Args: {
+          _handover_to?: string
+          _location?: string
+          _node: string
+          _remark?: string
+          _sample_id: number
+        }
+        Returns: Json
+      }
       record_audit_event: {
         Args: {
           _action: string

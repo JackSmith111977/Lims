@@ -62,7 +62,12 @@
   - [x] T-203C [S] 实现样品列表/详情/创建/修改 API（Files：src/app/api/v1/samples；Verify：API 正负向集成）
   - [x] T-203D [P] 实现样品登记页面和筛选交互（Files：src/app/samples、src/components/sample-registration；Depends：T-203C；Verify：生产 build 和未认证 E2E）
   - [x] T-203E [S] 完成集成测试、对抗性审查和一致性门禁（Depends：T-203B～D；Verify：远程临时夹具清理和全量质量门禁；Review：REV-SAMPLE-REG-001）
-- [ ] T-204 实现样品状态和流转记录（Spec：FR-SAMPLE-004～006）
+- [x] T-204 [S] 实现样品状态和流转记录（Spec：FR-SAMPLE-004～006、AC-SAMPLE-002；设计：DES-SAMPLE-FLOW-001；Depends：T-203；Integration：T-206 复用样品流转查询；REV-SAMPLE-FLOW-001 已关闭 P0/P1）
+  - [x] T-204A [S] 锁定样品状态机、物流事件、事务边界和流转 API（Files：`specs/001-lims-core/design-sample-flow.md`、`data-model.md`、`api-contract.md`、`ui.md`、`plan.md`）
+  - [x] T-204B [S] 实现 `sample_flow` 读取策略和事务状态流转 RPC（Files：`supabase/migrations`、`src/types/database.ts`；Verify：迁移、RLS 负向和状态约束）
+  - [x] T-204C [S] 实现流转服务和样品流转 API（Files：`src/lib/server/sample-registration.ts`、`src/app/api/v1/samples/[id]/flows`；Verify：节点/状态/交接人校验和远程集成）
+  - [x] T-204D [P] 实现样品详情当前位置、流转时间线和流转登记表单（Files：`src/components/sample-registration`、`src/app/samples`；Depends：T-204C；Verify：生产构建和未认证 E2E）
+  - [x] T-204E [S] 完成集成测试、对抗性审查和一致性门禁（Depends：T-204B～D；Verify：远程临时数据清理、全量质量门禁；Review：`REV-SAMPLE-FLOW-001`）
 - [ ] T-205 实现任务分配和任务状态流转（Spec：FR-TASK-003～006、BR-001～005）
 - [ ] T-206 编写样品和任务主流程测试（Spec：AC-SAMPLE-001～002、AC-TASK-001）
 

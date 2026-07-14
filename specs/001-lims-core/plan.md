@@ -88,6 +88,7 @@
 - [x] 确认实验室人员档案模型、能力记录和任务状态读取边界（DES-PERSONNEL-001）
 - [x] 确认科研项目、实验任务登记和后续分配/状态机的模块边界（DES-TASK-REGISTRATION-001）
 - [x] 确认样品登记、编号生成和项目/任务/方法关联边界（DES-SAMPLE-REGISTRATION-001）
+- [x] 确认样品状态机、物流事件、事务边界和流转 API（DES-SAMPLE-FLOW-001）
 
 ## 4. 设计产物
 

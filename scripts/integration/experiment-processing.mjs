@@ -50,6 +50,37 @@ async function runSqlCleanup() {
   });
 }
 
+async function verifyCleanup() {
+  const [usersResult, tasks, samples, projects, instruments, methods] = await Promise.all([
+    service.auth.admin.listUsers({ page: 1, perPage: 100 }),
+    must(service.from("experiment_task").select("id").like("task_code", "processing_%"), "verify stale tasks"),
+    must(service.from("sample").select("id").like("sample_code", "processing_%"), "verify stale samples"),
+    must(service.from("research_project").select("id").like("project_code", "processing_%"), "verify stale projects"),
+    must(service.from("instrument").select("id").like("instrument_code", "processing_%"), "verify stale instruments"),
+    must(service.from("experiment_method").select("id").like("method_code", "processing_%"), "verify stale methods"),
+  ]);
+  if (usersResult.error) throw new Error(`verify stale users failed: ${usersResult.error.message}`);
+  const staleUsers = usersResult.data.users.filter((user) => user.email && testEmailPattern.test(user.email));
+  let processingRuns = [];
+  let dataRows = [];
+  if (tasks.length) {
+    processingRuns = await must(service.from("experiment_processing_run").select("id").in("task_id", tasks.map((task) => task.id)), "verify stale processing runs");
+    dataRows = await must(service.from("experiment_data").select("id").in("task_id", tasks.map((task) => task.id)), "verify stale processing data");
+  }
+  const counts = {
+    users: staleUsers.length,
+    tasks: tasks.length,
+    samples: samples.length,
+    projects: projects.length,
+    instruments: instruments.length,
+    methods: methods.length,
+    processingRuns: processingRuns.length,
+    dataRows: dataRows.length,
+  };
+  assert(Object.values(counts).every((count) => count === 0), `temporary processing resources remain: ${JSON.stringify(counts)}`);
+  return counts;
+}
+
 async function removeTestUser(userId) {
   await service.from("audit_log").delete().eq("operator_id", userId);
   await service.from("sys_user_role").delete().eq("user_id", userId);
@@ -225,7 +256,7 @@ async function main() {
   const unchangedRaw = await must(service.from("experiment_data").select("raw_value, processed_value").eq("id", raw.id).single(), "read unchanged raw data");
   assert(unchangedRaw.raw_value === 12.345678 && unchangedRaw.processed_value === null, "raw input changed during processing");
 
-  console.log(JSON.stringify({ ok: true, checks: ["round success and immutable output", "threshold flagged result", "failed run without output", "lineage traceability", "reader RLS visibility", "forbidden mutation and execution", "approved task lock", "audit parity", "raw input immutability"], cleanedByFinally: true }));
+  console.log(JSON.stringify({ ok: true, checks: ["round success and immutable output", "threshold flagged result", "failed run without output", "lineage traceability", "reader RLS visibility", "forbidden mutation and execution", "approved task lock", "audit parity", "raw input immutability"] }));
 }
 
 try {
@@ -236,6 +267,8 @@ try {
 } finally {
   try {
     await runSqlCleanup();
+    const cleanup = await verifyCleanup();
+    console.log(JSON.stringify({ cleanupVerified: true, remaining: cleanup }));
   } catch (error) {
     console.error(`SQL cleanup failed: ${error instanceof Error ? error.message : "unknown error"}`);
     process.exitCode = 1;

@@ -96,7 +96,12 @@
   - [x] T-303C [S] 实现规则处理服务/API 和模拟处理结果生成（Files：`src/lib/server/experiment-processing.ts`、`src/app/api/v1/tasks/[id]/data/process`；Verify：修约、阈值判定、失败路径；服务层与事务 RPC 双重校验）
   - [x] T-303D [P] 实现处理规则选择、运行结果和异常说明页面（Files：`src/app/data`、`src/components/experiment-data`；Depends：T-303C；Verify：生产构建和未认证 E2E；远程落地验证汇总至 T-303E）
   - [x] T-303E [S] 完成远程集成、对抗性审查和一致性门禁（Depends：T-303B～D；Verify：临时数据自动清理、全量质量门禁；Review：`REV-EXPERIMENT-PROCESSING-001`；远程迁移 `202607150012` 已应用，集成测试和清理计数均通过）
-- [ ] T-304 实现结果审核、退回和审核意见（Spec：FR-REVIEW-001～006）
+- [x] T-304 实现结果审核、退回和审核意见（Spec：FR-REVIEW-001～006；设计：DES-RESULT-REVIEW-001；Depends：T-303）
+  - [x] T-304A [S] 锁定审核记录、三类结果、任务状态事务、权限和审计边界（Files：`specs/001-lims-core/design-result-review.md`、`data-model.md`、`api-contract.md`、`contracts/openapi.yaml`、`plan.md`；Verify：审核追加、非通过意见、并发和状态映射）
+  - [x] T-304B [S] 实现审核记录约束、RLS、不可变触发器和审核事务迁移（Files：`supabase/migrations`、`src/types/database.ts`；Verify：三类结果、任务锁、直接写入拒绝、任务历史和审计；远程迁移 `202607150013` 已应用）
+  - [x] T-304C [S] 实现审核服务/API 和错误模型（Files：`src/lib/server/result-review.ts`、`src/app/api/v1/tasks/[id]/reviews`；Verify：字段校验、权限、状态冲突和事务响应）
+  - [x] T-304D [P] 实现待审核列表、结果上下文和审核操作页面（Files：`src/app/reviews`、`src/components/result-review`、`src/app/dashboard/page.tsx`；Depends：T-304C；Verify：生产构建、未认证 E2E 和提交后刷新；E2E 9/9）
+  - [x] T-304E [S] 完成远程集成、对抗性审查和一致性门禁（Depends：T-304B～D；Verify：临时账号/数据清理、全量质量门禁；Review：`REV-RESULT-REVIEW-001`；集成检查、清理计数和远程迁移核对均通过）
 - [ ] T-305 实现报告生成、状态和版本（Spec：FR-REPORT-001～006）
 - [ ] T-306 编写数据、审核和报告测试（Spec：AC-DATA-001、AC-REVIEW-001、AC-REPORT-001）
 

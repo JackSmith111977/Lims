@@ -1955,6 +1955,14 @@ export type Database = {
         }
         Returns: Json
       }
+      review_task_result: {
+        Args: {
+          _comment?: string | null
+          _result: string
+          _task_id: number
+        }
+        Returns: Json
+      }
       set_role_permissions: {
         Args: { _permission_codes: string[]; _role_id: number }
         Returns: undefined

@@ -189,7 +189,7 @@
 
 `id`、`task_id`、`reviewer_id(UUID)`、`result`、`comment`、`reviewed_at(TIMESTAMPTZ)`、`created_at(TIMESTAMPTZ)`。
 
-约束：审核结果只能为 APPROVED/RETURNED/NEED_MORE；退回时必须填写意见；同一任务允许多次审核，但仅最后一次有效审核决定状态。
+约束：审核结果只能为 APPROVED/RETURNED/NEED_MORE；RETURNED/NEED_MORE 必须填写意见；同一任务允许多次审核，但仅最后一次有效审核决定状态。审核记录只允许追加，不允许客户端直接更新或删除；审核人和时间由当前会话及数据库生成，写入、任务状态变化、任务历史和审计必须由同一事务函数完成。详细边界见 [`design-result-review.md`](design-result-review.md)。
 
 ### 6.2 `experiment_report`
 

@@ -92,9 +92,9 @@
   - [x] T-302E [S] 完成远程集成、对抗性审查和一致性门禁（Depends：T-302B～D；Verify：临时数据自动清理、全量质量门禁；Review：`REV-EXPERIMENT-DATA-001`）
 - [ ] T-303 [S] 实现数据处理、规则判定或模拟处理（Spec：FR-DATA-007～008；设计：DES-EXPERIMENT-PROCESSING-001；Depends：T-302）
 - [x] T-303A [S] 锁定规则版本、处理运行、结果判定、异常和数据血缘模型（Files：`specs/001-lims-core/design-experiment-processing.md`、`data-model.md`、`api-contract.md`、`contracts/openapi.yaml`、`plan.md`；Verify：设计覆盖规则不可变、运行终态、输出血缘、权限、审计和失败补偿；明确排除 FR-DATA-006/009）
-  - [ ] T-303B [S] 实现规则/运行/血缘约束、RLS、审计和失败补偿迁移（Files：`supabase/migrations`；Verify：规则版本不可变、原始数据不变、异常可追溯）
-  - [ ] T-303C [S] 实现规则处理服务/API 和模拟处理结果生成（Files：`src/lib/server/experiment-processing.ts`、`src/app/api/v1/tasks/[id]/data/process`；Verify：修约、阈值判定、失败路径）
-  - [ ] T-303D [P] 实现处理规则选择、运行结果和异常说明页面（Files：`src/app/data`、`src/components/experiment-data`；Depends：T-303C；Verify：生产构建和未认证 E2E）
+  - [x] T-303B [S] 实现规则/运行/血缘约束、RLS、审计和失败补偿迁移（Files：`supabase/migrations`；Verify：规则版本不可变、原始数据不变、异常可追溯；远程落地验证汇总至 T-303E）
+  - [x] T-303C [S] 实现规则处理服务/API 和模拟处理结果生成（Files：`src/lib/server/experiment-processing.ts`、`src/app/api/v1/tasks/[id]/data/process`；Verify：修约、阈值判定、失败路径；服务层与事务 RPC 双重校验）
+  - [x] T-303D [P] 实现处理规则选择、运行结果和异常说明页面（Files：`src/app/data`、`src/components/experiment-data`；Depends：T-303C；Verify：生产构建和未认证 E2E；远程落地验证汇总至 T-303E）
   - [ ] T-303E [S] 完成远程集成、对抗性审查和一致性门禁（Depends：T-303B～D；Verify：临时数据自动清理、全量质量门禁；Review：`REV-EXPERIMENT-PROCESSING-001`）
 - [ ] T-304 实现结果审核、退回和审核意见（Spec：FR-REVIEW-001～006）
 - [ ] T-305 实现报告生成、状态和版本（Spec：FR-REPORT-001～006）

@@ -246,6 +246,11 @@ declare
   source_row public.experiment_data;
   run_row public.experiment_processing_run;
   output_row public.experiment_data;
+  source_value numeric;
+  expected_value numeric;
+  expected_output_type varchar;
+  expected_decision varchar;
+  expected_status varchar;
 begin
   selected_rule := public.validate_processing_inputs(_task_id, _rule_id, _source_data_ids);
 
@@ -262,6 +267,48 @@ begin
   from public.experiment_data
   where id = _source_data_ids[1] and task_id = _task_id
   for share;
+
+  source_value := case
+    when source_row.data_type = 'RAW' then source_row.raw_value
+    else source_row.processed_value
+  end;
+  if source_value is null then
+    raise exception 'Processing source has no numeric value' using errcode = '22023';
+  end if;
+
+  if selected_rule.rule_type = 'ROUND' then
+    expected_value := round(source_value, (selected_rule.config->>'scale')::integer);
+    expected_output_type := 'PROCESSED';
+    expected_decision := 'PASS';
+    expected_status := 'SUCCEEDED';
+  else
+    expected_value := source_value;
+    expected_output_type := 'RESULT';
+    if (
+      ((selected_rule.config->>'inclusiveMin')::boolean
+        and source_value >= (selected_rule.config->>'min')::numeric)
+      or (not (selected_rule.config->>'inclusiveMin')::boolean
+        and source_value > (selected_rule.config->>'min')::numeric)
+    ) and (
+      ((selected_rule.config->>'inclusiveMax')::boolean
+        and source_value <= (selected_rule.config->>'max')::numeric)
+      or (not (selected_rule.config->>'inclusiveMax')::boolean
+        and source_value < (selected_rule.config->>'max')::numeric)
+    ) then
+      expected_decision := 'PASS';
+      expected_status := 'SUCCEEDED';
+    else
+      expected_decision := 'FAIL';
+      expected_status := 'FLAGGED';
+    end if;
+  end if;
+
+  if _output_type <> expected_output_type
+    or _processed_value is distinct from expected_value
+    or _decision is distinct from expected_decision
+    or _status <> expected_status then
+    raise exception 'Processing result does not match the selected rule' using errcode = '22023';
+  end if;
 
   insert into public.experiment_processing_run (
     task_id, rule_id, execution_mode, status, decision, explanation, executed_by

@@ -173,7 +173,15 @@
 
 `id`、`task_id`、`sample_id`、`instrument_id`、`data_type`、`metric_name`、`raw_value`、`processed_value`、`unit`、`source_type`、`collected_at(TIMESTAMPTZ)`、`recorded_by(UUID)`、`remark`。
 
-约束：原始数据不得被处理值覆盖；数值结果使用 `DECIMAL(20,8)`；查询常用组合建立 `(task_id, sample_id, collected_at)` 索引。
+约束：`data_type` 为 `RAW`、`PROCESSED` 或 `RESULT`；`RAW` 只填 `raw_value`，其余两类只填 `processed_value`；原始数据不得被处理值覆盖；数值结果使用 `DECIMAL(20,8)`；数据只能新增不能更新或删除；任务、样品和设备引用必须有效，方法版本从 `experiment_task.method_id` 追溯；查询常用组合建立 `(task_id, sample_id, collected_at)` 索引。
+
+### 5.4 数据处理、运行和血缘
+
+- `experiment_processing_rule(id, rule_code, name, version, rule_type, config(JSONB), status, created_by(UUID), created_at)`：版本化规则定义；`(rule_code, version)` 唯一，规则身份和配置不可修改。
+- `experiment_processing_run(id, task_id, rule_id, execution_mode, status, output_data_id, decision, explanation, error_code, error_message, executed_by(UUID), executed_at)`：一次处理运行及其终态；只允许 `RUNNING` 单向转换为 `SUCCEEDED`、`FLAGGED` 或 `FAILED`。
+- `experiment_data_lineage(id, run_id, source_data_id, output_data_id, relation_type, created_at)`：处理输入到输出的不可变血缘；同一运行、输入、输出和关系唯一，禁止更新和删除。
+
+`ROUND` 规则输出新的 `PROCESSED` 记录，`THRESHOLD` 规则输出新的 `RESULT` 记录；异常阈值结果使用 `FLAGGED` 和 `FAIL` 保存说明。处理输出的 `source_type` 为 `API`，仍然复用 `experiment_data` 的任务锁定、样品关联、设备状态和记录人约束。运行、输出、血缘和审计在同一事务中提交，失败时不得留下半成品输出。
 
 ## 6. 审核与报告表
 

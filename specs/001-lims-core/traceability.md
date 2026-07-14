@@ -4,8 +4,8 @@
 | --- | --- | --- | --- |
 | GB/T 40343—2021：任务登记 | `FR-TASK-001～002`、`FR-SAMPLE-001～003` | 项目、任务和样品登记 | `AC-SAMPLE-001`、`AC-TASK-001` |
 | GB/T 40343—2021：任务分配 | `FR-TASK-003～009`、`FR-PER-001～004` | 人员档案、任务分配和状态流转 | `AC-TASK-001` |
-| GB/T 40343—2021：数据获取 | `FR-DATA-001～006` | 手工录入、文件导入、来源与时间记录 | `AC-DATA-001` |
-| GB/T 40343—2021：数据处理 | `FR-DATA-004`、`FR-DATA-007～008` | 原始/处理数据分离、规则处理和异常 | `AC-DATA-001` |
+| GB/T 40343—2021：数据获取 | `FR-DATA-001～005` | 手工录入、来源、时间和历史查询；[`design-experiment-data.md`](design-experiment-data.md) | T-302、`AC-DATA-001` |
+| GB/T 40343—2021：数据处理 | `FR-DATA-004`、`FR-DATA-007～008` | 原始/处理数据分离、版本化规则处理和异常；[`design-experiment-processing.md`](design-experiment-processing.md) | T-302、T-303、`AC-DATA-001` |
 | GB/T 40343—2021：数据审核 | `FR-REVIEW-001～006` | 审核、退回、补充和审核日志 | `AC-REVIEW-001` |
 | GB/T 40343—2021：报告生成 | `FR-REPORT-001～007` | 报告生成、版本、发布和归档 | `AC-REPORT-001` |
 | GB/T 40343—2021：人员管理 | `FR-PER-001～004` | `sys_user` 扩展、岗位字典、技能/资质/培训记录和任务状态摘要；[`design-personnel.md`](design-personnel.md) | T-201 集成测试、提醒场景和 `REV-PERSONNEL-001` |

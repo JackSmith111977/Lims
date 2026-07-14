@@ -91,6 +91,8 @@
 - [x] 确认样品状态机、物流事件、事务边界和流转 API（DES-SAMPLE-FLOW-001）
 - [x] 确认任务分配、实验组分配、状态机、事务边界和状态历史 API（DES-TASK-FLOW-001）
 - [x] 确认方法版本实体、历史审计、附件元数据和不可变版本边界（DES-METHOD-VERSIONING-001）
+- [x] 确认原始/处理/结果数据分离、追溯关系、权限和不可变录入边界（DES-EXPERIMENT-DATA-001）
+- [x] 确认规则版本、处理运行、结果判定和异常说明边界（DES-EXPERIMENT-PROCESSING-001）
 
 ## 4. 设计产物
 

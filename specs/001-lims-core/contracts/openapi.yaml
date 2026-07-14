@@ -978,6 +978,96 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+  /tasks/{id}/data:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Data]
+      summary: 查询任务实验数据
+      operationId: listTaskData
+      responses:
+        '200':
+          description: 查询成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseExperimentDataItems'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    post:
+      tags: [Data]
+      summary: 录入任务实验数据
+      operationId: createTaskData
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ExperimentDataCreateRequest' }
+      responses:
+        '201':
+          description: 录入成功
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiResponseExperimentData' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /processing-rules:
+    get:
+      tags: [Data]
+      summary: 查询活动数据处理规则
+      operationId: listProcessingRules
+      responses:
+        '200':
+          description: 查询成功
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiResponseProcessingRuleItems' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /tasks/{id}/data/process:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [Data]
+      summary: 执行实验数据处理
+      operationId: processTaskData
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProcessingRequest' }
+      responses:
+        '201':
+          description: 处理完成
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiResponseProcessingRun' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/UnprocessableEntity' }
+  /tasks/{id}/data/process-runs:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Data]
+      summary: 查询任务数据处理运行
+      operationId: listTaskProcessingRuns
+      responses:
+        '200':
+          description: 查询成功
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiResponseProcessingRunItems' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
   /tasks/{id}/reviews:
     parameters:
       - $ref: '#/components/parameters/Id'
@@ -1115,6 +1205,11 @@ components:
           schema: { $ref: '#/components/schemas/ApiError' }
     Conflict:
       description: 业务状态冲突
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+    UnprocessableEntity:
+      description: 处理失败或异常数据
       content:
         application/json:
           schema: { $ref: '#/components/schemas/ApiError' }
@@ -1584,6 +1679,87 @@ components:
         operatorId: { type: string, format: uuid }
         remark: { type: string, nullable: true }
         occurredAt: { type: string, format: date-time }
+    ExperimentDataCreateRequest:
+      type: object
+      required: [sampleId, dataType, metricName, sourceType, collectedAt]
+      properties:
+        sampleId: { type: integer, format: int64 }
+        instrumentId: { type: integer, format: int64, nullable: true }
+        dataType: { type: string, enum: [RAW, PROCESSED, RESULT] }
+        metricName: { type: string, maxLength: 64 }
+        rawValue: { type: number, format: double, nullable: true }
+        processedValue: { type: number, format: double, nullable: true }
+        unit: { type: string, maxLength: 16, nullable: true }
+        sourceType: { type: string, enum: [MANUAL, FILE, INSTRUMENT, API] }
+        collectedAt: { type: string, format: date-time }
+        remark: { type: string, maxLength: 4000, nullable: true }
+    ExperimentData:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        taskId: { type: integer, format: int64 }
+        sampleId: { type: integer, format: int64 }
+        instrumentId: { type: integer, format: int64, nullable: true }
+        dataType: { type: string, enum: [RAW, PROCESSED, RESULT] }
+        metricName: { type: string }
+        rawValue: { type: number, nullable: true }
+        processedValue: { type: number, nullable: true }
+        unit: { type: string, nullable: true }
+        sourceType: { type: string }
+        collectedAt: { type: string, format: date-time }
+        recordedBy: { type: string, format: uuid }
+        recordedAt: { type: string, format: date-time }
+        remark: { type: string, nullable: true }
+        method: { type: object, nullable: true }
+        sample: { type: object, nullable: true }
+        instrument: { type: object, nullable: true }
+    ProcessingRequest:
+      type: object
+      required: [ruleId, sourceDataIds, executionMode]
+      properties:
+        ruleId: { type: integer, format: int64 }
+        sourceDataIds:
+          type: array
+          minItems: 1
+          maxItems: 1
+          items: { type: integer, format: int64 }
+        executionMode: { type: string, enum: [MANUAL, SIMULATED] }
+    ProcessingRule:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        ruleCode: { type: string }
+        name: { type: string }
+        version: { type: string }
+        ruleType: { type: string, enum: [ROUND, THRESHOLD] }
+        config: { type: object }
+        status: { type: string, enum: [DRAFT, ACTIVE, RETIRED] }
+    ProcessingLineage:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        sourceDataId: { type: integer, format: int64 }
+        outputDataId: { type: integer, format: int64 }
+        relationType: { type: string, enum: [DERIVED_FROM] }
+    ProcessingRun:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        taskId: { type: integer, format: int64 }
+        ruleId: { type: integer, format: int64 }
+        executionMode: { type: string, enum: [MANUAL, SIMULATED] }
+        status: { type: string, enum: [RUNNING, SUCCEEDED, FLAGGED, FAILED] }
+        outputDataId: { type: integer, format: int64, nullable: true }
+        decision: { type: string, enum: [PASS, FAIL, REVIEW], nullable: true }
+        explanation: { type: string, nullable: true }
+        errorCode: { type: string, nullable: true }
+        errorMessage: { type: string, nullable: true }
+        executedBy: { type: string, format: uuid }
+        executedAt: { type: string, format: date-time }
+        rule: { $ref: '#/components/schemas/ProcessingRule' }
+        lineage:
+          type: array
+          items: { $ref: '#/components/schemas/ProcessingLineage' }
     Task:
       type: object
       properties:
@@ -1751,6 +1927,41 @@ components:
         data:
           type: array
           items: { $ref: '#/components/schemas/TaskHistory' }
+        traceId: { type: string }
+    ApiResponseExperimentData:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { $ref: '#/components/schemas/ExperimentData' }
+        traceId: { type: string }
+    ApiResponseExperimentDataItems:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { type: array, items: { $ref: '#/components/schemas/ExperimentData' } }
+        traceId: { type: string }
+    ApiResponseProcessingRuleItems:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { type: array, items: { $ref: '#/components/schemas/ProcessingRule' } }
+        traceId: { type: string }
+    ApiResponseProcessingRun:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { $ref: '#/components/schemas/ProcessingRun' }
+        traceId: { type: string }
+    ApiResponseProcessingRunItems:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { type: array, items: { $ref: '#/components/schemas/ProcessingRun' } }
         traceId: { type: string }
     ApiResponseReview:
       type: object

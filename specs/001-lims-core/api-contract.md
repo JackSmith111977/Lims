@@ -150,6 +150,9 @@ HTTP 状态建议：`400` 参数错误、`401` 未认证、`403` 无权限、`40
 | --- | --- | --- | --- |
 | POST | `/tasks/{id}/data` | 实验人员 | `FR-DATA-001～005` |
 | GET | `/tasks/{id}/data` | 按权限 | `FR-DATA-005` |
+| GET | `/processing-rules` | 按权限 | `FR-DATA-007～008` |
+| POST | `/tasks/{id}/data/process` | 实验人员 | `FR-DATA-007～008` |
+| GET | `/tasks/{id}/data/process-runs` | 按权限 | `FR-DATA-007～008` |
 | POST | `/tasks/{id}/data/import` | 实验人员 | `FR-DATA-006` |
 | POST | `/tasks/{id}/reviews` | 负责人/教师 | `FR-REVIEW-001～006` |
 | GET | `/tasks/{id}/reviews` | 按权限 | `FR-REVIEW-001～006` |
@@ -157,6 +160,10 @@ HTTP 状态建议：`400` 参数错误、`401` 未认证、`403` 无权限、`40
 | GET | `/reports` | 按权限 | `FR-REPORT-003` |
 | GET | `/reports/{id}` | 按权限 | `FR-REPORT-003～006` |
 | POST | `/reports/{id}/publish` | 管理员、负责人 | `FR-REPORT-004～006` |
+
+`POST /tasks/{id}/data` 只允许新增不可变数据记录。`dataType=RAW` 时必须提供 `rawValue` 且不得提供 `processedValue`；`dataType=PROCESSED/RESULT` 时必须提供 `processedValue` 且不得提供 `rawValue`。服务端从当前会话生成 `recordedBy` 和时间，并校验样品属于任务、方法版本来自任务及设备未处置。任务进入 `APPROVED` 或 `ARCHIVED` 后返回 `409 DATA_TASK_LOCKED`；不提供更新或删除数据接口。
+
+`GET /processing-rules` 只返回活动规则的固定版本。`POST /tasks/{id}/data/process` 接收 `ruleId`、`sourceDataIds` 和 `executionMode`，按选定规则生成新的 `PROCESSED` 或 `RESULT` 数据记录，不覆盖输入数据；每次运行返回唯一 `runId`，并通过血缘记录关联输入、输出和规则版本。`ROUND` 支持 `HALF_UP` 修约，`THRESHOLD` 返回 `PASS` 或 `FAIL`；超出阈值时运行状态为 `FLAGGED` 并保留异常说明。`GET /tasks/{id}/data/process-runs` 返回运行状态、判定、异常和数据血缘。任务进入 `APPROVED` 或 `ARCHIVED` 后处理接口返回 `409 DATA_TASK_LOCKED`。
 
 ## 7. 看板与日志接口
 

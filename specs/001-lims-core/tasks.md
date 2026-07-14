@@ -84,8 +84,18 @@
 - [x] T-301C [S] 实现方法版本服务和 API（Spec：FR-METHOD-001～004；Files：`src/lib/server/methods.ts`、`src/app/api/v1/methods`；Verify：字段校验、状态变更和重复版本测试）
 - [x] T-301D [P] 实现方法库页面、历史时间线、附件登记和任务方法版本选择（Spec：FR-METHOD-001～004、FR-TASK-002；Files：`src/app/methods`、`src/components/methods`、`src/app/tasks`、`src/components/task-registration`；Depends：T-301C；Verify：生产构建和未认证 E2E）
   - [x] T-301E [S] 完成远程集成、对抗性审查和一致性门禁（Depends：T-301B～D；Verify：临时账号/数据自动清理、全量质量门禁；Review：`REV-METHOD-VERSIONING-001`）
-- [ ] T-302 实现实验原始数据和结果录入（Spec：FR-DATA-001～005）
-- [ ] T-303 实现数据处理、规则判定或模拟处理（Spec：FR-DATA-006～008）
+- [x] T-302 [S] 实现实验原始数据和结果录入（Spec：FR-DATA-001～005、AC-DATA-001；设计：DES-EXPERIMENT-DATA-001；Depends：T-301）
+  - [x] T-302A [S] 锁定原始/处理/结果数据模型、追溯关系、权限和不可变边界（Files：`specs/001-lims-core/design-experiment-data.md`、`data-model.md`、`api-contract.md`、`contracts/openapi.yaml`、`plan.md`）
+  - [x] T-302B [S] 实现数据类型约束、值字段约束、插入 RLS 和审计权限迁移（Files：`supabase/migrations`、`src/types/database.ts`；Verify：RLS 负向、状态锁定和约束）
+  - [x] T-302C [S] 实现实验数据查询和录入服务/API（Spec：FR-DATA-001～005；Files：`src/lib/server/experiment-data.ts`、`src/app/api/v1/tasks/[id]/data`；Verify：字段校验、任务/样品/方法/设备关联）
+  - [x] T-302D [P] 实现数据录入和历史查询页面（Spec：FR-DATA-001～005、AC-DATA-001；Files：`src/app/data`、`src/components/experiment-data`、`src/app/dashboard/page.tsx`；Depends：T-302C；Verify：生产构建和未认证 E2E）
+  - [x] T-302E [S] 完成远程集成、对抗性审查和一致性门禁（Depends：T-302B～D；Verify：临时数据自动清理、全量质量门禁；Review：`REV-EXPERIMENT-DATA-001`）
+- [ ] T-303 [S] 实现数据处理、规则判定或模拟处理（Spec：FR-DATA-007～008；设计：DES-EXPERIMENT-PROCESSING-001；Depends：T-302）
+- [x] T-303A [S] 锁定规则版本、处理运行、结果判定、异常和数据血缘模型（Files：`specs/001-lims-core/design-experiment-processing.md`、`data-model.md`、`api-contract.md`、`contracts/openapi.yaml`、`plan.md`；Verify：设计覆盖规则不可变、运行终态、输出血缘、权限、审计和失败补偿；明确排除 FR-DATA-006/009）
+  - [ ] T-303B [S] 实现规则/运行/血缘约束、RLS、审计和失败补偿迁移（Files：`supabase/migrations`；Verify：规则版本不可变、原始数据不变、异常可追溯）
+  - [ ] T-303C [S] 实现规则处理服务/API 和模拟处理结果生成（Files：`src/lib/server/experiment-processing.ts`、`src/app/api/v1/tasks/[id]/data/process`；Verify：修约、阈值判定、失败路径）
+  - [ ] T-303D [P] 实现处理规则选择、运行结果和异常说明页面（Files：`src/app/data`、`src/components/experiment-data`；Depends：T-303C；Verify：生产构建和未认证 E2E）
+  - [ ] T-303E [S] 完成远程集成、对抗性审查和一致性门禁（Depends：T-303B～D；Verify：临时数据自动清理、全量质量门禁；Review：`REV-EXPERIMENT-PROCESSING-001`）
 - [ ] T-304 实现结果审核、退回和审核意见（Spec：FR-REVIEW-001～006）
 - [ ] T-305 实现报告生成、状态和版本（Spec：FR-REPORT-001～006）
 - [ ] T-306 编写数据、审核和报告测试（Spec：AC-DATA-001、AC-REVIEW-001、AC-REPORT-001）

@@ -264,6 +264,173 @@ export type Database = {
           },
         ]
       }
+      experiment_processing_rule: {
+        Row: {
+          config: Json
+          created_at: string
+          created_by: string | null
+          id: number
+          name: string
+          rule_code: string
+          rule_type: string
+          status: string
+          version: string
+        }
+        Insert: {
+          config: Json
+          created_at?: string
+          created_by?: string | null
+          id?: number
+          name: string
+          rule_code: string
+          rule_type: string
+          status?: string
+          version: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: number
+          name?: string
+          rule_code?: string
+          rule_type?: string
+          status?: string
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "experiment_processing_rule_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      experiment_processing_run: {
+        Row: {
+          decision: string | null
+          error_code: string | null
+          error_message: string | null
+          executed_at: string
+          executed_by: string
+          execution_mode: string
+          explanation: string | null
+          id: number
+          output_data_id: number | null
+          rule_id: number
+          status: string
+          task_id: number
+        }
+        Insert: {
+          decision?: string | null
+          error_code?: string | null
+          error_message?: string | null
+          executed_at?: string
+          executed_by: string
+          execution_mode: string
+          explanation?: string | null
+          id?: number
+          output_data_id?: number | null
+          rule_id: number
+          status?: string
+          task_id: number
+        }
+        Update: {
+          decision?: string | null
+          error_code?: string | null
+          error_message?: string | null
+          executed_at?: string
+          executed_by?: string
+          execution_mode?: string
+          explanation?: string | null
+          id?: number
+          output_data_id?: number | null
+          rule_id?: number
+          status?: string
+          task_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "experiment_processing_run_executed_by_fkey"
+            columns: ["executed_by"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "experiment_processing_run_output_data_id_fkey"
+            columns: ["output_data_id"]
+            isOneToOne: false
+            referencedRelation: "experiment_data"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "experiment_processing_run_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "experiment_processing_rule"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "experiment_processing_run_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "experiment_task"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      experiment_data_lineage: {
+        Row: {
+          created_at: string
+          id: number
+          output_data_id: number
+          relation_type: string
+          run_id: number
+          source_data_id: number
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          output_data_id: number
+          relation_type?: string
+          run_id: number
+          source_data_id: number
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          output_data_id?: number
+          relation_type?: string
+          run_id?: number
+          source_data_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "experiment_data_lineage_output_data_id_fkey"
+            columns: ["output_data_id"]
+            isOneToOne: false
+            referencedRelation: "experiment_data"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "experiment_data_lineage_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "experiment_processing_run"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "experiment_data_lineage_source_data_id_fkey"
+            columns: ["source_data_id"]
+            isOneToOne: false
+            referencedRelation: "experiment_data"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       experiment_method: {
         Row: {
           created_at: string
@@ -1754,6 +1921,39 @@ export type Database = {
           _required_permission: string
         }
         Returns: undefined
+      }
+      validate_processing_inputs: {
+        Args: {
+          _rule_id: number
+          _source_data_ids: number[]
+          _task_id: number
+        }
+        Returns: Database["public"]["Tables"]["experiment_processing_rule"]["Row"]
+      }
+      execute_experiment_processing: {
+        Args: {
+          _decision?: string | null
+          _execution_mode: string
+          _explanation?: string
+          _output_type: string
+          _processed_value: number
+          _rule_id: number
+          _source_data_ids: number[]
+          _status: string
+          _task_id: number
+        }
+        Returns: Json
+      }
+      record_experiment_processing_failure: {
+        Args: {
+          _error_code: string
+          _error_message: string
+          _execution_mode: string
+          _rule_id: number
+          _source_data_ids: number[]
+          _task_id: number
+        }
+        Returns: Json
       }
       set_role_permissions: {
         Args: { _permission_codes: string[]; _role_id: number }

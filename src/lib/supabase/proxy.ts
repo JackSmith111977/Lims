@@ -43,7 +43,8 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/projects") ||
     request.nextUrl.pathname.startsWith("/tasks") ||
     request.nextUrl.pathname.startsWith("/samples") ||
-    request.nextUrl.pathname.startsWith("/methods");
+    request.nextUrl.pathname.startsWith("/methods") ||
+    request.nextUrl.pathname.startsWith("/data");
 
   if (!user && isProtectedPage) {
     const redirectUrl = request.nextUrl.clone();

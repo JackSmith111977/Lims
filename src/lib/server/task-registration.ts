@@ -2,6 +2,11 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { hasPermission } from "@/lib/auth/permissions";
 import {
+  loadTaskAssignments,
+  type TaskGroupAssignmentView,
+  type TaskUserAssignmentView,
+} from "@/lib/server/task-flow";
+import {
   AdminApiError,
   recordAudit,
   requireId,
@@ -45,6 +50,8 @@ export type TaskView = {
   sampleIds: number[];
   project: { id: number; projectCode: string; name: string; status: string } | null;
   method: { id: number; methodCode: string; name: string; version: string; status: string } | null;
+  userAssignments: TaskUserAssignmentView[];
+  groupAssignments: TaskGroupAssignmentView[];
   createdAt: string;
   updatedAt: string;
 };
@@ -144,7 +151,7 @@ function serializeProject(row: ProjectRow, taskCount: number): ProjectView {
   };
 }
 
-function serializeTask(row: TaskRow, sampleIds: number[], project: TaskView["project"], method: TaskView["method"]): TaskView {
+function serializeTask(row: TaskRow, sampleIds: number[], project: TaskView["project"], method: TaskView["method"], userAssignments: TaskUserAssignmentView[], groupAssignments: TaskGroupAssignmentView[]): TaskView {
   return {
     id: row.id,
     taskCode: row.task_code,
@@ -159,6 +166,8 @@ function serializeTask(row: TaskRow, sampleIds: number[], project: TaskView["pro
     sampleIds,
     project,
     method,
+    userAssignments,
+    groupAssignments,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -255,7 +264,11 @@ async function loadTaskReferences(supabase: SupabaseClient<Database>, rows: Task
 }
 
 async function buildTaskViews(supabase: SupabaseClient<Database>, rows: TaskRow[]) {
-  const [samples, references] = await Promise.all([loadTaskSamples(supabase, rows.map((row) => row.id)), loadTaskReferences(supabase, rows)]);
+  const [samples, references, assignments] = await Promise.all([
+    loadTaskSamples(supabase, rows.map((row) => row.id)),
+    loadTaskReferences(supabase, rows),
+    loadTaskAssignments(supabase, rows.map((row) => row.id)),
+  ]);
   return rows.map((row) => {
     const project = references.projects.get(row.project_id);
     const method = references.methods.get(row.method_id);
@@ -264,6 +277,8 @@ async function buildTaskViews(supabase: SupabaseClient<Database>, rows: TaskRow[
       samples.get(row.id) ?? [],
       project ? { id: project.id, projectCode: project.project_code, name: project.name, status: project.status } : null,
       method ? { id: method.id, methodCode: method.method_code, name: method.name, version: method.version, status: method.status } : null,
+      assignments.usersByTask.get(row.id) ?? [],
+      assignments.groupsByTask.get(row.id) ?? [],
     );
   });
 }

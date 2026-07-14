@@ -1495,6 +1495,55 @@ export type Database = {
           },
         ]
       }
+      task_group_assignee: {
+        Row: {
+          assigned_at: string
+          assigned_by: string
+          group_id: number
+          id: number
+          task_id: number
+          unassigned_at: string | null
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by: string
+          group_id: number
+          id?: number
+          task_id: number
+          unassigned_at?: string | null
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string
+          group_id?: number
+          id?: number
+          task_id?: number
+          unassigned_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_group_assignee_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_group_assignee_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "lab_group"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_group_assignee_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "experiment_task"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       task_resource: {
         Row: {
           id: number
@@ -1619,6 +1668,22 @@ export type Database = {
           _node: string
           _remark?: string
           _sample_id: number
+        }
+        Returns: Json
+      }
+      replace_task_assignments: {
+        Args: {
+          _group_ids?: number[]
+          _task_id: number
+          _user_ids?: string[]
+        }
+        Returns: Json
+      }
+      transition_task: {
+        Args: {
+          _remark?: string
+          _task_id: number
+          _to_status: string
         }
         Returns: Json
       }

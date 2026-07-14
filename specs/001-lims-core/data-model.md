@@ -157,10 +157,11 @@
 
 - `task_sample(task_id, sample_id)`：任务与样品多对多，联合主键。
 - `task_assignee(id, task_id, user_id(UUID), assigned_by(UUID), assigned_at(TIMESTAMPTZ), unassigned_at(TIMESTAMPTZ))`：任务分配历史。
+- `task_group_assignee(id, task_id, group_id, assigned_by(UUID), assigned_at(TIMESTAMPTZ), unassigned_at(TIMESTAMPTZ))`：任务实验组分配历史；当前有效记录为 `unassigned_at is null`。
 - `task_resource(id, task_id, resource_type, resource_id, quantity, unit)`：任务使用设备或资源的关联。
 - `task_status_history(id, task_id, from_status, to_status, operator_id, remark, occurred_at)`：任务状态历史。
 
-人员任务状态查询使用 `task_assignee` 的当前有效分配（`unassigned_at is null`）关联 `experiment_task.status`，只读，不改变任务分配事实。
+人员任务状态查询使用 `task_assignee` 的当前有效分配（`unassigned_at is null`）关联 `experiment_task.status`，只读，不改变任务分配事实；实验组分配在任务详情单独显示。
 
 ### 5.3 `experiment_data`
 

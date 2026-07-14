@@ -68,7 +68,12 @@
   - [x] T-204C [S] 实现流转服务和样品流转 API（Files：`src/lib/server/sample-registration.ts`、`src/app/api/v1/samples/[id]/flows`；Verify：节点/状态/交接人校验和远程集成）
   - [x] T-204D [P] 实现样品详情当前位置、流转时间线和流转登记表单（Files：`src/components/sample-registration`、`src/app/samples`；Depends：T-204C；Verify：生产构建和未认证 E2E）
   - [x] T-204E [S] 完成集成测试、对抗性审查和一致性门禁（Depends：T-204B～D；Verify：远程临时数据清理、全量质量门禁；Review：`REV-SAMPLE-FLOW-001`）
-- [ ] T-205 实现任务分配和任务状态流转（Spec：FR-TASK-003～006、BR-001～005）
+- [x] T-205 [S] 实现任务分配和任务状态流转（Spec：FR-TASK-003～006、FR-TASK-008、FR-PER-002、FR-PER-004、BR-001～005；设计：DES-TASK-FLOW-001；Depends：T-202、T-201；Integration：T-206 复用任务状态与分配查询）
+  - [x] T-205A [S] 锁定个人/实验组分配、状态机、事务边界和 API（Files：`specs/001-lims-core/design-task-flow.md`、`data-model.md`、`api-contract.md`、`plan.md`）
+  - [x] T-205B [S] 实现组分配历史、状态保护触发器和事务 RPC（Files：`supabase/migrations`、`src/types/database.ts`；Verify：迁移、RLS 负向和状态约束）
+  - [x] T-205C [S] 实现任务分配、状态流转和状态历史 API（Files：`src/lib/server/task-flow.ts`、`src/app/api/v1/tasks/[id]/assignments`、`transition`、`history`；Verify：服务端校验和远程集成）
+  - [x] T-205D [P] 实现任务详情的分配、状态操作和历史时间线（Files：`src/components/task-registration`、`src/app/tasks`；Depends：T-205C；Verify：生产构建和未认证 E2E）
+  - [x] T-205E [S] 完成集成测试、对抗性审查和一致性门禁（Depends：T-205B～D；Verify：远程临时数据清理、全量质量门禁；Review：`REV-TASK-FLOW-001`）
 - [ ] T-206 编写样品和任务主流程测试（Spec：AC-SAMPLE-001～002、AC-TASK-001）
 
 ## 4. 数据、审核与报告

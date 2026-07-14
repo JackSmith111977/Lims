@@ -118,9 +118,11 @@ HTTP 状态建议：`400` 参数错误、`401` 未认证、`403` 无权限、`40
 | POST | `/tasks` | 管理员、负责人 | `FR-TASK-001～002` |
 | GET | `/tasks/{id}` | 按权限 | `FR-TASK-004～006` |
 | PATCH | `/tasks/{id}` | 管理员、负责人、执行人 | `FR-TASK-004～006` |
-| POST | `/tasks/{id}/assignments` | 管理员、负责人 | `FR-TASK-003、007` |
-| POST | `/tasks/{id}/transition` | 按状态授权 | `BR-001～005` |
-| GET | `/tasks/{id}/history` | 按权限 | `FR-TASK-004`、`FR-AUDIT-005` |
+| POST | `/tasks/{id}/assignments` | `task.assign` | `FR-TASK-003`、`FR-TASK-008`、`FR-PER-002`、`FR-PER-004` |
+| POST | `/tasks/{id}/transition` | `task.manage` 或当前执行人 | `FR-TASK-004～006`、`BR-001～005` |
+| GET | `/tasks/{id}/history` | `task.read` | `FR-TASK-004`、`FR-AUDIT-005` |
+
+`POST /tasks/{id}/assignments` 接收 `userIds?` 和 `groupIds?`，由服务端生成分配人和时间；`POST /tasks/{id}/transition` 接收 `toStatus`、`remark?`，由服务端推导当前状态、操作人和时间；状态历史只允许通过状态流转事务写入。
 
 ## 5.2 人员档案接口
 

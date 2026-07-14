@@ -814,6 +814,86 @@ paths:
                 $ref: '#/components/schemas/ApiResponseTask'
         '409':
           $ref: '#/components/responses/Conflict'
+  /tasks/{id}/assignments:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [Tasks]
+      summary: 更新任务分配
+      operationId: replaceTaskAssignments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskAssignmentRequest'
+      responses:
+        '200':
+          description: 分配更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseTaskAssignment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /tasks/{id}/transition:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [Tasks]
+      summary: 流转任务状态
+      operationId: transitionTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskTransitionRequest'
+      responses:
+        '200':
+          description: 状态更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseTaskTransition'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /tasks/{id}/history:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Tasks]
+      summary: 查询任务状态历史
+      operationId: listTaskHistory
+      responses:
+        '200':
+          description: 状态历史
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseTaskHistory'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
   /tasks/{id}/reviews:
     parameters:
       - $ref: '#/components/parameters/Id'
@@ -1276,6 +1356,50 @@ components:
         sampleIds:
           type: array
           items: { type: integer, format: int64 }
+    TaskAssignmentRequest:
+      type: object
+      properties:
+        userIds:
+          type: array
+          items: { type: string, format: uuid }
+        groupIds:
+          type: array
+          items: { type: integer, format: int64 }
+    TaskTransitionRequest:
+      type: object
+      required: [toStatus]
+      properties:
+        toStatus:
+          type: string
+          enum: [ASSIGNED, IN_PROGRESS, PENDING_REVIEW, RETURNED, APPROVED, ARCHIVED]
+        remark: { type: string, maxLength: 2000, nullable: true }
+    TaskAssignment:
+      type: object
+      properties:
+        taskId: { type: integer, format: int64 }
+        userId: { type: string, format: uuid, nullable: true }
+        groupId: { type: integer, format: int64, nullable: true }
+        assignedBy: { type: string, format: uuid }
+        assignedAt: { type: string, format: date-time }
+    TaskTransition:
+      type: object
+      properties:
+        taskId: { type: integer, format: int64 }
+        fromStatus: { type: string, nullable: true }
+        toStatus: { type: string }
+        operatorId: { type: string, format: uuid }
+        remark: { type: string, nullable: true }
+        occurredAt: { type: string, format: date-time }
+    TaskHistory:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        taskId: { type: integer, format: int64 }
+        fromStatus: { type: string, nullable: true }
+        toStatus: { type: string }
+        operatorId: { type: string, format: uuid }
+        remark: { type: string, nullable: true }
+        occurredAt: { type: string, format: date-time }
     Task:
       type: object
       properties:
@@ -1420,6 +1544,29 @@ components:
             page: { type: integer }
             size: { type: integer }
             total: { type: integer, format: int64 }
+        traceId: { type: string }
+    ApiResponseTaskAssignment:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { type: object }
+        traceId: { type: string }
+    ApiResponseTaskTransition:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { $ref: '#/components/schemas/TaskTransition' }
+        traceId: { type: string }
+    ApiResponseTaskHistory:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/TaskHistory' }
         traceId: { type: string }
     ApiResponseReview:
       type: object

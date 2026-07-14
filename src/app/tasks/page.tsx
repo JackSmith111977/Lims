@@ -23,10 +23,11 @@ export default async function TasksPage() {
     );
   }
 
-  const [tasks, projects, canManage] = await Promise.all([
+  const [tasks, projects, canManage, canAssign] = await Promise.all([
     loadTasks(context.supabase),
     loadProjects(context.supabase),
     hasPermission(context.supabase, "task.manage"),
+    hasPermission(context.supabase, "task.assign"),
   ]);
 
   return (
@@ -44,7 +45,7 @@ export default async function TasksPage() {
         <div className="rounded-2xl border border-blue-100 bg-blue-50 p-5 text-sm text-blue-900">
           当前仅维护任务基础信息和项目/方法/样品引用。任务分配与状态流转由 T-205 统一管理；方法编号需要填写已存在且处于 ACTIVE 状态的方法版本 ID。
         </div>
-        <TasksPanel initialTasks={tasks} initialProjects={projects} canManage={canManage} />
+        <TasksPanel initialTasks={tasks} initialProjects={projects} canManage={canManage} canAssign={canAssign} />
       </section>
     </main>
   );

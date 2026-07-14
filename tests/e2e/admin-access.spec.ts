@@ -56,6 +56,14 @@ test("unauthenticated users cannot open or call project and task registration", 
 
   const taskResponse = await request.get("/api/v1/tasks");
   expect(taskResponse.status()).toBe(401);
+  for (const [method, url] of [
+    ["POST", "/api/v1/tasks/1/assignments"],
+    ["POST", "/api/v1/tasks/1/transition"],
+    ["GET", "/api/v1/tasks/1/history"],
+  ] as const) {
+    const response = method === "GET" ? await request.get(url) : await request.post(url, { data: {} });
+    expect(response.status()).toBe(401);
+  }
   await expect(taskResponse.json()).resolves.toEqual({
     error: { code: "AUTH_REQUIRED", message: "请先登录。" },
   });

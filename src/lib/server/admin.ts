@@ -25,7 +25,7 @@ export type AdminContext = {
 };
 
 export async function requireAdminPermission(
-  permission: Extract<PermissionCode, "auth.user.manage" | "auth.role.manage" | "settings.manage" | "resource.read" | "resource.manage" | "project.read" | "project.manage" | "task.read" | "task.manage" | "sample.read" | "sample.manage">,
+  permission: Extract<PermissionCode, "auth.user.manage" | "auth.role.manage" | "settings.manage" | "resource.read" | "resource.manage" | "project.read" | "project.manage" | "task.read" | "task.manage" | "task.assign" | "sample.read" | "sample.manage">,
 ): Promise<AdminContext> {
   const supabase = await createClient();
   const {

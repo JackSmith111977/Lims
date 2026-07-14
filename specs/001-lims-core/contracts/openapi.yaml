@@ -16,6 +16,7 @@ tags:
   - name: Admin
   - name: Settings
   - name: Personnel
+  - name: Methods
 paths:
   /auth/login:
     post:
@@ -741,6 +742,89 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
+  /methods:
+    get:
+      tags: [Methods]
+      summary: 查询实验方法版本
+      operationId: listMethods
+      parameters:
+        - in: query
+          name: keyword
+          schema: { type: string }
+        - in: query
+          name: status
+          schema: { type: string, enum: [DRAFT, ACTIVE, INACTIVE, EXPIRED] }
+      responses:
+        '200':
+          description: 方法版本列表
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiResponseMethodItems' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Methods]
+      summary: 创建实验方法版本
+      operationId: createMethod
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MethodCreateRequest' }
+      responses:
+        '201': { description: 创建成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseMethod' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /methods/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Methods]
+      summary: 查询实验方法详情和变更历史
+      operationId: getMethod
+      responses:
+        '200': { description: 方法详情, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseMethod' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Methods]
+      summary: 更新实验方法可变字段或状态
+      operationId: updateMethod
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MethodUpdateRequest' }
+      responses:
+        '200': { description: 更新成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseMethod' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /methods/{id}/attachments:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [Methods]
+      summary: 上传并登记实验方法附件
+      operationId: createMethodAttachment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MethodAttachmentRequest' }
+          multipart/form-data:
+            schema: { $ref: '#/components/schemas/MethodAttachmentUploadRequest' }
+      responses:
+        '201': { description: 登记成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseMethodAttachment' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
   /tasks:
     get:
       tags: [Tasks]
@@ -1256,6 +1340,106 @@ components:
       type: object
       properties:
         data: { type: array, items: { type: object } }
+    MethodCreateRequest:
+      type: object
+      required: [methodCode, name, version]
+      properties:
+        methodCode: { type: string, maxLength: 32 }
+        name: { type: string, maxLength: 128 }
+        version: { type: string, maxLength: 32 }
+        scope: { type: string, maxLength: 255, nullable: true }
+        detectionLimit: { type: number, minimum: 0, nullable: true }
+        status: { type: string, enum: [DRAFT, ACTIVE, INACTIVE, EXPIRED] }
+        documentId: { type: integer, format: int64, nullable: true }
+        effectiveAt: { type: string, format: date-time, nullable: true }
+        expiredAt: { type: string, format: date-time, nullable: true }
+    MethodUpdateRequest:
+      type: object
+      properties:
+        name: { type: string, maxLength: 128 }
+        scope: { type: string, maxLength: 255, nullable: true }
+        detectionLimit: { type: number, minimum: 0, nullable: true }
+        status: { type: string, enum: [DRAFT, ACTIVE, INACTIVE, EXPIRED] }
+        documentId: { type: integer, format: int64, nullable: true }
+        effectiveAt: { type: string, format: date-time, nullable: true }
+        expiredAt: { type: string, format: date-time, nullable: true }
+    MethodAttachmentRequest:
+      type: object
+      required: [fileName, storagePath, fileSize, contentType]
+      properties:
+        fileName: { type: string, maxLength: 255 }
+        storagePath: { type: string, maxLength: 512 }
+        fileSize: { type: integer, format: int64, minimum: 0 }
+        contentType: { type: string, maxLength: 128 }
+    MethodHistory:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        methodId: { type: integer, format: int64 }
+        methodCode: { type: string }
+        fromVersion: { type: string, nullable: true }
+        toVersion: { type: string }
+        fromStatus: { type: string, nullable: true }
+        toStatus: { type: string }
+        changeType: { type: string, enum: [CREATE_VERSION, UPDATE, STATUS_CHANGE] }
+        operatorId: { type: string, format: uuid }
+        remark: { type: string, nullable: true }
+        occurredAt: { type: string, format: date-time }
+    MethodAttachment:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        objectType: { type: string }
+        objectId: { type: string }
+        fileName: { type: string }
+        storagePath: { type: string }
+        fileSize: { type: integer, format: int64 }
+        contentType: { type: string }
+        uploadedBy: { type: string, format: uuid }
+        uploadedAt: { type: string, format: date-time }
+    MethodAttachmentUploadRequest:
+      type: object
+      required: [file]
+      properties:
+        file: { type: string, format: binary, description: 实验方法或相关标准规范文件 }
+    Method:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        methodCode: { type: string }
+        name: { type: string }
+        version: { type: string }
+        scope: { type: string, nullable: true }
+        detectionLimit: { type: number, nullable: true }
+        status: { type: string, enum: [DRAFT, ACTIVE, INACTIVE, EXPIRED] }
+        documentId: { type: integer, format: int64, nullable: true }
+        effectiveAt: { type: string, format: date-time, nullable: true }
+        expiredAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        history: { type: array, items: { $ref: '#/components/schemas/MethodHistory' } }
+        attachments: { type: array, items: { $ref: '#/components/schemas/MethodAttachment' } }
+    ApiResponseMethod:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { $ref: '#/components/schemas/Method' }
+        traceId: { type: string }
+    ApiResponseMethodItems:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { type: array, items: { $ref: '#/components/schemas/Method' } }
+        traceId: { type: string }
+    ApiResponseMethodAttachment:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { $ref: '#/components/schemas/MethodAttachment' }
+        traceId: { type: string }
     SampleCreateRequest:
       type: object
       required: [projectId, name, quantity, unit]

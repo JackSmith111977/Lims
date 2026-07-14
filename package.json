@@ -10,6 +10,7 @@
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
     "test:integration": "node scripts/integration/sample-task-main-flow.mjs",
+    "test:method-integration": "node scripts/integration/method-versioning.mjs",
     "test:e2e": "playwright test --pass-with-no-tests",
     "supabase:status": "supabase status",
     "supabase:migrations": "supabase migration list",

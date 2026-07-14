@@ -11,7 +11,7 @@
 | GB/T 40343—2021：人员管理 | `FR-PER-001～004` | `sys_user` 扩展、岗位字典、技能/资质/培训记录和任务状态摘要；[`design-personnel.md`](design-personnel.md) | T-201 集成测试、提醒场景和 `REV-PERSONNEL-001` |
 | GB/T 40343—2021：设备管理 | `FR-EQUIP-001～007` | 设备档案、维护、校准和接口预留 | `AC-RESOURCE-001` |
 | GB/T 40343—2021：样品管理 | `FR-SAMPLE-001～008` | 唯一编号、流转、处理和附件 | `AC-SAMPLE-001～002` |
-| GB/T 40343—2021：方法管理 | `FR-METHOD-001～004` | 方法库和版本引用 | `AC-DATA-001` |
+| GB/T 40343—2021：方法管理 | `FR-METHOD-001～004` | 方法版本库、不可变版本引用、附件元数据和变更审计；[`design-method-versioning.md`](design-method-versioning.md) | T-301 集成测试、`REV-METHOD-VERSIONING-001` 和 `AC-DATA-001` |
 | GB/T 40343—2021：设施和环境管理 | `FR-ENV-001～006` | 环境记录、阈值提醒和接口扩展 | `AC-RESOURCE-001` |
 | GB/T 40343—2021：用户管理和权限控制 | `FR-AUTH-001～007` | 认证、角色、权限和授权记录；[`design-auth-admin.md`](design-auth-admin.md) | `AC-AUTH-001`；`REV-AUTH-001` 正向/负向集成验收 |
 | GB/T 40343—2021：基础设置 | `FR-SETTING-001～003` | 实验室、部门、实验组、通用分类、计量单位和系统参数；[`design-settings.md`](design-settings.md) | T-105B 集成测试和设置管理审查 |

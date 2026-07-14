@@ -309,6 +309,63 @@ export type Database = {
         }
         Relationships: []
       }
+      experiment_method_history: {
+        Row: {
+          change_type: string
+          from_status: string | null
+          from_version: string | null
+          id: number
+          method_code: string
+          method_id: number
+          occurred_at: string
+          operator_id: string
+          remark: string | null
+          to_status: string
+          to_version: string
+        }
+        Insert: {
+          change_type: string
+          from_status?: string | null
+          from_version?: string | null
+          id?: number
+          method_code: string
+          method_id: number
+          occurred_at?: string
+          operator_id: string
+          remark?: string | null
+          to_status: string
+          to_version: string
+        }
+        Update: {
+          change_type?: string
+          from_status?: string | null
+          from_version?: string | null
+          id?: number
+          method_code?: string
+          method_id?: number
+          occurred_at?: string
+          operator_id?: string
+          remark?: string | null
+          to_status?: string
+          to_version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "experiment_method_history_method_id_fkey"
+            columns: ["method_id"]
+            isOneToOne: false
+            referencedRelation: "experiment_method"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "experiment_method_history_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       experiment_report: {
         Row: {
           archived_at: string | null

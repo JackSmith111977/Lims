@@ -90,6 +90,7 @@
 - [x] 确认样品登记、编号生成和项目/任务/方法关联边界（DES-SAMPLE-REGISTRATION-001）
 - [x] 确认样品状态机、物流事件、事务边界和流转 API（DES-SAMPLE-FLOW-001）
 - [x] 确认任务分配、实验组分配、状态机、事务边界和状态历史 API（DES-TASK-FLOW-001）
+- [x] 确认方法版本实体、历史审计、附件元数据和不可变版本边界（DES-METHOD-VERSIONING-001）
 
 ## 4. 设计产物
 

@@ -130,7 +130,13 @@
 
 `id`、`method_code`、`name`、`version`、`scope`、`detection_limit`、`status`、`document_id`、`effective_at`、`expired_at`、`created_at`、`updated_at`。
 
-约束：`method_code + version` 唯一；已停用方法不能绑定新任务；历史任务保留原方法版本。
+约束：`method_code + version` 唯一；`method_code` 和 `version` 创建后不可修改；已停用方法不能绑定新任务；历史任务保留原方法版本。
+
+### 4.4 `experiment_method_history`
+
+`id`、`method_id`、`method_code`、`from_version`、`to_version`、`from_status`、`to_status`、`change_type`、`operator_id(UUID)`、`remark`、`occurred_at(TIMESTAMPTZ)`。
+
+约束：由数据库触发器在方法版本创建、字段更新和状态变化时追加；方法历史只读，不提供物理删除接口。`change_type` 取 `CREATE_VERSION`、`UPDATE`、`STATUS_CHANGE`。
 
 ## 5. 任务与数据表
 

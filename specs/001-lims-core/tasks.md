@@ -78,7 +78,12 @@
 
 ## 4. 数据、审核与报告
 
-- [ ] T-301 实现实验方法和版本管理（Spec：FR-METHOD-001～004）
+- [ ] T-301 [S] 实现实验方法和版本管理（Spec：FR-METHOD-001～004；设计：DES-METHOD-VERSIONING-001；Depends：T-202；Integration：T-302 复用方法版本）
+- [x] T-301A [S] 锁定方法版本、历史、附件和权限边界（Files：`specs/001-lims-core/design-method-versioning.md`、`data-model.md`、`api-contract.md`、`contracts/openapi.yaml`、`plan.md`）
+  - [ ] T-301B [S] 实现方法历史、版本身份保护、附件 RLS 和审计触发器（Files：`supabase/migrations`、`src/types/database.ts`；Verify：迁移、RLS 负向和唯一版本约束）
+- [x] T-301C [S] 实现方法版本服务和 API（Spec：FR-METHOD-001～004；Files：`src/lib/server/methods.ts`、`src/app/api/v1/methods`；Verify：字段校验、状态变更和重复版本测试）
+- [x] T-301D [P] 实现方法库页面、历史时间线、附件登记和任务方法版本选择（Spec：FR-METHOD-001～004、FR-TASK-002；Files：`src/app/methods`、`src/components/methods`、`src/app/tasks`、`src/components/task-registration`；Depends：T-301C；Verify：生产构建和未认证 E2E）
+  - [ ] T-301E [S] 完成远程集成、对抗性审查和一致性门禁（Depends：T-301B～D；Verify：临时账号/数据自动清理、全量质量门禁；Review：`REV-METHOD-VERSIONING-001`）
 - [ ] T-302 实现实验原始数据和结果录入（Spec：FR-DATA-001～005）
 - [ ] T-303 实现数据处理、规则判定或模拟处理（Spec：FR-DATA-006～008）
 - [ ] T-304 实现结果审核、退回和审核意见（Spec：FR-REVIEW-001～006）

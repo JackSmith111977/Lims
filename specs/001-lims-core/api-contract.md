@@ -84,7 +84,11 @@ HTTP 状态建议：`400` 参数错误、`401` 未认证、`403` 无权限、`40
 | POST | `/roles/{id}/permissions` | 系统管理员 | `FR-AUTH-004～006` |
 | GET/POST/PATCH | `/settings/laboratories`、`/settings/departments`、`/settings/groups` | 设置管理员 | `FR-SETTING-001` |
 | GET/POST/PATCH | `/settings/categories`、`/settings/units`、`/settings/parameters` | 设置管理员 | `FR-SETTING-002～003` |
-| GET/POST | `/methods` | 实验室管理员 | `FR-METHOD-001～004` |
+| GET | `/methods` | `resource.read` | `FR-METHOD-001～004` |
+| POST | `/methods` | `resource.manage` | `FR-METHOD-001～004` |
+| GET | `/methods/{id}` | `resource.read` | `FR-METHOD-001～004` |
+| PATCH | `/methods/{id}` | `resource.manage` | `FR-METHOD-001～004` |
+| POST | `/methods/{id}/attachments` | `resource.manage` | `FR-METHOD-003～004` |
 | GET/POST | `/instruments` | 实验室管理员 | `FR-EQUIP-001～006` |
 | GET/POST | `/inventory/items` | 实验室管理员 | `FR-INVENTORY-001～006` |
 
@@ -123,6 +127,8 @@ HTTP 状态建议：`400` 参数错误、`401` 未认证、`403` 无权限、`40
 | GET | `/tasks/{id}/history` | `task.read` | `FR-TASK-004`、`FR-AUDIT-005` |
 
 `POST /tasks/{id}/assignments` 接收 `userIds?` 和 `groupIds?`，由服务端生成分配人和时间；`POST /tasks/{id}/transition` 接收 `toStatus`、`remark?`，由服务端推导当前状态、操作人和时间；状态历史只允许通过状态流转事务写入。
+
+方法接口把 `method_code + version` 作为版本业务唯一键；`PATCH` 不允许修改方法编号和版本号。方法详情返回方法变更历史和附件元数据，附件二进制通过 Storage 路径承接，不在 API 日志中回显。
 
 ## 5.2 人员档案接口
 

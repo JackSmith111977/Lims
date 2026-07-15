@@ -114,7 +114,12 @@
 
 ## 5. 实验室资源
 
-- [ ] T-401 实现仪器设备档案（Spec：FR-EQUIP-001～003）
+- [x] T-401 实现仪器设备档案（Spec：FR-EQUIP-001～003；设计：DES-INSTRUMENT-REGISTRY-001）
+  - [x] T-401A [S] 锁定设备档案字段、状态终态、权限、数据关联和 T-402 边界（Files：`specs/001-lims-core/design-instrument-registry.md`、`data-model.md`、`api-contract.md`、`contracts/openapi.yaml`、`plan.md`；Verify：设计覆盖 SCRAPPED 终态、直接写入拒绝和审计）
+  - [x] T-401B [S] 实现设备字段约束、状态保护、RLS 和事务 RPC（Files：`supabase/migrations`、`src/types/database.ts`；Verify：编号唯一、负责人、状态负向和审计；远程迁移 `202607150015` 已应用）
+  - [x] T-401C [S] 实现设备服务/API 和关联摘要（Files：`src/lib/server/instruments.ts`、`src/app/api/v1/instruments`；Verify：字段校验、查询过滤和报废边界）
+  - [x] T-401D [P] 实现设备档案列表、详情和状态维护页面（Files：`src/app/instruments`、`src/components/instruments`、`src/app/dashboard/page.tsx`；Depends：T-401C；Verify：生产构建和未认证 E2E；E2E 11/11）
+  - [x] T-401E [S] 完成远程集成、对抗性审查和一致性门禁（Depends：T-401B～D；Verify：临时账号/数据清理、全量质量门禁；Review：`REV-INSTRUMENT-REGISTRY-001`；集成检查、清理计数和远程迁移核对均通过）
 - [ ] T-402 实现维护和校准记录（Spec：FR-EQUIP-004～006）
 - [ ] T-403 实现试剂耗材和库存变动（Spec：FR-INVENTORY-001～004）
 - [ ] T-404 实现库存和有效期提醒（Spec：FR-INVENTORY-005～006）

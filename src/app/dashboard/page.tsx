@@ -38,7 +38,7 @@ export default async function DashboardPage() {
   }
 
   const roles = await getCurrentRoles(supabase);
-  const [canManageUsers, canManageRoles, canManageSettings, canReadPersonnel, canReadProjects, canReadTasks, canReadSamples, canReadMethods, canReadData, canReadReviews, canReadReports] = await Promise.all([
+  const [canManageUsers, canManageRoles, canManageSettings, canReadPersonnel, canReadProjects, canReadTasks, canReadSamples, canReadMethods, canReadData, canReadReviews, canReadReports, canReadInstruments] = await Promise.all([
     hasPermission(supabase, "auth.user.manage"),
     hasPermission(supabase, "auth.role.manage"),
     hasPermission(supabase, "settings.manage"),
@@ -50,6 +50,7 @@ export default async function DashboardPage() {
     hasPermission(supabase, "data.read"),
     hasPermission(supabase, "review.read"),
     hasPermission(supabase, "report.read"),
+    hasPermission(supabase, "resource.read"),
   ]);
 
   return (
@@ -147,6 +148,11 @@ export default async function DashboardPage() {
           {canReadReports ? (
             <Link className="text-blue-600 hover:text-blue-700" href="/reports">
               实验报告
+            </Link>
+          ) : null}
+          {canReadInstruments ? (
+            <Link className="text-blue-600 hover:text-blue-700" href="/instruments">
+              设备档案
             </Link>
           ) : null}
         </div>

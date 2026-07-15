@@ -825,6 +825,65 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+  /instruments:
+    get:
+      tags: [Instruments]
+      summary: 查询仪器设备
+      operationId: listInstruments
+      parameters:
+        - in: query
+          name: keyword
+          schema: { type: string }
+        - in: query
+          name: status
+          schema: { type: string, enum: [ACTIVE, INACTIVE, MAINTENANCE, SCRAPPED] }
+      responses:
+        '200': { description: 查询成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseInstrumentItems' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Instruments]
+      summary: 创建仪器设备档案
+      operationId: createInstrument
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/InstrumentRequest' }
+      responses:
+        '201': { description: 创建成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseInstrument' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /instruments/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Instruments]
+      summary: 查询仪器设备详情
+      operationId: getInstrument
+      responses:
+        '200': { description: 查询成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseInstrument' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Instruments]
+      summary: 更新仪器设备档案
+      operationId: updateInstrument
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/InstrumentRequest' }
+      responses:
+        '200': { description: 更新成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseInstrument' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
   /tasks:
     get:
       tags: [Tasks]
@@ -1668,6 +1727,50 @@ components:
         code: { type: string }
         message: { type: string }
         data: { $ref: '#/components/schemas/MethodAttachment' }
+        traceId: { type: string }
+    InstrumentRequest:
+      type: object
+      properties:
+        instrumentCode: { type: string, maxLength: 32 }
+        name: { type: string, maxLength: 128 }
+        type: { type: string, maxLength: 64 }
+        model: { type: string, maxLength: 64, nullable: true }
+        manufacturer: { type: string, maxLength: 128, nullable: true }
+        location: { type: string, maxLength: 128, nullable: true }
+        ownerId: { type: string, format: uuid, nullable: true }
+        status: { type: string, enum: [ACTIVE, INACTIVE, MAINTENANCE, SCRAPPED] }
+        commissionedAt: { type: string, format: date, nullable: true }
+    Instrument:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        instrumentCode: { type: string }
+        name: { type: string }
+        type: { type: string }
+        model: { type: string, nullable: true }
+        manufacturer: { type: string, nullable: true }
+        location: { type: string, nullable: true }
+        ownerId: { type: string, format: uuid, nullable: true }
+        status: { type: string, enum: [ACTIVE, INACTIVE, MAINTENANCE, SCRAPPED] }
+        commissionedAt: { type: string, format: date, nullable: true }
+        nextCalibrationAt: { type: string, format: date, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        usageCount: { type: integer }
+        lastUsedAt: { type: string, format: date-time, nullable: true }
+    ApiResponseInstrument:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { $ref: '#/components/schemas/Instrument' }
+        traceId: { type: string }
+    ApiResponseInstrumentItems:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { type: array, items: { $ref: '#/components/schemas/Instrument' } }
         traceId: { type: string }
     SampleCreateRequest:
       type: object

@@ -2027,6 +2027,14 @@ export type Database = {
         Args: { _remark?: string | null; _report_id: number }
         Returns: Json
       }
+      create_instrument: {
+        Args: { _payload: Json }
+        Returns: Json
+      }
+      update_instrument: {
+        Args: { _instrument_id: number; _payload: Json }
+        Returns: Json
+      }
       set_role_permissions: {
         Args: { _permission_codes: string[]; _role_id: number }
         Returns: undefined

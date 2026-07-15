@@ -89,7 +89,10 @@ HTTP 状态建议：`400` 参数错误、`401` 未认证、`403` 无权限、`40
 | GET | `/methods/{id}` | `resource.read` | `FR-METHOD-001～004` |
 | PATCH | `/methods/{id}` | `resource.manage` | `FR-METHOD-001～004` |
 | POST | `/methods/{id}/attachments` | `resource.manage` | `FR-METHOD-003～004` |
-| GET/POST | `/instruments` | 实验室管理员 | `FR-EQUIP-001～006` |
+| GET | `/instruments` | `resource.read` | `FR-EQUIP-001～003` |
+| POST | `/instruments` | `resource.manage` | `FR-EQUIP-001～003` |
+| GET | `/instruments/{id}` | `resource.read` | `FR-EQUIP-001～003、FR-EQUIP-006` |
+| PATCH | `/instruments/{id}` | `resource.manage` | `FR-EQUIP-001～003` |
 | GET/POST | `/inventory/items` | 实验室管理员 | `FR-INVENTORY-001～006` |
 
 ## 4. 样品接口
@@ -169,6 +172,8 @@ HTTP 状态建议：`400` 参数错误、`401` 未认证、`403` 无权限、`40
 `GET /processing-rules` 只返回活动规则的固定版本。`POST /tasks/{id}/data/process` 接收 `ruleId`、`sourceDataIds` 和 `executionMode`，按选定规则生成新的 `PROCESSED` 或 `RESULT` 数据记录，不覆盖输入数据；每次运行返回唯一 `runId`，并通过血缘记录关联输入、输出和规则版本。`ROUND` 支持 `HALF_UP` 修约，`THRESHOLD` 返回 `PASS` 或 `FAIL`；超出阈值时运行状态为 `FLAGGED` 并保留异常说明。`GET /tasks/{id}/data/process-runs` 返回运行状态、判定、异常和数据血缘。任务进入 `APPROVED` 或 `ARCHIVED` 后处理接口返回 `409 DATA_TASK_LOCKED`。
 
 `POST /tasks/{id}/reports` 只从 `APPROVED` 任务生成服务端快照和新的 DRAFT 版本；`submit-review`、`publish` 和 `archive` 严格按报告状态机执行并返回 `409 REPORT_INVALID_TRANSITION`。`GET /reports/{id}/export` 返回不可变快照的 JSON 文件，不接受客户端内容覆盖。
+
+`POST /instruments` 和 `PATCH /instruments/{id}` 只接受设备档案字段；设备编号、启用日期和校准日期不允许通过更新接口修改。设备状态为 `SCRAPPED` 后返回 `409 INSTRUMENT_SCRAPPED`，负责人必须为 ACTIVE 用户，所有写入由服务端 RPC 记录审计。
 
 `GET /tasks/{id}/reviews` 返回任务审核上下文、实验数据摘要、处理运行摘要、审核历史和最新有效审核。`POST /tasks/{id}/reviews` 只接收 `result`（`APPROVED`、`RETURNED` 或 `NEED_MORE`）及可选 `comment`；服务端从当前会话生成审核人和时间，并通过事务函数写入审核、任务状态历史和审计。`RETURNED`/`NEED_MORE` 必须填写意见，任务必须处于 `PENDING_REVIEW`，否则返回 `409 REVIEW_TASK_NOT_PENDING`；通过后任务进入 `APPROVED`，退回或要求补充后进入 `RETURNED`。
 

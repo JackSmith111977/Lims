@@ -9,7 +9,7 @@
 | GB/T 40343—2021：数据审核 | `FR-REVIEW-001～006` | 审核、退回、补充和审核日志；[`design-result-review.md`](design-result-review.md) | T-304、T-306、`AC-REVIEW-001`、`REV-RESULT-REVIEW-001`、`test:review-integration` |
 | GB/T 40343—2021：报告生成 | `FR-REPORT-001～006` | 报告快照、版本、状态、发布、归档和导出；[`design-reporting.md`](design-reporting.md) | T-305、T-306、`AC-REPORT-001`、`REV-REPORTING-001`、`test:report-integration` |
 | GB/T 40343—2021：人员管理 | `FR-PER-001～004` | `sys_user` 扩展、岗位字典、技能/资质/培训记录和任务状态摘要；[`design-personnel.md`](design-personnel.md) | T-201 集成测试、提醒场景和 `REV-PERSONNEL-001` |
-| GB/T 40343—2021：设备管理 | `FR-EQUIP-001～007` | 设备档案、维护、校准和接口预留 | `AC-RESOURCE-001` |
+| GB/T 40343—2021：设备管理 | `FR-EQUIP-001～003` | 仪器设备档案、状态、负责人和数据关联；[`design-instrument-registry.md`](design-instrument-registry.md) | T-401、`AC-RESOURCE-001`、`REV-INSTRUMENT-REGISTRY-001`、`test:instrument-integration` |
 | GB/T 40343—2021：样品管理 | `FR-SAMPLE-001～008` | 唯一编号、流转、处理和附件 | `AC-SAMPLE-001～002` |
 | GB/T 40343—2021：方法管理 | `FR-METHOD-001～004` | 方法版本库、不可变版本引用、附件元数据和变更审计；[`design-method-versioning.md`](design-method-versioning.md) | T-301 集成测试、`REV-METHOD-VERSIONING-001` 和 `AC-DATA-001` |
 | GB/T 40343—2021：设施和环境管理 | `FR-ENV-001～006` | 环境记录、阈值提醒和接口扩展 | `AC-RESOURCE-001` |

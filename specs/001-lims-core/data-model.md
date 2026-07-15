@@ -209,7 +209,7 @@
 
 `id`、`instrument_code`、`name`、`type`、`model`、`manufacturer`、`location`、`owner_id`、`status`、`commissioned_at`、`next_calibration_at`。
 
-约束：设备编号唯一；停用设备不能绑定新任务；维护和校准日期不得早于启用日期。
+约束：设备编号唯一且创建后不可修改；状态为 ACTIVE/INACTIVE/MAINTENANCE/SCRAPPED，SCRAPPED 为终态；负责人必须为有效人员；停用/报废设备不能绑定新任务，报废设备不能新增实验数据。设备档案写入通过事务 RPC 并记录审计，详细边界见 [`design-instrument-registry.md`](design-instrument-registry.md)。
 
 ### 7.2 `instrument_maintenance`
 

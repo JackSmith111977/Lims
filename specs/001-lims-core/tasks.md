@@ -108,7 +108,9 @@
   - [x] T-305C [S] 实现报告服务/API、列表详情和 JSON 导出（Files：`src/lib/server/reporting.ts`、`src/app/api/v1/tasks/[id]/reports`、`src/app/api/v1/reports`；Verify：字段校验、快照一致性、版本递增和错误模型）
   - [x] T-305D [P] 实现报告列表、详情、状态操作和导出页面（Files：`src/app/reports`、`src/components/reporting`、`src/app/dashboard/page.tsx`；Depends：T-305C；Verify：生产构建、未认证 E2E 和状态刷新；E2E 10/10）
   - [x] T-305E [S] 完成远程集成、对抗性审查和一致性门禁（Depends：T-305B～D；Verify：临时账号/数据清理、全量质量门禁；Review：`REV-REPORTING-001`；集成检查、清理计数和远程迁移核对均通过）
-- [ ] T-306 编写数据、审核和报告测试（Spec：AC-DATA-001、AC-REVIEW-001、AC-REPORT-001）
+- [x] T-306 编写数据、审核和报告测试（Spec：AC-DATA-001、AC-REVIEW-001、AC-REPORT-001）
+  - [x] T-306A [S] 完成数据、处理、审核和报告的单元校验、未认证 E2E 及 OpenAPI/一致性门禁测试（Files：`tests/unit`、`tests/e2e`、`scripts/sdd`；Verify：42 个单元测试、E2E 10/10）
+  - [x] T-306B [S] 完成 Supabase 远程数据/审核/报告回归和临时资源清理验证（Files：`scripts/integration`；Verify：`test:data-integration`、`test:processing-integration`、`test:review-integration`、`test:report-integration` 全部通过）
 
 ## 5. 实验室资源
 

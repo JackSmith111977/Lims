@@ -120,7 +120,12 @@
   - [x] T-401C [S] 实现设备服务/API 和关联摘要（Files：`src/lib/server/instruments.ts`、`src/app/api/v1/instruments`；Verify：字段校验、查询过滤和报废边界）
   - [x] T-401D [P] 实现设备档案列表、详情和状态维护页面（Files：`src/app/instruments`、`src/components/instruments`、`src/app/dashboard/page.tsx`；Depends：T-401C；Verify：生产构建和未认证 E2E；E2E 11/11）
   - [x] T-401E [S] 完成远程集成、对抗性审查和一致性门禁（Depends：T-401B～D；Verify：临时账号/数据清理、全量质量门禁；Review：`REV-INSTRUMENT-REGISTRY-001`；集成检查、清理计数和远程迁移核对均通过）
-- [ ] T-402 实现维护和校准记录（Spec：FR-EQUIP-004～006）
+- [x] T-402 实现维护和校准记录（Spec：FR-EQUIP-004～006；设计：DES-INSTRUMENT-MAINTENANCE-001）
+  - [x] T-402A [S] 锁定追加事件、校准周期、到期提醒、权限和设备同步边界（Files：`specs/001-lims-core/design-instrument-maintenance.md`、`data-model.md`、`api-contract.md`、`contracts/openapi.yaml`、`plan.md`；Verify：设计覆盖报废设备、直接写入和校准日期一致性）
+  - [x] T-402B [S] 实现维护/校准字段约束、追加 RLS、提醒查询和事务 RPC（Files：`supabase/migrations`、`src/types/database.ts`；Verify：事件不可变、周期校验、设备日期同步和审计）
+  - [x] T-402C [S] 实现维护服务/API（Files：`src/lib/server/instrument-maintenance.ts`、`src/app/api/v1/instruments/[id]/maintenance`；Verify：字段校验、历史查询、到期提醒和权限）
+  - [x] T-402D [P] 实现设备维护/校准历史和提醒页面（Files：`src/components/instruments`、`src/app/instruments`；Depends：T-402C；Verify：生产构建和未认证 E2E）
+  - [x] T-402E [S] 完成远程集成、对抗性审查和一致性门禁（Depends：T-402B～D；Verify：临时账号/数据清理、全量质量门禁；Review：`REV-INSTRUMENT-MAINTENANCE-001`）
 - [ ] T-403 实现试剂耗材和库存变动（Spec：FR-INVENTORY-001～004）
 - [ ] T-404 实现库存和有效期提醒（Spec：FR-INVENTORY-005～006）
 - [ ] T-405 实现设施、环境记录和阈值提醒（Spec：FR-ENV-001～005）

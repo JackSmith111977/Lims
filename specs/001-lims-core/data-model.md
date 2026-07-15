@@ -213,7 +213,9 @@
 
 ### 7.2 `instrument_maintenance`
 
-`id`、`instrument_id`、`maintenance_type`、`occurred_on`、`operator_id(UUID)`、`result`、`next_due_on`、`attachment_id`、`remark`。
+`id`、`instrument_id`、`maintenance_type`、`occurred_on`、`operator_id(UUID)`、`result`、`cycle_days`、`next_due_on`、`attachment_id`、`remark`。
+
+约束：类型为 MAINTENANCE/REPAIR/INSPECTION/CALIBRATION；记录只允许追加；发生日期不得早于启用日期；CALIBRATION 必须保存周期和下次到期日，并同步 `instrument.next_calibration_at`。详细边界见 [`design-instrument-maintenance.md`](design-instrument-maintenance.md)。
 
 ### 7.3 `inventory_item`
 

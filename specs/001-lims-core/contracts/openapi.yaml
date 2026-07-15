@@ -884,6 +884,47 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/Conflict' }
+  /instruments/maintenance/reminders:
+    get:
+      tags: [Instruments]
+      summary: 查询维护和校准提醒
+      operationId: listInstrumentMaintenanceReminders
+      parameters:
+        - in: query
+          name: days
+          schema: { type: integer, minimum: 0, maximum: 365 }
+      responses:
+        '200': { description: 查询成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseInstrumentMaintenanceItems' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /instruments/{id}/maintenance:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Instruments]
+      summary: 查询设备维护校准历史
+      operationId: listInstrumentMaintenance
+      responses:
+        '200': { description: 查询成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseInstrumentMaintenanceItems' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    post:
+      tags: [Instruments]
+      summary: 追加设备维护校准记录
+      operationId: createInstrumentMaintenance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/InstrumentMaintenanceRequest' }
+      responses:
+        '201': { description: 创建成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseInstrumentMaintenance' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
   /tasks:
     get:
       tags: [Tasks]
@@ -1771,6 +1812,42 @@ components:
         code: { type: string }
         message: { type: string }
         data: { type: array, items: { $ref: '#/components/schemas/Instrument' } }
+        traceId: { type: string }
+    InstrumentMaintenanceRequest:
+      type: object
+      required: [maintenanceType, occurredOn]
+      properties:
+        maintenanceType: { type: string, enum: [MAINTENANCE, REPAIR, INSPECTION, CALIBRATION] }
+        occurredOn: { type: string, format: date }
+        result: { type: string, maxLength: 255, nullable: true }
+        cycleDays: { type: integer, minimum: 1, nullable: true }
+        nextDueOn: { type: string, format: date, nullable: true }
+        remark: { type: string, maxLength: 2000, nullable: true }
+    InstrumentMaintenance:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        instrumentId: { type: integer, format: int64 }
+        maintenanceType: { type: string, enum: [MAINTENANCE, REPAIR, INSPECTION, CALIBRATION] }
+        occurredOn: { type: string, format: date }
+        operatorId: { type: string, format: uuid }
+        result: { type: string, nullable: true }
+        cycleDays: { type: integer, nullable: true }
+        nextDueOn: { type: string, format: date, nullable: true }
+        remark: { type: string, nullable: true }
+    ApiResponseInstrumentMaintenance:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { $ref: '#/components/schemas/InstrumentMaintenance' }
+        traceId: { type: string }
+    ApiResponseInstrumentMaintenanceItems:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { type: array, items: { $ref: '#/components/schemas/InstrumentMaintenance' } }
         traceId: { type: string }
     SampleCreateRequest:
       type: object

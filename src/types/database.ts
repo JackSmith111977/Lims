@@ -754,6 +754,7 @@ export type Database = {
       instrument_maintenance: {
         Row: {
           attachment_id: number | null
+          cycle_days: number | null
           id: number
           instrument_id: number
           maintenance_type: string
@@ -765,6 +766,7 @@ export type Database = {
         }
         Insert: {
           attachment_id?: number | null
+          cycle_days?: number | null
           id?: number
           instrument_id: number
           maintenance_type: string
@@ -776,6 +778,7 @@ export type Database = {
         }
         Update: {
           attachment_id?: number | null
+          cycle_days?: number | null
           id?: number
           instrument_id?: number
           maintenance_type?: string
@@ -2032,6 +2035,10 @@ export type Database = {
         Returns: Json
       }
       update_instrument: {
+        Args: { _instrument_id: number; _payload: Json }
+        Returns: Json
+      }
+      record_instrument_maintenance: {
         Args: { _instrument_id: number; _payload: Json }
         Returns: Json
       }

@@ -813,6 +813,7 @@ export type Database = {
           id: number
           item_code: string
           location: string | null
+          low_stock_threshold: number
           manufacturer: string | null
           name: string
           quantity: number
@@ -829,6 +830,7 @@ export type Database = {
           id?: number
           item_code: string
           location?: string | null
+          low_stock_threshold?: number
           manufacturer?: string | null
           name: string
           quantity?: number
@@ -845,6 +847,7 @@ export type Database = {
           id?: number
           item_code?: string
           location?: string | null
+          low_stock_threshold?: number
           manufacturer?: string | null
           name?: string
           quantity?: number
@@ -2052,6 +2055,10 @@ export type Database = {
       }
       record_inventory_transaction: {
         Args: { _item_id: number; _payload: Json }
+        Returns: Json
+      }
+      get_inventory_alerts: {
+        Args: { _days?: number }
         Returns: Json
       }
       set_role_permissions: {

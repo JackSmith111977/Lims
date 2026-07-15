@@ -6,6 +6,8 @@ test("unauthenticated users cannot open or call inventory management", async ({ 
 
   const listResponse = await request.get("/api/v1/inventory/items");
   expect(listResponse.status()).toBe(401);
+  const alertsResponse = await request.get("/api/v1/inventory/alerts");
+  expect(alertsResponse.status()).toBe(401);
   const detailResponse = await request.get("/api/v1/inventory/items/1");
   expect(detailResponse.status()).toBe(401);
   const createResponse = await request.post("/api/v1/inventory/items", { data: {} });

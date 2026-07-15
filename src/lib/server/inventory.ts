@@ -8,7 +8,7 @@ export const INVENTORY_TRANSACTION_TYPES = ["INBOUND", "OUTBOUND", "RETURN", "SC
 export type InventoryStatus = (typeof INVENTORY_STATUSES)[number];
 export type InventoryTransactionType = (typeof INVENTORY_TRANSACTION_TYPES)[number];
 
-export const INVENTORY_ITEM_FIELDS = "id, item_code, type, name, batch_no, manufacturer, quantity, unit, expiry_date, storage_condition, location, status, created_at, updated_at";
+export const INVENTORY_ITEM_FIELDS = "id, item_code, type, name, batch_no, manufacturer, quantity, unit, expiry_date, storage_condition, location, status, low_stock_threshold, created_at, updated_at";
 export const INVENTORY_TRANSACTION_FIELDS = "id, item_id, task_id, transaction_type, quantity, operator_id, occurred_at, remark";
 
 type InventoryItemRow = Database["public"]["Tables"]["inventory_item"]["Row"];
@@ -23,6 +23,7 @@ export type InventoryItemView = {
   manufacturer: string | null;
   quantity: number;
   unit: string;
+  lowStockThreshold: number;
   expiryDate: string | null;
   storageCondition: string | null;
   location: string | null;
@@ -34,11 +35,26 @@ export type InventoryItemView = {
 export type InventoryTransactionView = {
   id: number;
   itemId: number;
+  taskId: number | null;
   transactionType: string;
   quantity: number;
   operatorId: string;
   occurredAt: string;
   remark: string | null;
+};
+
+export type InventoryAlertView = {
+  itemId: number;
+  itemCode: string;
+  itemName: string;
+  alertType: string;
+  severity: string;
+  quantity: number;
+  lowStockThreshold: number;
+  expiryDate: string | null;
+  daysUntilExpiry: number | null;
+  unit: string;
+  location: string | null;
 };
 
 function serializeItem(row: InventoryItemRow): InventoryItemView {
@@ -51,6 +67,7 @@ function serializeItem(row: InventoryItemRow): InventoryItemView {
     manufacturer: row.manufacturer,
     quantity: row.quantity,
     unit: row.unit,
+    lowStockThreshold: row.low_stock_threshold,
     expiryDate: row.expiry_date,
     storageCondition: row.storage_condition,
     location: row.location,
@@ -64,11 +81,28 @@ function serializeTransaction(row: InventoryTransactionRow): InventoryTransactio
   return {
     id: row.id,
     itemId: row.item_id,
+    taskId: row.task_id,
     transactionType: row.transaction_type,
     quantity: row.quantity,
     operatorId: row.operator_id,
     occurredAt: row.occurred_at,
     remark: row.remark,
+  };
+}
+
+function serializeAlert(row: Record<string, unknown>): InventoryAlertView {
+  return {
+    itemId: Number(row.item_id),
+    itemCode: String(row.item_code),
+    itemName: String(row.item_name),
+    alertType: String(row.alert_type),
+    severity: String(row.severity),
+    quantity: Number(row.quantity),
+    lowStockThreshold: Number(row.low_stock_threshold),
+    expiryDate: typeof row.expiry_date === "string" ? row.expiry_date : null,
+    daysUntilExpiry: row.days_until_expiry === null || row.days_until_expiry === undefined ? null : Number(row.days_until_expiry),
+    unit: String(row.unit),
+    location: typeof row.location === "string" ? row.location : null,
   };
 }
 
@@ -102,6 +136,17 @@ function parseQuantity(value: unknown) {
   return quantity;
 }
 
+function parseThreshold(value: unknown) {
+  const threshold = typeof value === "number" ? value : Number(typeof value === "string" ? value.trim() : NaN);
+  if (!Number.isFinite(threshold) || threshold < 0 || threshold > 999999999999) {
+    throw new AdminApiError(400, "INVALID_INVENTORY_THRESHOLD", "lowStockThreshold must be a non-negative finite number.");
+  }
+  if (Math.round(threshold * 1_000_000) / 1_000_000 !== threshold) {
+    throw new AdminApiError(400, "INVALID_INVENTORY_THRESHOLD", "lowStockThreshold supports at most six decimal places.");
+  }
+  return threshold;
+}
+
 export function buildInventoryItemPayload(bodyValue: unknown, update = false) {
   const body = requireObject(bodyValue);
   for (const field of ["id", "quantity", "createdAt", "updatedAt"]) {
@@ -120,6 +165,7 @@ export function buildInventoryItemPayload(bodyValue: unknown, update = false) {
   }
   const expiryDate = optionalDate(body.expiryDate, "expiryDate");
   if (expiryDate !== undefined) payload.expiry_date = expiryDate;
+  if (body.lowStockThreshold !== undefined) payload.low_stock_threshold = parseThreshold(body.lowStockThreshold);
   if (body.status !== undefined) {
     const status = requireText(body.status, "status", 16).toUpperCase();
     if (!INVENTORY_STATUSES.includes(status as InventoryStatus) || ["EXPIRED", "DEPLETED"].includes(status)) {
@@ -133,16 +179,21 @@ export function buildInventoryItemPayload(bodyValue: unknown, update = false) {
 
 export function buildInventoryTransactionPayload(bodyValue: unknown) {
   const body = requireObject(bodyValue);
-  for (const field of ["id", "itemId", "operatorId", "occurredAt", "taskId", "balanceBefore", "balanceAfter"]) {
-    if (body[field] !== undefined) throw new AdminApiError(400, "INVALID_INVENTORY_TRANSACTION_FIELD", `${field} is generated or reserved for a later task association.`);
+  for (const field of ["id", "itemId", "operatorId", "occurredAt", "balanceBefore", "balanceAfter"]) {
+    if (body[field] !== undefined) throw new AdminApiError(400, "INVALID_INVENTORY_TRANSACTION_FIELD", `${field} is generated by the server.`);
   }
   const transactionType = requireText(body.transactionType, "transactionType", 16).toUpperCase();
   if (!INVENTORY_TRANSACTION_TYPES.includes(transactionType as InventoryTransactionType)) {
     throw new AdminApiError(400, "INVALID_INVENTORY_TRANSACTION_TYPE", "Unsupported inventory transaction type.");
   }
+  const taskId = body.taskId === undefined || body.taskId === null || body.taskId === "" ? null : requireId(String(body.taskId));
+  if (taskId !== null && transactionType !== "OUTBOUND") {
+    throw new AdminApiError(400, "INVALID_INVENTORY_TASK_LINK", "Only OUTBOUND inventory usage can link an experiment task.");
+  }
   return {
     transaction_type: transactionType,
     quantity: parseQuantity(body.quantity),
+    task_id: taskId,
     remark: body.remark === undefined || body.remark === null || body.remark === "" ? null : requireText(body.remark, "remark", 2000),
   };
 }
@@ -184,6 +235,22 @@ export async function loadInventoryTransactions(supabase: SupabaseClient<Databas
   const { data, error } = await supabase.from("inventory_transaction").select(INVENTORY_TRANSACTION_FIELDS).eq("item_id", id).order("occurred_at", { ascending: false }).order("id", { ascending: false });
   if (error) throw new AdminApiError(500, "INVENTORY_TRANSACTION_LOOKUP_FAILED", "Unable to read inventory transactions.");
   return ((data ?? []) as unknown as InventoryTransactionRow[]).map(serializeTransaction);
+}
+
+export async function loadInventoryAlerts(supabase: SupabaseClient<Database>, days = 30) {
+  if (!Number.isSafeInteger(days) || days < 0 || days > 365) {
+    throw new AdminApiError(400, "INVALID_INVENTORY_ALERT_WINDOW", "days must be between 0 and 365.");
+  }
+  const { data, error } = await supabase.rpc("get_inventory_alerts", { _days: days });
+  if (error) throw new AdminApiError(500, "INVENTORY_ALERT_LOOKUP_FAILED", "Unable to read inventory alerts.");
+  const rows = Array.isArray(data) ? data as Record<string, unknown>[] : [];
+  return rows.map(serializeAlert).sort((left, right) => {
+    const severity = { CRITICAL: 0, WARNING: 1 } as Record<string, number>;
+    return (severity[left.severity] ?? 2) - (severity[right.severity] ?? 2)
+      || (left.daysUntilExpiry ?? 9999) - (right.daysUntilExpiry ?? 9999)
+      || left.itemCode.localeCompare(right.itemCode)
+      || left.alertType.localeCompare(right.alertType);
+  });
 }
 
 export async function createInventoryItem(supabase: SupabaseClient<Database>, bodyValue: unknown) {

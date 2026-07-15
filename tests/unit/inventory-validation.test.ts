@@ -26,8 +26,10 @@ describe("inventory validation", () => {
     expect(buildInventoryTransactionPayload({ transactionType: " inbound ", quantity: "10.25", remark: " received " })).toEqual({
       transaction_type: "INBOUND",
       quantity: 10.25,
+      task_id: null,
       remark: "received",
     });
+    expect(buildInventoryTransactionPayload({ transactionType: "OUTBOUND", quantity: 1, taskId: "42" })).toMatchObject({ transaction_type: "OUTBOUND", task_id: 42 });
     expect(() => buildInventoryTransactionPayload({ transactionType: "OUTBOUND", quantity: 0 })).toThrowError(AdminApiError);
     expect(() => buildInventoryTransactionPayload({ transactionType: "TRANSFER", quantity: 1 })).toThrowError(AdminApiError);
     expect(() => buildInventoryTransactionPayload({ transactionType: "RETURN", quantity: 1, taskId: 42 })).toThrowError(AdminApiError);

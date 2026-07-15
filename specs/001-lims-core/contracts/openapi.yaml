@@ -925,6 +925,19 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/Conflict' }
+  /inventory/alerts:
+    get:
+      tags: [Inventory]
+      summary: 查询库存和有效期提醒
+      operationId: listInventoryAlerts
+      parameters:
+        - in: query
+          name: days
+          schema: { type: integer, minimum: 0, maximum: 365, default: 30 }
+      responses:
+        '200': { description: 查询成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseInventoryAlerts' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
   /inventory/items:
     get:
       tags: [Inventory]
@@ -1949,6 +1962,7 @@ components:
         expiryDate: { type: string, format: date, nullable: true }
         storageCondition: { type: string, maxLength: 255, nullable: true }
         location: { type: string, maxLength: 128, nullable: true }
+        lowStockThreshold: { type: number, minimum: 0, maximum: 999999999999 }
     InventoryItemUpdateRequest:
       type: object
       properties:
@@ -1961,12 +1975,14 @@ components:
         storageCondition: { type: string, maxLength: 255, nullable: true }
         location: { type: string, maxLength: 128, nullable: true }
         status: { type: string, enum: [ACTIVE, INACTIVE] }
+        lowStockThreshold: { type: number, minimum: 0, maximum: 999999999999 }
     InventoryTransactionRequest:
       type: object
       required: [transactionType, quantity]
       properties:
         transactionType: { type: string, enum: [INBOUND, OUTBOUND, RETURN, SCRAP] }
         quantity: { type: number, exclusiveMinimum: 0 }
+        taskId: { type: integer, format: int64, description: 仅 OUTBOUND 领用记录可关联未归档实验任务 }
         remark: { type: string, maxLength: 2000, nullable: true }
     InventoryItem:
       type: object
@@ -1983,6 +1999,7 @@ components:
         storageCondition: { type: string, nullable: true }
         location: { type: string, nullable: true }
         status: { type: string }
+        lowStockThreshold: { type: number, minimum: 0 }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
     InventoryTransaction:
@@ -1990,6 +2007,7 @@ components:
       properties:
         id: { type: integer, format: int64 }
         itemId: { type: integer, format: int64 }
+        taskId: { type: integer, format: int64, nullable: true }
         transactionType: { type: string }
         quantity: { type: number, exclusiveMinimum: 0 }
         operatorId: { type: string, format: uuid }
@@ -2022,6 +2040,27 @@ components:
         code: { type: string }
         message: { type: string }
         data: { type: array, items: { $ref: '#/components/schemas/InventoryTransaction' } }
+        traceId: { type: string }
+    InventoryAlert:
+      type: object
+      properties:
+        itemId: { type: integer, format: int64 }
+        itemCode: { type: string }
+        itemName: { type: string }
+        alertType: { type: string, enum: [LOW_STOCK, EXPIRING, EXPIRED] }
+        severity: { type: string, enum: [WARNING, CRITICAL] }
+        quantity: { type: number }
+        lowStockThreshold: { type: number }
+        expiryDate: { type: string, format: date, nullable: true }
+        daysUntilExpiry: { type: integer, nullable: true }
+        unit: { type: string }
+        location: { type: string, nullable: true }
+    ApiResponseInventoryAlerts:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { type: array, items: { $ref: '#/components/schemas/InventoryAlert' } }
         traceId: { type: string }
     SampleCreateRequest:
       type: object

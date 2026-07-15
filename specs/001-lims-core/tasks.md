@@ -132,7 +132,12 @@
   - [x] T-403C [S] 实现库存服务/API（Files：`src/lib/server/inventory.ts`、`src/app/api/v1/inventory`；Verify：字段校验、主档查询、变动历史和权限）
   - [x] T-403D [P] 实现试剂耗材主档和变动页面（Files：`src/components/inventory`、`src/app/inventory`；Depends：T-403C；Verify：生产构建和未认证 E2E）
   - [x] T-403E [S] 完成远程集成、对抗性审查和一致性门禁（Depends：T-403B～D；Verify：临时账号/数据清理、全量质量门禁；Review：`REV-INVENTORY-MANAGEMENT-001`）
-- [ ] T-404 实现库存和有效期提醒（Spec：FR-INVENTORY-005～006）
+- [x] T-404 实现库存和有效期提醒（Spec：FR-INVENTORY-005～006；设计：DES-INVENTORY-ALERTS-001）
+  - [x] T-404A [S] 锁定低库存阈值、有效期窗口、提醒视图和 OUTBOUND-任务关联边界（Files：`specs/001-lims-core/design-inventory-alerts.md`、`data-model.md`、`api-contract.md`、`plan.md`；Verify：明确停用排除、过期包含和任务状态边界）
+  - [x] T-404B [S] 实现提醒字段、提醒查询 RPC、任务关联校验和审计扩展（Files：`supabase/migrations`、`src/types/database.ts`；Verify：窗口边界、任务权限、并发扣减和直接写入拒绝）
+  - [x] T-404C [S] 实现提醒/阈值/任务关联服务与 API（Files：`src/lib/server/inventory.ts`、`src/app/api/v1/inventory`；Verify：提醒排序、字段校验和权限）
+  - [x] T-404D [P] 实现提醒摘要和任务关联交互页面（Files：`src/components/inventory`、`src/app/inventory`；Depends：T-404C；Verify：生产构建和未认证 E2E）
+  - [x] T-404E [S] 完成远程集成、对抗性审查和一致性门禁（Depends：T-404B～D；Verify：临时账号/任务/库存清理、全量质量门禁；Review：`REV-INVENTORY-ALERTS-001`）
 - [ ] T-405 实现设施、环境记录和阈值提醒（Spec：FR-ENV-001～005）
 - [ ] T-406 编写资源管理测试（Spec：AC-RESOURCE-001）
 

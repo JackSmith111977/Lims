@@ -148,7 +148,12 @@
 
 ## 6. 追溯、统计与交付
 
-- [ ] T-501 实现认证和关键业务操作日志（Spec：FR-AUDIT-001～004）
+- [x] T-501 实现认证和关键业务操作日志（Spec：FR-AUDIT-001～004）
+  - [x] T-501A [S] 锁定认证事件、既有审计表复用、服务端写入和 `audit.read` 查询边界（Files：`specs/001-lims-core/design-audit-logging.md`、`plan.md`；Verify：不记录密码/令牌且登录失败可追踪）
+  - [x] T-501B [S] 实现认证审计适配器和登录/退出 Route Handler（Files：`src/lib/server/audit.ts`、`src/app/api/v1/auth`；Verify：成功、失败、停用拦截、退出和审计写入失败）
+  - [x] T-501C [S] 实现日志查询服务和 `audit.read` API（Files：`src/lib/server/audit-data.ts`、`src/app/api/v1/audit-logs`；Verify：过滤、排序、分页上限和越权）
+  - [x] T-501D [P] 实现日志查询页面并接入登录/退出交互（Files：`src/app/admin/audit`、`src/components/admin`、`src/app/login`、`src/components/auth`；Depends：T-501B～C；Verify：无敏感字段展示、未认证 E2E）
+  - [x] T-501E [S] 完成远程审计集成、对抗性审查和一致性门禁（Depends：T-501B～D；Verify：认证事件/查询权限/临时清理/全量质量门禁；Review：`REV-AUDIT-LOGGING-001`）
 - [ ] T-502 实现报告到样品、任务、数据和审核的追溯（Spec：FR-AUDIT-005、AC-AUDIT-001）
 - [ ] T-503 实现样品、任务、审核和库存统计（Spec：FR-DASH-001～005）
 - [ ] T-504 编写数据库备份和恢复说明（Spec：FR-AUDIT-006、NFR-BACKUP-001）

@@ -70,6 +70,10 @@ HTTP 状态建议：`400` 参数错误、`401` 未认证、`403` 无权限、`40
 | GET | `/auth/me` | 登录用户 | `FR-AUTH-002` |
 | PUT | `/auth/password` | 登录用户 | `FR-AUTH-007` |
 
+`POST /auth/login` 由服务端完成 Supabase SSR 登录，并在成功、错误密码和停用用户拦截时分别写入 `LOGIN_SUCCESS`、`LOGIN_FAILURE` 或 `LOGIN_BLOCKED` 审计事件；请求体中的密码、令牌和完整请求头不得进入日志。若审计写入失败，登录不得返回成功。
+
+`POST /auth/logout` 先记录当前用户的 `LOGOUT` 事件，再清理会话；未登录请求返回 `401`。
+
 ## 3. 基础数据接口
 
 | 方法 | 路径 | 角色 | 需求 |
@@ -204,6 +208,8 @@ HTTP 状态建议：`400` 参数错误、`401` 未认证、`403` 无权限、`40
 | GET | `/dashboard/inventory-alerts` | 管理员 | `FR-DASH-004` |
 | GET | `/audit-logs` | 系统管理员、授权管理员 | `FR-AUDIT-001～004` |
 | GET | `/trace/{objectType}/{id}` | 按权限 | `FR-AUDIT-005` |
+
+`GET /audit-logs` 需要 `audit.read` 权限，支持 `objectType`、`action`、`operatorId`、`from`、`to` 和 `limit`（默认 100，最大 200）筛选，按 `occurredAt desc, id desc` 返回只读日志。
 
 ## 8. 状态冲突
 

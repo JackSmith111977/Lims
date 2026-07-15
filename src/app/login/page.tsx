@@ -3,8 +3,6 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { createClient } from "@/lib/supabase/client";
-
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -17,14 +15,14 @@ export default function LoginPage() {
     setError(null);
     setIsSubmitting(true);
 
-    const supabase = createClient();
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
+    const response = await fetch("/api/v1/auth/login", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ email, password }),
     });
 
-    if (signInError) {
-      setError("登录失败，请检查账号和密码。");
+    if (!response.ok) {
+      setError(response.status === 503 ? "登录服务暂时不可用，请稍后重试。" : "登录失败，请检查账号和密码。");
       setIsSubmitting(false);
       return;
     }

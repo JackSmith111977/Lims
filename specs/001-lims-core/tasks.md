@@ -144,7 +144,7 @@
   - [x] T-405C [S] 实现环境阈值/记录/提醒服务与 API（Files：`src/lib/server/environment.ts`、`src/app/api/v1/environment`；Verify：过滤、提醒排序、字段校验和权限）
   - [x] T-405D [P] 实现实验室环境记录和提醒页面（Files：`src/components/environment`、`src/app/environment`；Depends：T-405C；Verify：生产构建和未认证 E2E）
   - [x] T-405E [S] 完成远程集成、对抗性审查和一致性门禁（Depends：T-405B～D；Verify：临时实验室/阈值/记录清理、全量质量门禁；Review：`REV-ENVIRONMENT-MONITORING-001`）
-- [ ] T-406 编写资源管理测试（Spec：AC-RESOURCE-001）
+- [x] T-406 编写资源管理测试（Spec：AC-RESOURCE-001；Verify：`npm run test:resource-integration` 串行执行设备和试剂耗材远程验收，并自动清理临时资源；Review：`REV-RESOURCE-MANAGEMENT-001`）
 
 ## 6. 追溯、统计与交付
 

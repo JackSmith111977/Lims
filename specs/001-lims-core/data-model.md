@@ -193,9 +193,15 @@
 
 ### 6.2 `experiment_report`
 
-`id`、`report_code`、`task_id`、`version_no`、`status`、`storage_path`、`generated_by(UUID)`、`generated_at(TIMESTAMPTZ)`、`published_at(TIMESTAMPTZ)`、`archived_at(TIMESTAMPTZ)`。
+`id`、`report_code`、`task_id`、`version_no`、`status`、`report_payload(JSONB)`、`storage_path`、`generated_by(UUID)`、`generated_at(TIMESTAMPTZ)`、`published_at(TIMESTAMPTZ)`、`archived_at(TIMESTAMPTZ)`。
 
-约束：`report_code + version_no` 唯一；只有审核通过的任务可以生成正式报告；报告发布后生成新版本而不是覆盖旧版本。
+约束：状态为 DRAFT/REVIEW/PUBLISHED/ARCHIVED；`report_code + version_no` 唯一；只有审核通过的任务可以生成报告；报告快照和身份字段不可变；报告发布后生成新版本而不是覆盖旧版本。状态变化、报告历史和审计由事务函数完成。详细边界见 [`design-reporting.md`](design-reporting.md)。
+
+### 6.3 `experiment_report_history`
+
+`id`、`report_id`、`from_status`、`to_status`、`operator_id(UUID)`、`remark`、`occurred_at(TIMESTAMPTZ)`。
+
+约束：历史记录只允许追加；每次报告状态变化必须同时写入历史和审计。
 
 ## 7. 设备、库存和环境表
 

@@ -540,6 +540,7 @@ export type Database = {
           generated_by: string
           id: number
           published_at: string | null
+          report_payload: Json
           report_code: string
           status: string
           storage_path: string | null
@@ -552,6 +553,7 @@ export type Database = {
           generated_by: string
           id?: number
           published_at?: string | null
+          report_payload?: Json
           report_code: string
           status?: string
           storage_path?: string | null
@@ -564,6 +566,7 @@ export type Database = {
           generated_by?: string
           id?: number
           published_at?: string | null
+          report_payload?: Json
           report_code?: string
           status?: string
           storage_path?: string | null
@@ -583,6 +586,51 @@ export type Database = {
             columns: ["task_id"]
             isOneToOne: false
             referencedRelation: "experiment_task"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      experiment_report_history: {
+        Row: {
+          from_status: string | null
+          id: number
+          occurred_at: string
+          operator_id: string
+          report_id: number
+          remark: string | null
+          to_status: string
+        }
+        Insert: {
+          from_status?: string | null
+          id?: number
+          occurred_at?: string
+          operator_id: string
+          report_id: number
+          remark?: string | null
+          to_status: string
+        }
+        Update: {
+          from_status?: string | null
+          id?: number
+          occurred_at?: string
+          operator_id?: string
+          report_id?: number
+          remark?: string | null
+          to_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "experiment_report_history_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "experiment_report_history_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "experiment_report"
             referencedColumns: ["id"]
           },
         ]
@@ -1961,6 +2009,22 @@ export type Database = {
           _result: string
           _task_id: number
         }
+        Returns: Json
+      }
+      generate_report: {
+        Args: { _task_id: number }
+        Returns: Json
+      }
+      submit_report_for_review: {
+        Args: { _remark?: string | null; _report_id: number }
+        Returns: Json
+      }
+      publish_report: {
+        Args: { _remark?: string | null; _report_id: number }
+        Returns: Json
+      }
+      archive_report: {
+        Args: { _remark?: string | null; _report_id: number }
         Returns: Json
       }
       set_role_permissions: {

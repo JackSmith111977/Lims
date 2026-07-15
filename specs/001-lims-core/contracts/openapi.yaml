@@ -1124,6 +1124,122 @@ paths:
                 $ref: '#/components/schemas/ApiResponseReport'
         '409':
           $ref: '#/components/responses/Conflict'
+  /reports:
+    get:
+      tags: [Reports]
+      summary: 查询实验报告
+      operationId: listReports
+      responses:
+        '200':
+          description: 查询成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseReports'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /reports/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Reports]
+      summary: 查询报告详情
+      operationId: getReport
+      responses:
+        '200':
+          description: 查询成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseReport'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /reports/{id}/export:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Reports]
+      summary: 导出报告快照
+      operationId: exportReport
+      responses:
+        '200':
+          description: JSON 报告文件
+          content:
+            application/json:
+              schema: { type: object, additionalProperties: true }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /reports/{id}/submit-review:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [Reports]
+      summary: 提交报告审核
+      operationId: submitReportForReview
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReportTransitionRequest' }
+      responses:
+        '200':
+          description: 提交成功
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiResponseReport' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /reports/{id}/publish:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [Reports]
+      summary: 发布报告
+      operationId: publishReport
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReportTransitionRequest' }
+      responses:
+        '200':
+          description: 发布成功
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiResponseReport' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /reports/{id}/archive:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [Reports]
+      summary: 归档报告
+      operationId: archiveReport
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReportTransitionRequest' }
+      responses:
+        '200':
+          description: 归档成功
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiResponseReport' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
   /dashboard/overview:
     get:
       tags: [Dashboard]
@@ -1909,7 +2025,28 @@ components:
         reportCode: { type: string }
         taskId: { type: integer, format: int64 }
         versionNo: { type: integer }
-        status: { type: string }
+        status: { type: string, enum: [DRAFT, REVIEW, PUBLISHED, ARCHIVED] }
+        reportPayload: { type: object, additionalProperties: true }
+        storagePath: { type: string, nullable: true }
+        generatedBy: { type: string, format: uuid }
+        generatedAt: { type: string, format: date-time }
+        publishedAt: { type: string, format: date-time, nullable: true }
+        archivedAt: { type: string, format: date-time, nullable: true }
+        history: { type: array, items: { $ref: '#/components/schemas/ReportHistory' } }
+    ReportHistory:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        reportId: { type: integer, format: int64 }
+        fromStatus: { type: string, nullable: true }
+        toStatus: { type: string }
+        operatorId: { type: string, format: uuid }
+        remark: { type: string, nullable: true }
+        occurredAt: { type: string, format: date-time }
+    ReportTransitionRequest:
+      type: object
+      properties:
+        remark: { type: string, maxLength: 1000 }
     Dashboard:
       type: object
       properties:
@@ -2052,6 +2189,13 @@ components:
         code: { type: string }
         message: { type: string }
         data: { $ref: '#/components/schemas/Report' }
+        traceId: { type: string }
+    ApiResponseReports:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { type: array, items: { $ref: '#/components/schemas/Report' } }
         traceId: { type: string }
     ApiResponseDashboard:
       type: object

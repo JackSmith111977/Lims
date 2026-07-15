@@ -7,7 +7,7 @@
 | GB/T 40343—2021：数据获取 | `FR-DATA-001～005` | 手工录入、来源、时间和历史查询；[`design-experiment-data.md`](design-experiment-data.md) | T-302、`AC-DATA-001` |
 | GB/T 40343—2021：数据处理 | `FR-DATA-004`、`FR-DATA-007～008` | 原始/处理数据分离、版本化规则处理和异常；[`design-experiment-processing.md`](design-experiment-processing.md) | T-302、T-303、`AC-DATA-001`、`REV-EXPERIMENT-PROCESSING-001` |
 | GB/T 40343—2021：数据审核 | `FR-REVIEW-001～006` | 审核、退回、补充和审核日志；[`design-result-review.md`](design-result-review.md) | T-304、`AC-REVIEW-001`、`REV-RESULT-REVIEW-001` |
-| GB/T 40343—2021：报告生成 | `FR-REPORT-001～007` | 报告生成、版本、发布和归档 | `AC-REPORT-001` |
+| GB/T 40343—2021：报告生成 | `FR-REPORT-001～006` | 报告快照、版本、状态、发布、归档和导出；[`design-reporting.md`](design-reporting.md) | T-305、`AC-REPORT-001`、`REV-REPORTING-001` |
 | GB/T 40343—2021：人员管理 | `FR-PER-001～004` | `sys_user` 扩展、岗位字典、技能/资质/培训记录和任务状态摘要；[`design-personnel.md`](design-personnel.md) | T-201 集成测试、提醒场景和 `REV-PERSONNEL-001` |
 | GB/T 40343—2021：设备管理 | `FR-EQUIP-001～007` | 设备档案、维护、校准和接口预留 | `AC-RESOURCE-001` |
 | GB/T 40343—2021：样品管理 | `FR-SAMPLE-001～008` | 唯一编号、流转、处理和附件 | `AC-SAMPLE-001～002` |

@@ -102,7 +102,12 @@
   - [x] T-304C [S] 实现审核服务/API 和错误模型（Files：`src/lib/server/result-review.ts`、`src/app/api/v1/tasks/[id]/reviews`；Verify：字段校验、权限、状态冲突和事务响应）
   - [x] T-304D [P] 实现待审核列表、结果上下文和审核操作页面（Files：`src/app/reviews`、`src/components/result-review`、`src/app/dashboard/page.tsx`；Depends：T-304C；Verify：生产构建、未认证 E2E 和提交后刷新；E2E 9/9）
   - [x] T-304E [S] 完成远程集成、对抗性审查和一致性门禁（Depends：T-304B～D；Verify：临时账号/数据清理、全量质量门禁；Review：`REV-RESULT-REVIEW-001`；集成检查、清理计数和远程迁移核对均通过）
-- [ ] T-305 实现报告生成、状态和版本（Spec：FR-REPORT-001～006）
+- [x] T-305 实现报告生成、状态和版本（Spec：FR-REPORT-001～006；设计：DES-REPORTING-001）
+  - [x] T-305A [S] 锁定报告快照、版本状态机、权限、导出和审计边界（Files：`specs/001-lims-core/design-reporting.md`、`data-model.md`、`api-contract.md`、`contracts/openapi.yaml`、`plan.md`；Verify：设计覆盖只允许审核通过任务生成、版本递增、发布归档和不可变快照）
+  - [x] T-305B [S] 实现报告快照、版本/状态约束、历史、RLS 和事务函数迁移（Files：`supabase/migrations`、`src/types/database.ts`；Verify：越权、并发、直接写入和状态机负向测试；远程迁移 `202607150014` 已应用）
+  - [x] T-305C [S] 实现报告服务/API、列表详情和 JSON 导出（Files：`src/lib/server/reporting.ts`、`src/app/api/v1/tasks/[id]/reports`、`src/app/api/v1/reports`；Verify：字段校验、快照一致性、版本递增和错误模型）
+  - [x] T-305D [P] 实现报告列表、详情、状态操作和导出页面（Files：`src/app/reports`、`src/components/reporting`、`src/app/dashboard/page.tsx`；Depends：T-305C；Verify：生产构建、未认证 E2E 和状态刷新；E2E 10/10）
+  - [x] T-305E [S] 完成远程集成、对抗性审查和一致性门禁（Depends：T-305B～D；Verify：临时账号/数据清理、全量质量门禁；Review：`REV-REPORTING-001`；集成检查、清理计数和远程迁移核对均通过）
 - [ ] T-306 编写数据、审核和报告测试（Spec：AC-DATA-001、AC-REVIEW-001、AC-REPORT-001）
 
 ## 5. 实验室资源

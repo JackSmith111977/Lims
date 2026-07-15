@@ -14,6 +14,7 @@
     "test:data-integration": "node scripts/integration/experiment-data.mjs",
     "test:processing-integration": "node scripts/integration/experiment-processing.mjs",
     "test:review-integration": "node scripts/integration/result-review.mjs",
+    "test:report-integration": "node scripts/integration/reporting.mjs",
     "test:e2e": "playwright test --pass-with-no-tests",
     "supabase:status": "supabase status",
     "supabase:migrations": "supabase migration list",

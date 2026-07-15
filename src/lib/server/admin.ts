@@ -25,7 +25,7 @@ export type AdminContext = {
 };
 
 export async function requireAdminPermission(
-  permission: Extract<PermissionCode, "auth.user.manage" | "auth.role.manage" | "settings.manage" | "resource.read" | "resource.manage" | "project.read" | "project.manage" | "task.read" | "task.manage" | "task.assign" | "sample.read" | "sample.manage" | "data.read" | "data.manage" | "review.read" | "review.manage">,
+  permission: Extract<PermissionCode, "auth.user.manage" | "auth.role.manage" | "settings.manage" | "resource.read" | "resource.manage" | "project.read" | "project.manage" | "task.read" | "task.manage" | "task.assign" | "sample.read" | "sample.manage" | "data.read" | "data.manage" | "review.read" | "review.manage" | "report.read" | "report.manage" | "report.publish">,
 ): Promise<AdminContext> {
   const supabase = await createClient();
   const {
@@ -132,7 +132,7 @@ export function parseStringArray(value: unknown, field: string) {
 
 export async function recordAudit(
   supabase: SupabaseClient<Database>,
-  permission: "auth.user.manage" | "auth.role.manage" | "settings.manage" | "resource.manage" | "project.manage" | "task.manage" | "sample.manage" | "data.manage",
+  permission: "auth.user.manage" | "auth.role.manage" | "settings.manage" | "resource.manage" | "project.manage" | "task.manage" | "sample.manage" | "data.manage" | "report.manage" | "report.publish",
   objectType: string,
   objectId: string,
   action: string,

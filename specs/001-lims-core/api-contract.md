@@ -96,7 +96,12 @@ HTTP 状态建议：`400` 参数错误、`401` 未认证、`403` 无权限、`40
 | GET | `/instruments/{id}/maintenance` | `resource.read` | `FR-EQUIP-003～006` |
 | POST | `/instruments/{id}/maintenance` | `resource.manage` | `FR-EQUIP-003～004、006` |
 | GET | `/instruments/maintenance/reminders` | `resource.read` | `FR-EQUIP-005` |
-| GET/POST | `/inventory/items` | 实验室管理员 | `FR-INVENTORY-001～006` |
+| GET | `/inventory/items` | `resource.read` | `FR-INVENTORY-001～004` |
+| POST | `/inventory/items` | `resource.manage` | `FR-INVENTORY-001～004` |
+| GET | `/inventory/items/{id}` | `resource.read` | `FR-INVENTORY-001～004` |
+| PATCH | `/inventory/items/{id}` | `resource.manage` | `FR-INVENTORY-001～002、004` |
+| GET | `/inventory/items/{id}/transactions` | `resource.read` | `FR-INVENTORY-003～004` |
+| POST | `/inventory/items/{id}/transactions` | `resource.manage` | `FR-INVENTORY-003～004` |
 
 ## 4. 样品接口
 

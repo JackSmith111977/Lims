@@ -47,7 +47,8 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/data") ||
     request.nextUrl.pathname.startsWith("/reviews") ||
     request.nextUrl.pathname.startsWith("/reports") ||
-    request.nextUrl.pathname.startsWith("/instruments");
+    request.nextUrl.pathname.startsWith("/instruments") ||
+    request.nextUrl.pathname.startsWith("/inventory");
 
   if (!user && isProtectedPage) {
     const redirectUrl = request.nextUrl.clone();

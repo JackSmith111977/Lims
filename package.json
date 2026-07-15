@@ -16,6 +16,7 @@
     "test:review-integration": "node scripts/integration/result-review.mjs",
     "test:report-integration": "node scripts/integration/reporting.mjs",
     "test:instrument-integration": "node scripts/integration/instrument-registry.mjs",
+    "test:inventory-integration": "node scripts/integration/inventory-management.mjs",
     "test:e2e": "playwright test --pass-with-no-tests",
     "supabase:status": "supabase status",
     "supabase:migrations": "supabase migration list",

@@ -155,6 +155,11 @@ export default async function DashboardPage() {
               设备档案
             </Link>
           ) : null}
+          {canReadInstruments ? (
+            <Link className="text-blue-600 hover:text-blue-700" href="/inventory">
+              试剂耗材
+            </Link>
+          ) : null}
         </div>
       </section>
     </main>

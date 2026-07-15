@@ -925,6 +925,93 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/Conflict' }
+  /inventory/items:
+    get:
+      tags: [Inventory]
+      summary: 查询试剂耗材主档
+      operationId: listInventoryItems
+      parameters:
+        - in: query
+          name: keyword
+          schema: { type: string }
+        - in: query
+          name: status
+          schema: { type: string, enum: [ACTIVE, INACTIVE, EXPIRED, DEPLETED] }
+      responses:
+        '200': { description: 查询成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseInventoryItems' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Inventory]
+      summary: 创建试剂耗材主档
+      operationId: createInventoryItem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/InventoryItemCreateRequest' }
+      responses:
+        '201': { description: 创建成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseInventoryItem' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /inventory/items/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Inventory]
+      summary: 查询试剂耗材详情
+      operationId: getInventoryItem
+      responses:
+        '200': { description: 查询成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseInventoryItem' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Inventory]
+      summary: 修改试剂耗材非余额字段
+      operationId: updateInventoryItem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/InventoryItemUpdateRequest' }
+      responses:
+        '200': { description: 修改成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseInventoryItem' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /inventory/items/{id}/transactions:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Inventory]
+      summary: 查询库存变动历史
+      operationId: listInventoryTransactions
+      responses:
+        '200': { description: 查询成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseInventoryTransactions' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    post:
+      tags: [Inventory]
+      summary: 追加库存变动
+      operationId: createInventoryTransaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/InventoryTransactionRequest' }
+      responses:
+        '201': { description: 创建成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseInventoryTransaction' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
   /tasks:
     get:
       tags: [Tasks]
@@ -1848,6 +1935,93 @@ components:
         code: { type: string }
         message: { type: string }
         data: { type: array, items: { $ref: '#/components/schemas/InstrumentMaintenance' } }
+        traceId: { type: string }
+    InventoryItemCreateRequest:
+      type: object
+      required: [itemCode, type, name, unit]
+      properties:
+        itemCode: { type: string, maxLength: 32 }
+        type: { type: string, maxLength: 32 }
+        name: { type: string, maxLength: 128 }
+        batchNo: { type: string, maxLength: 64, nullable: true }
+        manufacturer: { type: string, maxLength: 128, nullable: true }
+        unit: { type: string, maxLength: 16 }
+        expiryDate: { type: string, format: date, nullable: true }
+        storageCondition: { type: string, maxLength: 255, nullable: true }
+        location: { type: string, maxLength: 128, nullable: true }
+    InventoryItemUpdateRequest:
+      type: object
+      properties:
+        type: { type: string, maxLength: 32 }
+        name: { type: string, maxLength: 128 }
+        batchNo: { type: string, maxLength: 64, nullable: true }
+        manufacturer: { type: string, maxLength: 128, nullable: true }
+        unit: { type: string, maxLength: 16 }
+        expiryDate: { type: string, format: date, nullable: true }
+        storageCondition: { type: string, maxLength: 255, nullable: true }
+        location: { type: string, maxLength: 128, nullable: true }
+        status: { type: string, enum: [ACTIVE, INACTIVE] }
+    InventoryTransactionRequest:
+      type: object
+      required: [transactionType, quantity]
+      properties:
+        transactionType: { type: string, enum: [INBOUND, OUTBOUND, RETURN, SCRAP] }
+        quantity: { type: number, exclusiveMinimum: 0 }
+        remark: { type: string, maxLength: 2000, nullable: true }
+    InventoryItem:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        itemCode: { type: string }
+        type: { type: string }
+        name: { type: string }
+        batchNo: { type: string, nullable: true }
+        manufacturer: { type: string, nullable: true }
+        quantity: { type: number, minimum: 0 }
+        unit: { type: string }
+        expiryDate: { type: string, format: date, nullable: true }
+        storageCondition: { type: string, nullable: true }
+        location: { type: string, nullable: true }
+        status: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    InventoryTransaction:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        itemId: { type: integer, format: int64 }
+        transactionType: { type: string }
+        quantity: { type: number, exclusiveMinimum: 0 }
+        operatorId: { type: string, format: uuid }
+        occurredAt: { type: string, format: date-time }
+        remark: { type: string, nullable: true }
+    ApiResponseInventoryItem:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { $ref: '#/components/schemas/InventoryItem' }
+        traceId: { type: string }
+    ApiResponseInventoryItems:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { type: array, items: { $ref: '#/components/schemas/InventoryItem' } }
+        traceId: { type: string }
+    ApiResponseInventoryTransaction:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { $ref: '#/components/schemas/InventoryTransaction' }
+        traceId: { type: string }
+    ApiResponseInventoryTransactions:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { type: array, items: { $ref: '#/components/schemas/InventoryTransaction' } }
         traceId: { type: string }
     SampleCreateRequest:
       type: object

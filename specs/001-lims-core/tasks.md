@@ -126,7 +126,12 @@
   - [x] T-402C [S] 实现维护服务/API（Files：`src/lib/server/instrument-maintenance.ts`、`src/app/api/v1/instruments/[id]/maintenance`；Verify：字段校验、历史查询、到期提醒和权限）
   - [x] T-402D [P] 实现设备维护/校准历史和提醒页面（Files：`src/components/instruments`、`src/app/instruments`；Depends：T-402C；Verify：生产构建和未认证 E2E）
   - [x] T-402E [S] 完成远程集成、对抗性审查和一致性门禁（Depends：T-402B～D；Verify：临时账号/数据清理、全量质量门禁；Review：`REV-INSTRUMENT-MAINTENANCE-001`）
-- [ ] T-403 实现试剂耗材和库存变动（Spec：FR-INVENTORY-001～004）
+- [x] T-403 实现试剂耗材和库存变动（Spec：FR-INVENTORY-001～004；设计：DES-INVENTORY-MANAGEMENT-001）
+  - [x] T-403A [S] 锁定主档字段、余额投影、变动方向、权限和 T-404 边界（Files：`specs/001-lims-core/design-inventory-management.md`、`data-model.md`、`api-contract.md`、`plan.md`；Verify：设计明确不允许直接改余额，且覆盖入库/领用/退库/报废）
+  - [x] T-403B [S] 实现库存字段约束、追加 RLS、余额事务 RPC 和审计（Files：`supabase/migrations`、`src/types/database.ts`；Verify：并发余额、库存不足、不可变明细和直接写入拒绝）
+  - [x] T-403C [S] 实现库存服务/API（Files：`src/lib/server/inventory.ts`、`src/app/api/v1/inventory`；Verify：字段校验、主档查询、变动历史和权限）
+  - [x] T-403D [P] 实现试剂耗材主档和变动页面（Files：`src/components/inventory`、`src/app/inventory`；Depends：T-403C；Verify：生产构建和未认证 E2E）
+  - [x] T-403E [S] 完成远程集成、对抗性审查和一致性门禁（Depends：T-403B～D；Verify：临时账号/数据清理、全量质量门禁；Review：`REV-INVENTORY-MANAGEMENT-001`）
 - [ ] T-404 实现库存和有效期提醒（Spec：FR-INVENTORY-005～006）
 - [ ] T-405 实现设施、环境记录和阈值提醒（Spec：FR-ENV-001～005）
 - [ ] T-406 编写资源管理测试（Spec：AC-RESOURCE-001）

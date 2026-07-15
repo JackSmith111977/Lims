@@ -2042,6 +2042,18 @@ export type Database = {
         Args: { _instrument_id: number; _payload: Json }
         Returns: Json
       }
+      create_inventory_item: {
+        Args: { _payload: Json }
+        Returns: Json
+      }
+      update_inventory_item: {
+        Args: { _item_id: number; _payload: Json }
+        Returns: Json
+      }
+      record_inventory_transaction: {
+        Args: { _item_id: number; _payload: Json }
+        Returns: Json
+      }
       set_role_permissions: {
         Args: { _permission_codes: string[]; _role_id: number }
         Returns: undefined

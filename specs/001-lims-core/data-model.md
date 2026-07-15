@@ -221,13 +221,13 @@
 
 `id`、`item_code`、`type`、`name`、`batch_no`、`manufacturer`、`quantity`、`unit`、`expiry_date`、`storage_condition`、`location`、`status`。
 
-约束：库存不得小于 0；耗用数量不得超过可用库存；批号和有效期用于追溯。
+约束：库存余额由服务端库存变动事务维护，新建主档余额为 0，客户端不得直接修改；库存不得小于 0；耗用/报废数量不得超过可用库存；批号和有效期用于追溯。详细边界见 [`design-inventory-management.md`](design-inventory-management.md)。
 
 ### 7.4 `inventory_transaction`
 
 `id`、`item_id`、`task_id`、`transaction_type`、`quantity`、`operator_id(UUID)`、`occurred_at(TIMESTAMPTZ)`、`remark`。
 
-库存数量由交易记录产生，禁止直接修改库存总量而不产生交易记录。库存写操作必须在服务端事务中完成。
+库存数量由交易记录产生，禁止直接修改库存总量而不产生交易记录。T-403 支持 INBOUND/OUTBOUND/RETURN/SCRAP，数量为正数且方向由类型决定；责任人、时间、余额和审计由服务端事务生成。库存写操作必须在服务端事务中完成。任务关联由 T-404 接入。
 
 ### 7.5 `environment_record`
 

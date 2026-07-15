@@ -938,6 +938,101 @@ paths:
         '200': { description: 查询成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseInventoryAlerts' } } } }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
+  /environment/thresholds:
+    get:
+      tags: [Environment]
+      summary: 查询环境阈值
+      operationId: listEnvironmentThresholds
+      parameters:
+        - in: query
+          name: laboratoryId
+          schema: { type: integer, format: int64 }
+      responses:
+        '200': { description: 查询成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseEnvironmentThresholds' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Environment]
+      summary: 创建环境阈值
+      operationId: createEnvironmentThreshold
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EnvironmentThresholdRequest' }
+      responses:
+        '201': { description: 创建成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseEnvironmentThreshold' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /environment/thresholds/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    patch:
+      tags: [Environment]
+      summary: 修改环境阈值
+      operationId: updateEnvironmentThreshold
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EnvironmentThresholdUpdateRequest' }
+      responses:
+        '200': { description: 修改成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseEnvironmentThreshold' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /environment/records:
+    get:
+      tags: [Environment]
+      summary: 查询环境采集记录
+      operationId: listEnvironmentRecords
+      parameters:
+        - in: query
+          name: laboratoryId
+          schema: { type: integer, format: int64 }
+        - in: query
+          name: metric
+          schema: { type: string }
+        - in: query
+          name: status
+          schema: { type: string, enum: [NORMAL, WARNING, EXCEEDED] }
+      responses:
+        '200': { description: 查询成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseEnvironmentRecords' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Environment]
+      summary: 追加环境采集记录
+      operationId: createEnvironmentRecord
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EnvironmentRecordRequest' }
+      responses:
+        '201': { description: 创建成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseEnvironmentRecord' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /environment/alerts:
+    get:
+      tags: [Environment]
+      summary: 查询环境超阈值提醒
+      operationId: listEnvironmentAlerts
+      parameters:
+        - in: query
+          name: days
+          schema: { type: integer, minimum: 0, maximum: 365, default: 30 }
+        - in: query
+          name: laboratoryId
+          schema: { type: integer, format: int64 }
+      responses:
+        '200': { description: 查询成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseEnvironmentAlerts' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
   /inventory/items:
     get:
       tags: [Inventory]
@@ -2061,6 +2156,100 @@ components:
         code: { type: string }
         message: { type: string }
         data: { type: array, items: { $ref: '#/components/schemas/InventoryAlert' } }
+        traceId: { type: string }
+    EnvironmentThresholdRequest:
+      type: object
+      required: [laboratoryId, metric, unit]
+      properties:
+        laboratoryId: { type: integer, format: int64 }
+        metric: { type: string, maxLength: 64 }
+        unit: { type: string, maxLength: 16 }
+        thresholdMin: { type: number, nullable: true, maximum: 999999999999 }
+        thresholdMax: { type: number, nullable: true, maximum: 999999999999 }
+        status: { type: string, enum: [ACTIVE, INACTIVE], default: ACTIVE }
+    EnvironmentThresholdUpdateRequest:
+      type: object
+      properties:
+        thresholdMin: { type: number, nullable: true, maximum: 999999999999 }
+        thresholdMax: { type: number, nullable: true, maximum: 999999999999 }
+        status: { type: string, enum: [ACTIVE, INACTIVE] }
+    EnvironmentThreshold:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        laboratoryId: { type: integer, format: int64 }
+        metric: { type: string }
+        unit: { type: string }
+        thresholdMin: { type: number, nullable: true }
+        thresholdMax: { type: number, nullable: true }
+        status: { type: string, enum: [ACTIVE, INACTIVE] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    EnvironmentRecordRequest:
+      type: object
+      required: [laboratoryId, metric, value, unit]
+      properties:
+        laboratoryId: { type: integer, format: int64 }
+        metric: { type: string, maxLength: 64 }
+        value: { type: number, maximum: 999999999999 }
+        unit: { type: string, maxLength: 16 }
+        sourceType: { type: string, enum: [MANUAL, SENSOR, API], default: MANUAL }
+        collectedAt: { type: string, format: date-time, nullable: true }
+    EnvironmentRecord:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        laboratoryId: { type: integer, format: int64 }
+        metric: { type: string }
+        value: { type: number }
+        unit: { type: string }
+        thresholdMin: { type: number, nullable: true }
+        thresholdMax: { type: number, nullable: true }
+        collectedAt: { type: string, format: date-time }
+        sourceType: { type: string, enum: [MANUAL, SENSOR, API] }
+        recordedBy: { type: string, format: uuid, nullable: true }
+        status: { type: string, enum: [NORMAL, WARNING, EXCEEDED] }
+    EnvironmentAlert:
+      allOf:
+        - $ref: '#/components/schemas/EnvironmentRecord'
+        - type: object
+          properties:
+            laboratoryCode: { type: string }
+            laboratoryName: { type: string }
+    ApiResponseEnvironmentThreshold:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { $ref: '#/components/schemas/EnvironmentThreshold' }
+        traceId: { type: string }
+    ApiResponseEnvironmentThresholds:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { type: array, items: { $ref: '#/components/schemas/EnvironmentThreshold' } }
+        traceId: { type: string }
+    ApiResponseEnvironmentRecord:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { $ref: '#/components/schemas/EnvironmentRecord' }
+        traceId: { type: string }
+    ApiResponseEnvironmentRecords:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { type: array, items: { $ref: '#/components/schemas/EnvironmentRecord' } }
+        traceId: { type: string }
+    ApiResponseEnvironmentAlerts:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { type: array, items: { $ref: '#/components/schemas/EnvironmentAlert' } }
         traceId: { type: string }
     SampleCreateRequest:
       type: object

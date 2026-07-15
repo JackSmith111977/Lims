@@ -184,6 +184,50 @@ export type Database = {
           },
         ]
       }
+      environment_threshold: {
+        Row: {
+          created_at: string
+          id: number
+          laboratory_id: number
+          metric: string
+          status: string
+          threshold_max: number | null
+          threshold_min: number | null
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          laboratory_id: number
+          metric: string
+          status?: string
+          threshold_max?: number | null
+          threshold_min?: number | null
+          unit: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          laboratory_id?: number
+          metric?: string
+          status?: string
+          threshold_max?: number | null
+          threshold_min?: number | null
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "environment_threshold_laboratory_id_fkey"
+            columns: ["laboratory_id"]
+            isOneToOne: false
+            referencedRelation: "lab_laboratory"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       experiment_data: {
         Row: {
           collected_at: string
@@ -2059,6 +2103,18 @@ export type Database = {
       }
       get_inventory_alerts: {
         Args: { _days?: number }
+        Returns: Json
+      }
+      save_environment_threshold: {
+        Args: { _payload: Json; _threshold_id: number }
+        Returns: Json
+      }
+      record_environment_reading: {
+        Args: { _payload: Json }
+        Returns: Json
+      }
+      get_environment_alerts: {
+        Args: { _days?: number; _laboratory_id?: number | null }
         Returns: Json
       }
       set_role_permissions: {

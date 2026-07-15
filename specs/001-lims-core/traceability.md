@@ -14,7 +14,7 @@
 | GB/T 40343—2021：库存提醒与资源关联 | `FR-INVENTORY-005～006` | 低库存/有效期实时提醒，以及 OUTBOUND 记录关联实验任务；[`design-inventory-alerts.md`](design-inventory-alerts.md)、migration `202607160018` | T-404、`AC-RESOURCE-001`、`REV-INVENTORY-ALERTS-001`、`test:inventory-alerts-integration`、`inventory-alert-validation.test.ts`、`inventory-access.spec.ts` |
 | GB/T 40343—2021：样品管理 | `FR-SAMPLE-001～008` | 唯一编号、流转、处理和附件 | `AC-SAMPLE-001～002` |
 | GB/T 40343—2021：方法管理 | `FR-METHOD-001～004` | 方法版本库、不可变版本引用、附件元数据和变更审计；[`design-method-versioning.md`](design-method-versioning.md) | T-301 集成测试、`REV-METHOD-VERSIONING-001` 和 `AC-DATA-001` |
-| GB/T 40343—2021：设施和环境管理 | `FR-ENV-001～006` | 环境记录、阈值提醒和接口扩展 | `AC-RESOURCE-001` |
+| GB/T 40343—2021：设施和环境管理 | `FR-ENV-001～006` | 复用实验室/区域主档，维护环境阈值、采集记录和超阈值提醒；真实传感器接口预留；[`design-environment-monitoring.md`](design-environment-monitoring.md) | T-105B、T-405、`AC-RESOURCE-001`、`REV-ENVIRONMENT-MONITORING-001`、`test:environment-integration`、`environment-validation.test.ts`、`environment-access.spec.ts` |
 | GB/T 40343—2021：用户管理和权限控制 | `FR-AUTH-001～007` | 认证、角色、权限和授权记录；[`design-auth-admin.md`](design-auth-admin.md) | `AC-AUTH-001`；`REV-AUTH-001` 正向/负向集成验收 |
 | GB/T 40343—2021：基础设置 | `FR-SETTING-001～003` | 实验室、部门、实验组、通用分类、计量单位和系统参数；[`design-settings.md`](design-settings.md) | T-105B 集成测试和设置管理审查 |
 | GB/T 40343—2021：任务登记 | `FR-TASK-001～002` | 科研项目、实验任务、有效方法引用和已有样品关联；[`design-task-registration.md`](design-task-registration.md) | T-202/T-206 集成测试和 `REV-TASK-REG-001` |

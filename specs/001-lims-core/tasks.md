@@ -138,7 +138,12 @@
   - [x] T-404C [S] 实现提醒/阈值/任务关联服务与 API（Files：`src/lib/server/inventory.ts`、`src/app/api/v1/inventory`；Verify：提醒排序、字段校验和权限）
   - [x] T-404D [P] 实现提醒摘要和任务关联交互页面（Files：`src/components/inventory`、`src/app/inventory`；Depends：T-404C；Verify：生产构建和未认证 E2E）
   - [x] T-404E [S] 完成远程集成、对抗性审查和一致性门禁（Depends：T-404B～D；Verify：临时账号/任务/库存清理、全量质量门禁；Review：`REV-INVENTORY-ALERTS-001`）
-- [ ] T-405 实现设施、环境记录和阈值提醒（Spec：FR-ENV-001～005）
+- [x] T-405 实现设施、环境记录和阈值提醒（Spec：FR-ENV-001～005）
+  - [x] T-405A [S] 锁定基础设施复用、阈值配置、环境记录快照和提醒边界（Files：`specs/001-lims-core/design-environment-monitoring.md`、`data-model.md`、`api-contract.md`、`plan.md`；Verify：明确复用实验室/区域主档且不接入真实传感器）
+  - [x] T-405B [S] 实现阈值配置、不可变环境记录、状态计算和审计 RPC（Files：`supabase/migrations`、`src/types/database.ts`；Verify：边界值、停用实验室、直接写入拒绝和快照一致性）
+  - [x] T-405C [S] 实现环境阈值/记录/提醒服务与 API（Files：`src/lib/server/environment.ts`、`src/app/api/v1/environment`；Verify：过滤、提醒排序、字段校验和权限）
+  - [x] T-405D [P] 实现实验室环境记录和提醒页面（Files：`src/components/environment`、`src/app/environment`；Depends：T-405C；Verify：生产构建和未认证 E2E）
+  - [x] T-405E [S] 完成远程集成、对抗性审查和一致性门禁（Depends：T-405B～D；Verify：临时实验室/阈值/记录清理、全量质量门禁；Review：`REV-ENVIRONMENT-MONITORING-001`）
 - [ ] T-406 编写资源管理测试（Spec：AC-RESOURCE-001）
 
 ## 6. 追溯、统计与交付

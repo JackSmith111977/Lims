@@ -104,6 +104,13 @@ HTTP 状态建议：`400` 参数错误、`401` 未认证、`403` 无权限、`40
 | POST | `/inventory/items/{id}/transactions` | `resource.manage` + `task.read` when `OUTBOUND.taskId` is supplied | `FR-INVENTORY-003～004、FR-INVENTORY-006` |
 | GET | `/inventory/alerts` | `resource.read` | `FR-INVENTORY-005～006` |
 
+| GET | `/environment/thresholds` | `resource.read` | `FR-ENV-004` |
+| POST | `/environment/thresholds` | `resource.manage` | `FR-ENV-004` |
+| PATCH | `/environment/thresholds/{id}` | `resource.manage` | `FR-ENV-004` |
+| GET | `/environment/records` | `resource.read` | `FR-ENV-002～003` |
+| POST | `/environment/records` | `resource.manage` | `FR-ENV-002～003` |
+| GET | `/environment/alerts` | `resource.read` | `FR-ENV-004～005` |
+
 ## 4. 样品接口
 
 | 方法 | 路径 | 角色 | 需求 |

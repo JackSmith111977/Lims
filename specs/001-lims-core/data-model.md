@@ -229,9 +229,17 @@
 
 库存数量由交易记录产生，禁止直接修改库存总量而不产生交易记录。T-403 支持 INBOUND/OUTBOUND/RETURN/SCRAP，数量为正数且方向由类型决定；责任人、时间、余额和审计由服务端事务生成。库存写操作必须在服务端事务中完成。T-404 允许 OUTBOUND 记录关联未归档实验任务，其他变动类型不得携带任务 ID。
 
-### 7.5 `environment_record`
+### 7.5 `environment_threshold`
+
+`id`、`laboratory_id`、`metric`、`unit`、`threshold_min`、`threshold_max`、`status`、`created_at`、`updated_at`。
+
+约束：同一实验室、指标和单位只有一条配置；至少存在一个阈值边界，最大值不得小于最小值；状态为 ACTIVE/INACTIVE。配置修改需记录审计，停用代替删除。详细边界见 [`design-environment-monitoring.md`](design-environment-monitoring.md)。
+
+### 7.6 `environment_record`
 
 `id`、`laboratory_id`、`metric`、`value`、`unit`、`threshold_min`、`threshold_max`、`collected_at(TIMESTAMPTZ)`、`source_type`、`recorded_by(UUID)`、`status`。
+
+约束：实验室必须为 ACTIVE；阈值字段是写入时快照；超出任一活动边界时状态为 EXCEEDED，否则为 NORMAL；记录只允许追加，超阈值记录由提醒查询接口返回。详细边界见 [`design-environment-monitoring.md`](design-environment-monitoring.md)。
 
 ## 8. 附件和审计表
 

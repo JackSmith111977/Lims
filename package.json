@@ -18,6 +18,7 @@
     "test:instrument-integration": "node scripts/integration/instrument-registry.mjs",
     "test:inventory-integration": "node scripts/integration/inventory-management.mjs",
     "test:inventory-alerts-integration": "node scripts/integration/inventory-alerts.mjs",
+    "test:environment-integration": "node scripts/integration/environment-monitoring.mjs",
     "test:e2e": "playwright test --pass-with-no-tests",
     "supabase:status": "supabase status",
     "supabase:migrations": "supabase migration list",

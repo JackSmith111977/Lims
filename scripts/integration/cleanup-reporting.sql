@@ -48,8 +48,10 @@ begin
   alter table public.result_review enable trigger user;
   delete from public.experiment_data where task_id = any(task_ids);
   delete from public.experiment_task where id = any(task_ids);
+  alter table public.instrument disable trigger user;
   delete from public.instrument_maintenance where instrument_id = any(instrument_ids);
   delete from public.instrument where id = any(instrument_ids);
+  alter table public.instrument enable trigger user;
   delete from public.sample_flow where sample_id = any(sample_ids);
   delete from public.sample where id = any(sample_ids);
   delete from public.research_project where id = any(project_ids);

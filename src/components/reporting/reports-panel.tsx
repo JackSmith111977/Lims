@@ -106,7 +106,7 @@ export function ReportsPanel({ initialReports, canManage, canPublish }: ReportsP
           <>
             <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-200 pb-5">
               <div><p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-600">{selected.reportCode}</p><h2 className="mt-2 text-2xl font-semibold">报告 v{selected.versionNo}</h2><p className="mt-1 text-sm text-slate-500">任务 {selected.taskId} · {selected.status}</p></div>
-              <a className="rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 hover:border-blue-300" href={`/api/v1/reports/${selected.id}/export`}>导出 JSON</a>
+              <div className="flex flex-wrap gap-2"><a className="rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 hover:border-blue-300" href={`/api/v1/reports/${selected.id}/export`}>导出 JSON</a><a className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-700 hover:border-blue-300" href={`/reports/trace/${selected.id}`}>查看追溯</a></div>
             </div>
             <div className="mt-5 flex flex-wrap items-center gap-2">
               {canManage && selected.status === "DRAFT" ? <button className="rounded-lg bg-amber-500 px-3 py-2 text-sm font-medium text-white disabled:opacity-50" disabled={busy} onClick={() => void transition("submit-review")}>提交审核</button> : null}

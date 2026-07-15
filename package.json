@@ -15,6 +15,7 @@
     "test:processing-integration": "node scripts/integration/experiment-processing.mjs",
     "test:review-integration": "node scripts/integration/result-review.mjs",
     "test:report-integration": "node scripts/integration/reporting.mjs",
+    "test:traceability-integration": "node scripts/integration/report-traceability.mjs",
     "test:instrument-integration": "node scripts/integration/instrument-registry.mjs",
     "test:inventory-integration": "node scripts/integration/inventory-management.mjs",
     "test:resource-integration": "node scripts/integration/resource-management.mjs",

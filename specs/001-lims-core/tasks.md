@@ -154,7 +154,11 @@
   - [x] T-501C [S] 实现日志查询服务和 `audit.read` API（Files：`src/lib/server/audit-data.ts`、`src/app/api/v1/audit-logs`；Verify：过滤、排序、分页上限和越权）
   - [x] T-501D [P] 实现日志查询页面并接入登录/退出交互（Files：`src/app/admin/audit`、`src/components/admin`、`src/app/login`、`src/components/auth`；Depends：T-501B～C；Verify：无敏感字段展示、未认证 E2E）
   - [x] T-501E [S] 完成远程审计集成、对抗性审查和一致性门禁（Depends：T-501B～D；Verify：认证事件/查询权限/临时清理/全量质量门禁；Review：`REV-AUDIT-LOGGING-001`）
-- [ ] T-502 实现报告到样品、任务、数据和审核的追溯（Spec：FR-AUDIT-005、AC-AUDIT-001）
+- [x] T-502 实现报告到样品、任务、数据和审核的追溯（Spec：FR-AUDIT-005、AC-AUDIT-001）
+  - [x] T-502A [S] 锁定报告不可变快照、追溯返回模型和 `report.read` 权限边界（Files：`specs/001-lims-core/design-traceability.md`、`plan.md`）
+  - [x] T-502B [S] 实现报告追溯查询服务和 Route Handler（Files：`src/lib/server/traceability.ts`、`src/app/api/v1/trace`；Verify：报告、任务、样品、数据、审核节点只读返回）
+  - [x] T-502C [P] 实现报告页追溯入口和只读追溯页面（Files：`src/components/reporting`、`src/app/reports/trace`；Depends：T-502B；Verify：节点完整、无编辑入口）
+  - [x] T-502D [S] 完成追溯单元/E2E/远程集成、对抗性审查和质量门禁（Depends：T-502B～C；Review：`REV-TRACEABILITY-001`）
 - [ ] T-503 实现样品、任务、审核和库存统计（Spec：FR-DASH-001～005）
 - [ ] T-504 编写数据库备份和恢复说明（Spec：FR-AUDIT-006、NFR-BACKUP-001）
 - [ ] T-505 准备演示数据和演示流程（Spec：所有 P0）

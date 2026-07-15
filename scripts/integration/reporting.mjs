@@ -18,6 +18,7 @@ const testEmailPattern = /^report_\d+_(manager|publisher|reader)@example\.invali
 const execFileAsync = promisify(execFile);
 const service = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, { auth: { autoRefreshToken: false, persistSession: false } });
 const createdReportIds = [];
+const reportBaseUrl = process.env.REPORT_BASE_URL;
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -85,7 +86,30 @@ async function createUser(username, roleCode) {
   const client = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPABASE_ANON_KEY, { auth: { autoRefreshToken: false, persistSession: false } });
   const signIn = await client.auth.signInWithPassword({ email, password });
   if (signIn.error) throw new Error(`sign in ${username} failed: ${signIn.error.message}`);
-  return { id: data.user.id, client };
+  return { id: data.user.id, client, email, password };
+}
+
+function cookiesFrom(response) {
+  return (response.headers.getSetCookie?.() ?? []).map((value) => value.split(";", 1)[0]).join("; ");
+}
+
+async function verifyTraceRoute(reportId, user, taskId, sampleId, dataId) {
+  if (!reportBaseUrl) return;
+  const login = await fetch(`${reportBaseUrl}/api/v1/auth/login`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ email: user.email, password: user.password }),
+  });
+  assert(login.status === 200, "trace integration user login failed");
+  const cookie = cookiesFrom(login);
+  assert(cookie.length > 0, "trace integration login did not establish a session");
+  const response = await fetch(`${reportBaseUrl}/api/v1/trace/report/${reportId}`, { headers: { cookie } });
+  const body = await response.json().catch(() => null);
+  assert(response.status === 200, `trace API returned ${response.status}`);
+  assert(body?.data?.task?.id === taskId, "trace API task node is incomplete");
+  assert(body?.data?.samples?.some((item) => item.id === sampleId), "trace API sample node is incomplete");
+  assert(body?.data?.data?.some((item) => item.id === dataId), "trace API data node is incomplete");
+  assert(body?.data?.reviews?.some((item) => item.result === "APPROVED"), "trace API review node is incomplete");
 }
 
 async function transitionTask(client, taskId, toStatus) {
@@ -120,6 +144,9 @@ async function main() {
   const first = await must(manager.client.rpc("generate_report", { _task_id: approvedTask.id }), "generate first report");
   createdReportIds.push(first.id);
   assert(first.status === "DRAFT" && first.version_no === 1 && first.report_payload.task.id === approvedTask.id, "first report snapshot is incorrect");
+  assert(first.report_payload.samples?.[0]?.id === sample.id && first.report_payload.data?.[0]?.id === approvedTask.dataId, "report sample/data snapshot is incomplete");
+  assert(first.report_payload.reviews?.[0]?.result === "APPROVED", "report review snapshot is incomplete");
+  await verifyTraceRoute(first.id, manager, approvedTask.id, sample.id, approvedTask.dataId);
   await expectError(publisher.client.rpc("generate_report", { _task_id: approvedTask.id }), "publisher report generation");
   await expectError(reader.client.rpc("generate_report", { _task_id: approvedTask.id }), "reader report generation");
   const submitted = await must(manager.client.rpc("submit_report_for_review", { _report_id: first.id, _remark: "报告草稿已准备" }), "submit first report");

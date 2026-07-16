@@ -33,7 +33,7 @@
 - `npm.cmd test`：19 个文件、74 个测试通过。
 - `npm.cmd run build`：通过；Windows 原生 SWC 警告由既有 WASM/webpack 回退处理。
 - OpenAPI YAML 解析及看板路径/Schema 引用检查：通过。
-- 看板未认证 E2E：1/1 通过；使用已启动的生产服务复测，避免 Playwright 自动启动器在当前 Windows 环境中的超时干扰。
+- 全量未认证 Playwright E2E：17/17 通过；使用已启动的生产服务复测，避免 Playwright 自动启动器在当前 Windows 环境中的超时干扰。
 - HTTP 诊断：`/dashboard` 返回 307、登录页返回 200、看板 API 未认证返回 401。
 - `scripts/sdd/check-consistency.ps1`：通过。
 - `npm.cmd run check:versioning`：通过，版本 `0.1.0` 与锁文件、变更日志一致。
@@ -49,7 +49,7 @@
 ## 未关闭项与结论
 
 1. `T-503D` 的产品实现、远程业务断言、对抗性检查和本地质量门禁均已有证据；但“自动化 SQL 清理”尚未在本机 CLI 登录态下完成一次成功闭环。
-2. 后续只需提供 Supabase CLI access token 或数据库连接串，重新执行 `npm.cmd run test:dashboard-integration`，并保留脚本输出中的 `dashboardIntegration` 与 `cleanupVerified` 记录，即可关闭该环境门禁。
+2. 后续只需提供 Supabase CLI access token 或数据库连接串，重新执行 `npm.cmd run test:dashboard-integration`，并保留脚本输出中的 `dashboardIntegration` 与 `cleanupVerified` 记录，即可关闭该环境门禁；完整未认证 E2E 已通过。
 3. 在该自动化清理证据补齐前，T-503D 及 T-503 暂不标记完成，不宣称 P0/P1 审查已关闭，也不合并或发布。
 
 ## 决议

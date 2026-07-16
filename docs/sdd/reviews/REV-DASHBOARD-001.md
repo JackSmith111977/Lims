@@ -42,14 +42,15 @@
 
 - 远程 Supabase 业务集成主流程已通过：临时用户登录、项目/样品/任务筛选、`PENDING_REVIEW` 待审核、`FLAGGED` 异常统计、窄任务统计接口、库存接口和非法参数拒绝均完成断言。
 - 远程集成中的仪器夹具已改为调用 `create_instrument` RPC，符合远程数据库禁止直接写入仪器表的约束。
-- 集成脚本最后的 `supabase db query --linked` 自动清理因当前环境没有 Supabase CLI access token，在 `Initialising login role...` 阶段失败；这属于执行环境门禁，不是业务断言失败。
+- 集成清理器现支持两条受控路径：优先使用本机 `SUPABASE_DB_URL` 通过仓库内 CLI 直连查询，否则使用 `supabase db query --linked` 的 CLI 登录态；连接串只作为子进程参数传递，不写日志、不提交。
+- 当前环境两种凭据均未配置，因此尚未形成自动清理成功闭环；此前 `--linked` 路径在 `Initialising login role...` 阶段失败，这属于执行环境门禁，不是业务断言失败。
 - 经用户授权，在已登录 Supabase SQL 编辑器执行 `scripts/integration/cleanup-experiment-processing.sql`，返回 `Success. No rows returned`。
 - 清理后只读核对结果：`users=0`、`tasks=0`、`samples=0`、`projects=0`、`instruments=0`、`methods=0`、`processingRuns=0`、`dataRows=0`。
 
 ## 未关闭项与结论
 
 1. `T-503D` 的产品实现、远程业务断言、对抗性检查和本地质量门禁均已有证据；但“自动化 SQL 清理”尚未在本机 CLI 登录态下完成一次成功闭环。
-2. 后续只需提供 Supabase CLI access token 或数据库连接串，重新执行 `npm.cmd run test:dashboard-integration`，并保留脚本输出中的 `dashboardIntegration` 与 `cleanupVerified` 记录，即可关闭该环境门禁；完整未认证 E2E 已通过。
+2. 后续只需在本机配置 Supabase CLI access token 或完整数据库连接串（`SUPABASE_DB_URL`），重新执行 `npm.cmd run test:dashboard-integration`，并保留脚本输出中的 `dashboardIntegration` 与 `cleanupVerified` 记录，即可关闭该环境门禁；完整未认证 E2E 已通过。
 3. 在该自动化清理证据补齐前，T-503D 及 T-503 暂不标记完成，不宣称 P0/P1 审查已关闭，也不合并或发布。
 
 ## 决议

@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import path from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { createClient } from "@supabase/supabase-js";
@@ -43,7 +44,17 @@ function cliEnvironment() {
 }
 
 async function runSqlCleanup() {
-  await execFileAsync(process.env.ComSpec ?? "cmd.exe", ["/d", "/s", "/c", "npx.cmd supabase db query --linked --file scripts/integration/cleanup-experiment-processing.sql --yes"], {
+  const cliPath = path.join(process.cwd(), "node_modules", "supabase", "dist", "supabase.js");
+  const databaseUrl = process.env.SUPABASE_DB_URL?.trim();
+  const cliArgs = [cliPath, "db", "query"];
+  if (databaseUrl) {
+    cliArgs.push("--db-url", databaseUrl);
+  } else {
+    cliArgs.push("--linked");
+  }
+  cliArgs.push("--file", "scripts/integration/cleanup-experiment-processing.sql", "--yes");
+  console.log(`[cleanup] mode=${databaseUrl ? "db-url" : "linked"}`);
+  await execFileAsync(process.execPath, cliArgs, {
     cwd: process.cwd(),
     env: cliEnvironment(),
     windowsHide: true,

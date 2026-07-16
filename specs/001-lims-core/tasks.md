@@ -173,6 +173,9 @@
   - [x] T-505B [S] 编写逐页演示流程和验收证据清单（Files：`docs/demo/demo-runbook.md`；Verify：覆盖登录、设置、项目、样品、任务、数据、审核、报告、追溯、看板和审计）
   - [ ] T-505C [S] 在隔离环境生成演示数据并完成全链路演练和清理（Depends：T-503D、T-505A～B；Verify：P0 流程、截图/编号证据、演练后 `DEMO_` 残留为 0；Review：`REV-DEMO-001`）
 - [ ] T-506 完成系统测试和缺陷修复（Spec：所有 AC）
+  - [x] T-506A [S] 建立系统测试策略、AC 验收矩阵和缺陷记录（Files：`specs/001-lims-core/design-system-test.md`、`docs/testing/system-test-plan.md`、`docs/testing/defect-log.md`；Verify：每个 AC 有证据/复测入口，区分环境门禁和产品缺陷）
+  - [x] T-506B [S] 完成测试计划完整性检查和对抗性审查（Files：`scripts/sdd/check-system-test-plan.ps1`、`package.json`、`traceability.md`；Verify：AC 覆盖、负向场景、敏感信息检查；Review：`REV-SYSTEM-TEST-001`）
+  - [ ] T-506C [S] 执行全量系统测试、关闭缺陷并形成测试报告（Depends：T-503D、T-505C、T-506A～B；Verify：所有 AC、P0/P1 缺陷、远程清理和回归门禁通过）
 
 ## 7. 扩展任务
 

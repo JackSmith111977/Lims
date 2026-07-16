@@ -26,6 +26,7 @@
     "test:e2e": "playwright test --pass-with-no-tests",
     "check:backup-docs": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/sdd/check-backup-recovery.ps1",
     "check:demo-assets": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/sdd/check-demo-assets.ps1",
+    "check:system-test-plan": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/sdd/check-system-test-plan.ps1",
     "supabase:status": "supabase status",
     "supabase:migrations": "supabase migration list",
     "supabase:dry-run": "supabase db push --dry-run",

@@ -168,7 +168,10 @@
   - [x] T-504A [S] 锁定托管备份、逻辑备份、Auth/Storage 边界和 RPO/RTO 口径（Files：`specs/001-lims-core/design-backup-recovery.md`、`plan.md`；Verify：覆盖 Supabase 计划差异、密钥处理和恢复路径）
   - [x] T-504B [S] 编写数据库备份、恢复、验证、回滚和演练说明（Files：`docs/ops/backup-recovery.md`；Verify：操作步骤、故障降级、敏感信息和完整性检查清单）
   - [x] T-504C [S] 完成文档完整性检查、对抗性审查和一致性门禁（Files：`scripts/sdd/check-backup-recovery.ps1`、`package.json`、`traceability.md`；Verify：文档检查、CLI 能力检查、SDD 一致性和版本门禁；Review：`REV-BACKUP-RECOVERY-001`）
-- [ ] T-505 准备演示数据和演示流程（Spec：所有 P0）
+- [ ] T-505 准备演示数据和演示流程（Spec：所有 P0；设计：DES-DEMO-SCENARIO-001）
+  - [x] T-505A [S] 锁定合成数据目录、角色切换、P0 覆盖和清理边界（Files：`specs/001-lims-core/design-demo-scenario.md`、`docs/demo/demo-data-catalog.json`；Verify：不含真实数据/凭据，所有 P0 有对应演示实体）
+  - [x] T-505B [S] 编写逐页演示流程和验收证据清单（Files：`docs/demo/demo-runbook.md`；Verify：覆盖登录、设置、项目、样品、任务、数据、审核、报告、追溯、看板和审计）
+  - [ ] T-505C [S] 在隔离环境生成演示数据并完成全链路演练和清理（Depends：T-503D、T-505A～B；Verify：P0 流程、截图/编号证据、演练后 `DEMO_` 残留为 0；Review：`REV-DEMO-001`）
 - [ ] T-506 完成系统测试和缺陷修复（Spec：所有 AC）
 
 ## 7. 扩展任务

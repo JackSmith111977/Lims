@@ -159,7 +159,11 @@
   - [x] T-502B [S] 实现报告追溯查询服务和 Route Handler（Files：`src/lib/server/traceability.ts`、`src/app/api/v1/trace`；Verify：报告、任务、样品、数据、审核节点只读返回）
   - [x] T-502C [P] 实现报告页追溯入口和只读追溯页面（Files：`src/components/reporting`、`src/app/reports/trace`；Depends：T-502B；Verify：节点完整、无编辑入口）
   - [x] T-502D [S] 完成追溯单元/E2E/远程集成、对抗性审查和质量门禁（Depends：T-502B～C；Review：`REV-TRACEABILITY-001`）
-- [ ] T-503 实现样品、任务、审核和库存统计（Spec：FR-DASH-001～005）
+- [ ] T-503 实现样品、任务、审核和库存统计（Spec：FR-DASH-001～005；设计：DES-DASHBOARD-001）
+  - [x] T-503A [S] 锁定统计口径、筛选参数、分区权限和窄接口边界（Files：`specs/001-lims-core/design-dashboard-statistics.md`、`plan.md`、`traceability.md`；Verify：设计覆盖样品/任务/审核/异常/设备/库存及失败降级）
+  - [x] T-503B [S] 实现看板统计服务、权限分区和 API 契约（Files：`src/lib/server/dashboard.ts`、`src/app/api/v1/dashboard`、`specs/001-lims-core/api-contract.md`、`specs/001-lims-core/contracts/openapi.yaml`；Verify：参数校验、RLS 边界、稳定聚合和窄接口一致性；本地类型检查、Lint、单元测试、构建和未认证接口 E2E 已通过）
+  - [x] T-503C [P] 实现工作台统计卡片、筛选和待审核/异常/库存摘要（Files：`src/components/dashboard`、`src/app/dashboard/page.tsx`；Depends：T-503B；Verify：登录页面渲染、筛选刷新和无权限分区隐藏；未认证页面/API E2E 已通过）
+  - [ ] T-503D [S] 完成单元/E2E/远程集成、对抗性审查和一致性门禁（Depends：T-503B～C；Verify：临时数据自动清理、全量质量门禁；Review：`REV-DASHBOARD-001`）
 - [ ] T-504 编写数据库备份和恢复说明（Spec：FR-AUDIT-006、NFR-BACKUP-001）
 - [ ] T-505 准备演示数据和演示流程（Spec：所有 P0）
 - [ ] T-506 完成系统测试和缺陷修复（Spec：所有 AC）

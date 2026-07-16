@@ -113,7 +113,51 @@ async function createUser(username, roleCode) {
   const client = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPABASE_ANON_KEY, { auth: { autoRefreshToken: false, persistSession: false } });
   const signIn = await client.auth.signInWithPassword({ email, password });
   if (signIn.error) throw new Error(`sign in ${username} failed: ${signIn.error.message}`);
-  return { id: userId, client };
+  return { id: userId, client, email, password };
+}
+
+async function dashboardRequest(admin, path) {
+  const baseUrl = process.env.DASHBOARD_BASE_URL;
+  if (!baseUrl) throw new Error("DASHBOARD_BASE_URL is required for dashboard integration");
+  const loginResponse = await fetch(`${baseUrl.replace(/\/$/, "")}/api/v1/auth/login`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ email: admin.email, password: admin.password }),
+  });
+  assert(loginResponse.ok, `dashboard API login failed with status ${loginResponse.status}`);
+  const setCookies = typeof loginResponse.headers.getSetCookie === "function"
+    ? loginResponse.headers.getSetCookie()
+    : [loginResponse.headers.get("set-cookie") ?? ""];
+  const cookie = setCookies.map((value) => value.split(";", 1)[0]).filter(Boolean).join("; ");
+  const response = await fetch(`${baseUrl.replace(/\/$/, "")}${path}`, { headers: { cookie } });
+  const payload = await response.json().catch(() => ({}));
+  return { response, payload };
+}
+
+async function verifyDashboard(admin, project, task, sample) {
+  if (!process.env.DASHBOARD_BASE_URL) return;
+  const query = new URLSearchParams({
+    projectId: String(project.id),
+    personnelId: admin.id,
+    taskStatus: "PENDING_REVIEW",
+    inventoryDays: "0",
+  });
+  const overview = await dashboardRequest(admin, `/api/v1/dashboard/overview?${query}`);
+  assert(overview.response.ok, `dashboard overview failed with status ${overview.response.status}`);
+  assert(overview.payload.data.samples.total >= 1, "dashboard sample statistics are missing the fixture");
+  assert(overview.payload.data.tasks.total === 1, "dashboard task filter did not isolate the fixture");
+  assert(overview.payload.data.pendingReviews.length === 1 && overview.payload.data.pendingReviews[0].id === task.id, "dashboard pending review list is incorrect");
+  assert(overview.payload.data.abnormalData.total >= 1, "dashboard abnormal processing statistics are missing the flagged run");
+  assert(overview.payload.data.filters.personnelId === admin.id && overview.payload.data.filters.projectId === project.id, "dashboard filters were not echoed");
+
+  const taskStatistics = await dashboardRequest(admin, `/api/v1/dashboard/task-statistics?${query}`);
+  assert(taskStatistics.response.ok && taskStatistics.payload.data.tasks.total === 1, "dashboard task statistics endpoint is inconsistent");
+  const inventory = await dashboardRequest(admin, "/api/v1/dashboard/inventory-alerts?inventoryDays=0");
+  assert(inventory.response.ok && inventory.payload.data.inventory.totalAlerts >= 0, "dashboard inventory endpoint failed");
+  const invalid = await dashboardRequest(admin, "/api/v1/dashboard/overview?inventoryDays=366");
+  assert(invalid.response.status === 400 && invalid.payload.error?.code === "INVALID_QUERY", "dashboard invalid query was not rejected");
+  assert(sample.id > 0, "dashboard fixture sample was not created");
+  console.log(JSON.stringify({ dashboardIntegration: true, checks: ["filtered sample and task statistics", "pending review list", "flagged processing anomaly", "task statistics endpoint parity", "inventory dashboard endpoint", "invalid filter rejection"] }));
 }
 
 async function transition(client, taskId, toStatus) {
@@ -152,7 +196,15 @@ async function main() {
   const task = await must(admin.client.from("experiment_task").insert({ task_code: `${tag}_T`, project_id: project.id, method_id: method.id, name: "Processing integration task", priority: "NORMAL", status: "DRAFT" }).select("id").single(), "create task");
   const sample = await must(admin.client.from("sample").insert({ sample_code: `${tag}_S`, project_id: project.id, name: "Processing integration sample", quantity: 1, unit: "mL", status: "REGISTERED" }).select("id").single(), "create sample");
   await must(admin.client.from("task_sample").insert({ task_id: task.id, sample_id: sample.id }), "link sample to task");
-  const instrument = await must(admin.client.from("instrument").insert({ instrument_code: `${tag}_I`, name: "Processing integration instrument", type: "TEST", status: "ACTIVE" }).select("id").single(), "create instrument");
+  const instrument = await must(admin.client.rpc("create_instrument", {
+    _payload: {
+      instrument_code: `${tag}_I`,
+      name: "Processing integration instrument",
+      type: "TEST",
+      status: "ACTIVE",
+      owner_id: admin.id,
+    },
+  }), "create instrument");
 
   const raw = await createRawData(admin, sample, instrument, task, "rounding", 12.345678);
   const thresholdRaw = await createRawData(admin, sample, instrument, task, "threshold", 150);
@@ -238,6 +290,7 @@ async function main() {
   await must(admin.client.rpc("replace_task_assignments", { _task_id: task.id, _user_ids: [admin.id], _group_ids: null }), "assign task for lock test");
   await transition(admin.client, task.id, "IN_PROGRESS");
   await transition(admin.client, task.id, "PENDING_REVIEW");
+  await verifyDashboard(admin, project, task, sample);
   await transition(admin.client, task.id, "APPROVED");
   await expectError(admin.client.rpc("execute_experiment_processing", {
     _task_id: task.id,

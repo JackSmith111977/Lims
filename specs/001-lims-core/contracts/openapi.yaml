@@ -1618,6 +1618,14 @@ paths:
       tags: [Dashboard]
       summary: 获取工作台概览
       operationId: getDashboardOverview
+      parameters:
+        - { $ref: '#/components/parameters/DashboardProjectId' }
+        - { $ref: '#/components/parameters/DashboardPersonnelId' }
+        - { $ref: '#/components/parameters/DashboardSampleStatus' }
+        - { $ref: '#/components/parameters/DashboardTaskStatus' }
+        - { $ref: '#/components/parameters/DashboardFrom' }
+        - { $ref: '#/components/parameters/DashboardTo' }
+        - { $ref: '#/components/parameters/DashboardInventoryDays' }
       responses:
         '200':
           description: 工作台统计
@@ -1625,6 +1633,37 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiResponseDashboard'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /dashboard/task-statistics:
+    get:
+      tags: [Dashboard]
+      summary: 获取任务统计
+      operationId: getDashboardTaskStatistics
+      parameters:
+        - { $ref: '#/components/parameters/DashboardProjectId' }
+        - { $ref: '#/components/parameters/DashboardPersonnelId' }
+        - { $ref: '#/components/parameters/DashboardTaskStatus' }
+        - { $ref: '#/components/parameters/DashboardFrom' }
+        - { $ref: '#/components/parameters/DashboardTo' }
+      responses:
+        '200': { description: 任务统计, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseDashboardTaskStatistics' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /dashboard/inventory-alerts:
+    get:
+      tags: [Dashboard]
+      summary: 获取看板库存预警统计
+      operationId: getDashboardInventoryAlerts
+      parameters:
+        - { $ref: '#/components/parameters/DashboardInventoryDays' }
+      responses:
+        '200': { description: 库存预警统计, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseDashboardInventory' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
   /personnel/{id}/{recordType}/{recordId}:
     parameters:
       - name: id
@@ -1684,6 +1723,34 @@ components:
       name: size
       in: query
       schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+    DashboardProjectId:
+      name: projectId
+      in: query
+      schema: { type: integer, format: int64, minimum: 1 }
+    DashboardPersonnelId:
+      name: personnelId
+      in: query
+      schema: { type: string, format: uuid }
+    DashboardSampleStatus:
+      name: sampleStatus
+      in: query
+      schema: { type: string, enum: [REGISTERED, PROCESSING, PROCESSED, ARCHIVED, DISPOSED] }
+    DashboardTaskStatus:
+      name: taskStatus
+      in: query
+      schema: { type: string, enum: [DRAFT, ASSIGNED, IN_PROGRESS, PENDING_REVIEW, RETURNED, APPROVED, ARCHIVED] }
+    DashboardFrom:
+      name: from
+      in: query
+      schema: { type: string, format: date-time }
+    DashboardTo:
+      name: to
+      in: query
+      schema: { type: string, format: date-time }
+    DashboardInventoryDays:
+      name: inventoryDays
+      in: query
+      schema: { type: integer, minimum: 0, maximum: 365, default: 30 }
   responses:
     BadRequest:
       description: 请求参数错误
@@ -2718,11 +2785,75 @@ components:
         reviews: { type: array, items: { $ref: '#/components/schemas/Review' } }
     Dashboard:
       type: object
+      required: [filters, availableSections, samples, tasks, pendingReviews, abnormalData, instruments, inventory]
       properties:
-        sampleCount: { type: integer }
-        taskCount: { type: integer }
-        pendingReviewCount: { type: integer }
-        inventoryAlertCount: { type: integer }
+        filters: { $ref: '#/components/schemas/DashboardFilters' }
+        availableSections: { type: array, items: { type: string } }
+        samples: { allOf: [{ $ref: '#/components/schemas/DashboardStatusStatistics' }], nullable: true }
+        tasks: { allOf: [{ $ref: '#/components/schemas/DashboardTaskStatistics' }], nullable: true }
+        pendingReviews: { type: array, nullable: true, items: { $ref: '#/components/schemas/DashboardPendingReview' } }
+        abnormalData: { allOf: [{ $ref: '#/components/schemas/DashboardAbnormalData' }], nullable: true }
+        instruments: { allOf: [{ $ref: '#/components/schemas/DashboardStatusStatistics' }], nullable: true }
+        inventory: { allOf: [{ $ref: '#/components/schemas/DashboardInventory' }], nullable: true }
+    DashboardFilters:
+      type: object
+      properties:
+        projectId: { type: integer, format: int64, nullable: true }
+        personnelId: { type: string, format: uuid, nullable: true }
+        sampleStatus: { type: string, nullable: true }
+        taskStatus: { type: string, nullable: true }
+        from: { type: string, format: date-time, nullable: true }
+        to: { type: string, format: date-time, nullable: true }
+        inventoryDays: { type: integer, minimum: 0, maximum: 365 }
+    DashboardStatusStatistics:
+      type: object
+      required: [total, byStatus]
+      properties:
+        total: { type: integer, minimum: 0 }
+        byStatus: { type: object, additionalProperties: { type: integer, minimum: 0 } }
+    DashboardTaskStatistics:
+      allOf:
+        - $ref: '#/components/schemas/DashboardStatusStatistics'
+        - type: object
+          required: [completedCount, completionRate]
+          properties:
+            completedCount: { type: integer, minimum: 0 }
+            completionRate: { type: number, minimum: 0, maximum: 100 }
+    DashboardPendingReview:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        taskCode: { type: string }
+        name: { type: string }
+        projectId: { type: integer, format: int64 }
+        status: { type: string, enum: [PENDING_REVIEW] }
+        plannedEnd: { type: string, format: date-time, nullable: true }
+        updatedAt: { type: string, format: date-time }
+    DashboardAbnormalData:
+      type: object
+      required: [total, byStatus, byDecision, items]
+      properties:
+        total: { type: integer, minimum: 0 }
+        byStatus: { type: object, additionalProperties: { type: integer, minimum: 0 } }
+        byDecision: { type: object, additionalProperties: { type: integer, minimum: 0 } }
+        items: { type: array, items: { $ref: '#/components/schemas/DashboardAbnormalDataItem' } }
+    DashboardAbnormalDataItem:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        taskId: { type: integer, format: int64 }
+        status: { type: string, enum: [FLAGGED, FAILED, SUCCEEDED, RUNNING] }
+        decision: { type: string, enum: [PASS, FAIL, REVIEW], nullable: true }
+        explanation: { type: string, nullable: true }
+        executedAt: { type: string, format: date-time }
+    DashboardInventory:
+      type: object
+      required: [totalAlerts, byType, bySeverity, alerts]
+      properties:
+        totalAlerts: { type: integer, minimum: 0 }
+        byType: { type: object, additionalProperties: { type: integer, minimum: 0 } }
+        bySeverity: { type: object, additionalProperties: { type: integer, minimum: 0 } }
+        alerts: { type: array, items: { $ref: '#/components/schemas/InventoryAlert' } }
     ApiResponseLogin:
       type: object
       properties:
@@ -2876,6 +3007,29 @@ components:
         code: { type: string }
         message: { type: string }
         data: { $ref: '#/components/schemas/Dashboard' }
+        traceId: { type: string }
+    ApiResponseDashboardTaskStatistics:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data:
+          type: object
+          properties:
+            filters: { $ref: '#/components/schemas/DashboardFilters' }
+            tasks: { allOf: [{ $ref: '#/components/schemas/DashboardTaskStatistics' }], nullable: true }
+            pendingReviews: { type: array, items: { $ref: '#/components/schemas/DashboardPendingReview' } }
+        traceId: { type: string }
+    ApiResponseDashboardInventory:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data:
+          type: object
+          properties:
+            filters: { $ref: '#/components/schemas/DashboardFilters' }
+            inventory: { allOf: [{ $ref: '#/components/schemas/DashboardInventory' }], nullable: true }
         traceId: { type: string }
     AuditLog:
       type: object

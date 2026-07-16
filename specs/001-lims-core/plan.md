@@ -108,6 +108,7 @@
 - [x] 锁定实验室/区域复用、环境阈值配置、采集快照和提醒查询边界（DES-ENVIRONMENT-MONITORING-001）
 - [x] 锁定认证事件、既有审计表复用、服务端认证路由和 `audit.read` 查询边界（DES-AUDIT-LOGGING-001）
 - [x] 锁定报告快照作为追溯事实源、report.read 权限和只读返回边界（DES-TRACEABILITY-001）
+- [x] 锁定看板统计口径、筛选维度、分区权限和可替换聚合边界（DES-DASHBOARD-001）
 
 ## 4. 设计产物
 
@@ -132,3 +133,4 @@
 - [ui.md](ui.md)：页面导航和权限
 - [api-contract.md](api-contract.md)：REST API 契约
 - [contracts/openapi.yaml](contracts/openapi.yaml)：OpenAPI 契约初稿
+- [design-dashboard-statistics.md](design-dashboard-statistics.md)：看板统计口径、权限和接口设计

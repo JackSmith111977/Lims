@@ -22,6 +22,7 @@
     "test:inventory-alerts-integration": "node scripts/integration/inventory-alerts.mjs",
     "test:environment-integration": "node scripts/integration/environment-monitoring.mjs",
     "test:auth-audit-integration": "node scripts/integration/auth-audit.mjs",
+    "test:dashboard-integration": "node scripts/integration/dashboard-statistics.mjs",
     "test:e2e": "playwright test --pass-with-no-tests",
     "supabase:status": "supabase status",
     "supabase:migrations": "supabase migration list",

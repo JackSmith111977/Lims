@@ -22,6 +22,7 @@
 | GB/T 40343—2021：样品流转 | `FR-SAMPLE-004～006`、`AC-SAMPLE-002`、`BR-003`、`BR-005` | 样品状态机、物流事件、当前位置、事务流转和审计；[`design-sample-flow.md`](design-sample-flow.md) | T-204 集成测试和 `REV-SAMPLE-FLOW-001` |
 | GB/T 40343—2021：任务分配与执行 | `FR-TASK-003～006`、`FR-TASK-008`、`FR-PER-002`、`FR-PER-004`、`BR-001～005` | 个人/实验组分配、任务状态机、状态历史、执行人权限和审计；[`design-task-flow.md`](design-task-flow.md) | T-205 集成测试和 `REV-TASK-FLOW-001` |
 | GB/T 40343—2021：系统安全 | `FR-AUDIT-001～006`、`NFR-SEC-*` | 登录、退出、失败登录、关键业务审计、日志查询、备份、恢复和数据保护；[`design-audit-logging.md`](design-audit-logging.md)、[`design-traceability.md`](design-traceability.md) | T-501、T-502、T-504、`AC-AUDIT-001`、`REV-AUDIT-LOGGING-001`、`REV-TRACEABILITY-001`、`test:auth-audit-integration`、`test:traceability-integration`、`audit-validation.test.ts`、`traceability-validation.test.ts`、`audit-access.spec.ts`、`traceability-access.spec.ts` |
+| GB/T 40343—2021：数据看板与统计 | `FR-DASH-001～005`、`AC-DASH-001` | 样品/任务/审核/异常/设备/库存统计，项目/人员/状态/时间筛选和按分区权限返回；[`design-dashboard-statistics.md`](design-dashboard-statistics.md) | T-503、`REV-DASHBOARD-001`、`test:dashboard-integration`、`dashboard-validation.test.ts`、`dashboard-access.spec.ts` |
 | GB/T 40343—2021：通信功能 | `FR-DATA-006`、`FR-DATA-009` | 文件交换和模拟接口 | 导入导出/接口测试 |
 | 项目安全与可维护性 | `NFR-USE-001`、`NFR-SEC-001～002`、`NFR-MAINT-001～002` | 表单校验、权限、审计和分层设计 | 质量门禁与安全测试 |
 | 数据完整性与恢复 | `NFR-DATA-001～003`、`NFR-PERF-001`、`NFR-BACKUP-001` | 唯一性、原始数据保护、演示规模稳定性和备份恢复 | 数据约束、恢复演练和回归测试 |

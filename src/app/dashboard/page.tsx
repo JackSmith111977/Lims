@@ -2,8 +2,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { LogoutButton } from "@/components/auth/logout-button";
+import { DashboardPanel } from "@/components/dashboard/dashboard-panel";
 import { getCurrentRoles, hasPermission, ROLE_NAMES } from "@/lib/auth/permissions";
 import { hasPublicSupabaseEnv } from "@/lib/env";
+import { loadDashboardOverview } from "@/lib/server/dashboard";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function DashboardPage() {
@@ -54,6 +56,9 @@ export default async function DashboardPage() {
     hasPermission(supabase, "resource.read"),
     hasPermission(supabase, "audit.read"),
   ]);
+  const initialOverview = (canReadSamples || canReadTasks || canReadData || canReadInstruments)
+    ? await loadDashboardOverview(supabase, { inventoryDays: 30 }, { sampleRead: canReadSamples, taskRead: canReadTasks, dataRead: canReadData, resourceRead: canReadInstruments })
+    : null;
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
@@ -173,6 +178,7 @@ export default async function DashboardPage() {
             </Link>
           ) : null}
         </div>
+        {initialOverview ? <DashboardPanel initialOverview={initialOverview} /> : <div className="mt-8 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-800">当前账号没有可用的看板读取权限。</div>}
       </section>
     </main>
   );

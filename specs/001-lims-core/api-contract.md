@@ -203,15 +203,19 @@ HTTP 状态建议：`400` 参数错误、`401` 未认证、`403` 无权限、`40
 
 | 方法 | 路径 | 角色 | 需求 |
 | --- | --- | --- | --- |
-| GET | `/dashboard/overview` | 按权限 | `FR-DASH-001～005` |
-| GET | `/dashboard/task-statistics` | 按权限 | `FR-DASH-002` |
-| GET | `/dashboard/inventory-alerts` | 管理员 | `FR-DASH-004` |
+| GET | `/dashboard/overview` | 至少一个看板分区读取权限 | `FR-DASH-001～005` |
+| GET | `/dashboard/task-statistics` | `task.read` | `FR-DASH-002` |
+| GET | `/dashboard/inventory-alerts` | `resource.read` | `FR-DASH-004` |
 | GET | `/audit-logs` | 系统管理员、授权管理员 | `FR-AUDIT-001～004` |
 | GET | `/trace/{objectType}/{id}` | 按权限 | `FR-AUDIT-005` |
 
 `GET /audit-logs` 需要 `audit.read` 权限，支持 `objectType`、`action`、`operatorId`、`from`、`to` 和 `limit`（默认 100，最大 200）筛选，按 `occurredAt desc, id desc` 返回只读日志。
 
 `GET /trace/report/{id}` 需要 `report.read` 权限，以报告不可变快照为事实源返回报告、任务、样品、实验数据和审核记录；接口只读，不接受请求体或客户端覆盖字段。
+
+`GET /dashboard/overview` 返回按权限分区的样品、任务、待审核任务、异常处理运行、设备状态和库存预警统计；未具备对应读取权限的分区为 `null`。支持 `projectId`、`personnelId`、`sampleStatus`、`taskStatus`、`from`、`to` 和 `inventoryDays` 筛选。时间范围为 ISO 8601，`from` 含、`to` 不含；人员筛选基于当前有效任务分配，要求 `task.read`。异常数据定义为处理运行 `FLAGGED` 或判定 `FAIL/REVIEW`，库存分区复用 `get_inventory_alerts`。
+
+`GET /dashboard/task-statistics` 复用概览接口的任务统计和待审核任务口径；`GET /dashboard/inventory-alerts` 复用库存告警 RPC 并返回按类型/严重级别的统计。两者不提供写入能力。
 
 ## 8. 状态冲突
 

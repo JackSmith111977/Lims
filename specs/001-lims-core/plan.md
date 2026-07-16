@@ -109,6 +109,7 @@
 - [x] 锁定认证事件、既有审计表复用、服务端认证路由和 `audit.read` 查询边界（DES-AUDIT-LOGGING-001）
 - [x] 锁定报告快照作为追溯事实源、report.read 权限和只读返回边界（DES-TRACEABILITY-001）
 - [x] 锁定看板统计口径、筛选维度、分区权限和可替换聚合边界（DES-DASHBOARD-001）
+- [x] 锁定数据库备份、恢复、Auth/Storage 边界、验证和回滚策略（DES-BACKUP-RECOVERY-001）
 
 ## 4. 设计产物
 
@@ -134,3 +135,4 @@
 - [api-contract.md](api-contract.md)：REST API 契约
 - [contracts/openapi.yaml](contracts/openapi.yaml)：OpenAPI 契约初稿
 - [design-dashboard-statistics.md](design-dashboard-statistics.md)：看板统计口径、权限和接口设计
+- [design-backup-recovery.md](design-backup-recovery.md)：数据库备份、恢复、验证和回滚设计

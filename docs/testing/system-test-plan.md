@@ -11,7 +11,7 @@
 
 1. 运行 `npm.cmd run lint`、`npm.cmd test`、`npm.cmd run build`。
 2. 用已构建生产服务运行完整未认证 E2E：`npx.cmd playwright test --workers=1 --reporter=line`。
-3. 在隔离 Supabase 项目执行 migration 状态核对和各模块远程集成；每组使用独立临时前缀并在 `finally` 清理。
+3. 在经授权的隔离远程 Supabase 项目执行 migration 状态核对和各模块远程集成；每组使用独立临时前缀并在 `finally` 清理。本地数据库不作为远程验收证据。
 4. 执行 T-503 看板集成和 T-505 演示流程，分别确认临时测试前缀、`DEMO_` 前缀和演示账号残留为 0。
 5. 运行 `npm.cmd run check:backup-docs`、`npm.cmd run check:demo-assets`、一致性和版本门禁。
 6. 将失败记录到 [`defect-log.md`](defect-log.md)，修复后保留原失败证据、复测命令和新结果。
@@ -31,6 +31,8 @@
 | `AC-AUDIT-001` | `REV-TRACEABILITY-001`、`test:traceability-integration`、`traceability-access.spec.ts` | Passed（已有模块证据） | `npm.cmd run test:traceability-integration` |
 | `AC-AUDIT-002` | `REV-BACKUP-RECOVERY-001`、`check:backup-docs` | Passed（文档验收） | `npm.cmd run check:backup-docs` |
 | `AC-DASH-001` | `REV-DASHBOARD-001`、看板集成断言、17/17 未认证 E2E、`cleanupVerified` 零残留证据 | Passed | `npm.cmd run test:dashboard-integration` |
+| `AC-ENV-001` | 远程项目 ref、迁移/集成/清理记录、`T-102F` 工作流检查 | Conditional（T-505C 的隔离演示环境仍待完成） | `scripts/sdd/check-consistency.ps1`、远程演练记录 |
+| `AC-DEV-001` | Spec 入口、相关设计/任务、需求 ID 和提交记录 | Passed（流程规则已固化） | `scripts/sdd/check-consistency.ps1`、`T-102F` |
 
 ## 3. 系统级负向场景
 

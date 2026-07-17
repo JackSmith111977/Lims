@@ -9,7 +9,7 @@
 | 目标场景 | 高校科研实验室 |
 | 系统形态 | Web 管理系统 |
 | 参考标准 | GB/T 40343—2021 |
-| 更新时间 | 2026-07-11 |
+| 更新时间 | 2026-07-18 |
 
 > 本文件定义系统必须提供的行为、数据关联和验收条件。技术栈、代码结构和开发顺序不在本文件中决定，分别维护在 `plan.md` 和 `tasks.md`。
 
@@ -308,6 +308,9 @@
 | NFR-MAINT-002 | 可维护性 | 关键接口、数据表和业务规则必须有文档说明。 | Approved |
 | NFR-PERF-001 | 性能 | 在单实验室、毕业设计演示规模下，系统应稳定运行并保证数据正确性。 | Proposed |
 | NFR-BACKUP-001 | 可恢复性 | 应提供数据库备份与恢复说明。 | Approved |
+| NFR-ENV-001 | 环境与数据源 | 本项目开发、联调、数据库迁移验证、演示和验收统一使用经授权的远程 Supabase 项目；不依赖本地 Supabase/Docker 数据库。单元测试可以使用 mock 或 fixture，但不能作为远程数据库验收证据。 | Approved |
+| NFR-ENV-002 | 远程操作安全 | 远程 Supabase 数据库的 SQL、迁移、清理和只读核验，默认通过已登录 Supabase Dashboard 的受控浏览器操作；为可重复自动化而使用 CLI/API 时，必须记录项目 ref、操作范围、命令或脚本、结果和清理证据。不得读取、回显或提交浏览器会话、Token、Service Role Key 或数据库密码。 | Approved |
+| NFR-DEV-001 | 开发准入 | 开始任何需求、设计或编码工作前，必须读取 `specs/README.md`、本核心 Spec、相关 Plan/Design/Tasks 和 `docs/sdd/README.md`，并在变更中记录需求或验收 ID；规范缺失、过期或互相冲突时，先完成规范治理，不得直接实现。 | Approved |
 
 ## 7. 验收场景
 
@@ -324,6 +327,8 @@
 | AC-AUDIT-001 | 数据追溯 | 从报告能够回查任务、样品、结果和审核记录。 |
 | AC-AUDIT-002 | 数据库恢复 | 系统提供数据库备份、恢复、验证、密钥处理和回滚说明，并明确 Supabase Auth 与 Storage 对象的独立恢复边界。 |
 | AC-DASH-001 | 数据看板 | 系统能展示样品、任务、待审核和库存等基础统计。 |
+| AC-ENV-001 | 远程环境验收 | 迁移、远程集成、演示和验收均能指向经授权的远程 Supabase 项目；不以本地数据库测试替代远程证据，并保留操作和清理记录。 |
+| AC-DEV-001 | 开发准入 | 每次需求、设计或编码变更都能在任务或提交记录中找到已读取的规范入口和对应需求/验收 ID；未通过准入时不进入实现。 |
 
 ## 8. 待确认与变更入口
 
@@ -332,7 +337,7 @@
 - 指导教师是否要求增加客户/委托方角色。
 - 实验结果字段和报告模板的具体格式。
 - CSV/Excel 导入是否为第一版强制功能。
-- 第一版的技术栈和部署环境。
+- 远程 Supabase 项目标识、隔离演示环境和演示账号审批策略。
 - 学校要求的测试材料和论文格式。
 
 需求变更应在本文件中修改对应编号、状态和验收条件，并同步更新 [traceability.md](E:/Work%20Space/SchoolWork/specs/001-lims-core/traceability.md)、[plan.md](E:/Work%20Space/SchoolWork/specs/001-lims-core/plan.md) 和 [tasks.md](E:/Work%20Space/SchoolWork/specs/001-lims-core/tasks.md)。

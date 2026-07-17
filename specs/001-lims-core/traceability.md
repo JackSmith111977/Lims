@@ -28,6 +28,7 @@
 | GB/T 40343—2021：通信功能 | `FR-DATA-006`、`FR-DATA-009` | 文件交换和模拟接口 | 导入导出/接口测试 |
 | 项目安全与可维护性 | `NFR-USE-001`、`NFR-SEC-001～002`、`NFR-MAINT-001～002` | 表单校验、权限、审计和分层设计 | 质量门禁与安全测试 |
 | 数据完整性与恢复 | `NFR-DATA-001～003`、`NFR-PERF-001`、`NFR-BACKUP-001` | 唯一性、原始数据保护、演示规模稳定性和备份恢复 | 数据约束、恢复演练和回归测试 |
+| 工程环境与开发准入 | `NFR-ENV-001`、`NFR-ENV-002`、`NFR-DEV-001`、`AC-ENV-001`、`AC-DEV-001` | 远程 Supabase 数据源、受控浏览器操作、自动化例外、规范读取和变更准入 | T-102F、[`remote-supabase-workflow.md`](../../docs/sdd/remote-supabase-workflow.md)、`check-consistency.ps1`、`check:system-test-plan` |
 | 需求族覆盖 | `FR-AUTH-*`、`FR-PER-*`、`FR-SAMPLE-*`、`FR-TASK-*`、`FR-METHOD-*`、`FR-DATA-*`、`FR-REVIEW-*`、`FR-REPORT-*`、`FR-EQUIP-*`、`FR-INVENTORY-*`、`FR-ENV-*`、`FR-AUDIT-*`、`FR-DASH-*`、`FR-SETTING-*`、`NFR-*`、`BR-*`、`AC-*` | 族级需求由各模块行和测试目录覆盖 | 自动一致性检查 |
 | 细分族覆盖 | `NFR-DATA-*`、`NFR-MAINT-*`、`AC-*` | 数据完整性、可维护性和验收场景 | 自动一致性检查 |
 | 验收族覆盖 | `AC-SAMPLE-*`、`AC-DASH-*` | 样品流转和工作台统计验收 | 自动一致性检查 |

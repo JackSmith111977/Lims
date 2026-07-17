@@ -29,6 +29,7 @@
 - [x] T-102C 执行远程初始迁移并核验核心表（Spec：数据模型要求、NFR-DATA-001）
 - [x] T-102D 从远程数据库生成并接入 TypeScript 类型（Spec：NFR-MAINT-001）
 - [x] T-102E 建立版本管理、分支规约和发布检查（Plan：版本管理）
+- [x] T-102F [S] 固化远程 Supabase、受控浏览器和开发准入规则（Spec：NFR-ENV-001～002、NFR-DEV-001、AC-ENV-001、AC-DEV-001；Files：`specs/README.md`、`specs/constitution.md`、`docs/sdd/README.md`、`docs/sdd/remote-supabase-workflow.md`、`plan.md`、`traceability.md`、`docs/testing/system-test-plan.md`；Verify：一致性、系统测试计划和版本门禁）
 - [x] T-103A 完成登录页面、Supabase 客户端分层和 Auth 回调骨架（Spec：FR-AUTH-001）
 - [x] T-103 实现用户登录和退出（Spec：FR-AUTH-001）
 - [x] T-104A 实现登录态读取和 `/dashboard` 路由保护（Spec：FR-AUTH-002）

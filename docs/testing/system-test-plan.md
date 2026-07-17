@@ -5,7 +5,7 @@
 | 计划 ID | `TEST-PLAN-001` |
 | 关联设计 | [`DES-SYSTEM-TEST-001`](../../specs/001-lims-core/design-system-test.md) |
 | 需求事实源 | [`spec.md`](../../specs/001-lims-core/spec.md) |
-| 当前状态 | Conditional：本地自动化通过，T-503D/T-505C 隔离环境证据待完成 |
+| 当前状态 | Conditional：本地自动化和 T-503D 远程闭环已通过，T-505C 隔离环境证据待完成 |
 
 ## 1. 执行顺序
 
@@ -30,7 +30,7 @@
 | `AC-RESOURCE-001` | `REV-RESOURCE-MANAGEMENT-001`、设备/库存/环境集成 | Passed（已有模块证据） | `npm.cmd run test:resource-integration` |
 | `AC-AUDIT-001` | `REV-TRACEABILITY-001`、`test:traceability-integration`、`traceability-access.spec.ts` | Passed（已有模块证据） | `npm.cmd run test:traceability-integration` |
 | `AC-AUDIT-002` | `REV-BACKUP-RECOVERY-001`、`check:backup-docs` | Passed（文档验收） | `npm.cmd run check:backup-docs` |
-| `AC-DASH-001` | `REV-DASHBOARD-001`、看板集成断言、17/17 未认证 E2E | Conditional（CLI 自动清理待复跑） | `npm.cmd run test:dashboard-integration` |
+| `AC-DASH-001` | `REV-DASHBOARD-001`、看板集成断言、17/17 未认证 E2E、`cleanupVerified` 零残留证据 | Passed | `npm.cmd run test:dashboard-integration` |
 
 ## 3. 系统级负向场景
 

@@ -5,7 +5,7 @@
 | Review ID | `REV-DASHBOARD-001` |
 | 关联设计 | `DES-DASHBOARD-001` |
 | 关联任务 | `T-503` |
-| 审查状态 | Conditional：功能、远程业务断言和本地门禁通过；自动化 CLI 清理仍受当前环境登录态限制 |
+| 审查状态 | Passed：功能、远程业务断言、自动化清理、对抗性检查和本地质量门禁均通过 |
 
 ## 审查范围
 
@@ -43,16 +43,18 @@
 - 远程 Supabase 业务集成主流程已通过：临时用户登录、项目/样品/任务筛选、`PENDING_REVIEW` 待审核、`FLAGGED` 异常统计、窄任务统计接口、库存接口和非法参数拒绝均完成断言。
 - 远程集成中的仪器夹具已改为调用 `create_instrument` RPC，符合远程数据库禁止直接写入仪器表的约束。
 - 集成清理器现支持两条受控路径：优先使用本机 `SUPABASE_DB_URL` 通过仓库内 CLI 直连查询，否则使用 `supabase db query --linked` 的 CLI 登录态；连接串只作为子进程参数传递，不写日志、不提交。
-- 当前环境两种凭据均未配置，因此尚未形成自动清理成功闭环；此前 `--linked` 路径在 `Initialising login role...` 阶段失败，这属于执行环境门禁，不是业务断言失败。
+- 首次自动重跑曾因沙箱身份无法读取用户 Terminal 的 CLI 凭据，在 `Initialising login role...` 阶段失败；该失败记录保留在 `ENV-503-001`，不作为业务断言失败。
+- 凭据可访问后，首次数据库清理暴露 `public.instrument` 用户触发器未纳入测试清理范围的问题；修复 `cleanup-experiment-processing.sql` 后，清理 SQL 和完整看板集成都通过。
+- 最终 `npm.cmd run test:dashboard-integration` 输出 `dashboardIntegration: true`、`cleanupVerified: true`；`users`、`tasks`、`samples`、`projects`、`instruments`、`methods`、`processingRuns`、`dataRows` 均为 `0`。
 - 经用户授权，在已登录 Supabase SQL 编辑器执行 `scripts/integration/cleanup-experiment-processing.sql`，返回 `Success. No rows returned`。
 - 清理后只读核对结果：`users=0`、`tasks=0`、`samples=0`、`projects=0`、`instruments=0`、`methods=0`、`processingRuns=0`、`dataRows=0`。
 
 ## 未关闭项与结论
 
-1. `T-503D` 的产品实现、远程业务断言、对抗性检查和本地质量门禁均已有证据；但“自动化 SQL 清理”尚未在本机 CLI 登录态下完成一次成功闭环。
-2. 后续只需在本机配置 Supabase CLI access token 或完整数据库连接串（`SUPABASE_DB_URL`），重新执行 `npm.cmd run test:dashboard-integration`，并保留脚本输出中的 `dashboardIntegration` 与 `cleanupVerified` 记录，即可关闭该环境门禁；完整未认证 E2E 已通过。
-3. 在该自动化清理证据补齐前，T-503D 及 T-503 暂不标记完成，不宣称 P0/P1 审查已关闭，也不合并或发布。
+1. `T-503D` 的产品实现、远程业务断言、自动化清理、对抗性检查和本地质量门禁均已有证据。
+2. 完整未认证 E2E 已通过；远程集成产生的 `processing_` 临时用户、任务、样品、项目、仪器、方法、处理运行和数据行均已清理。
+3. `T-503D` 及 `T-503` 可以标记完成；后续转入 T-505C 隔离环境演示，不能将当前生产项目替代为演示隔离环境。
 
 ## 决议
 
-实现可以继续保留在当前分支；当前阻塞点已从功能实现收敛为 Supabase CLI 认证配置。补齐 CLI 认证后，应重新执行远程集成、清理核验、对抗性审查和提交前门禁。
+实现可以继续保留在当前分支；T-503D 证据链已闭合，允许进入 T-505C。T-505C 仍必须使用隔离 Supabase 项目，并在演示后完成 `DEMO_` 残留核验。

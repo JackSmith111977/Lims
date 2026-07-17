@@ -34,14 +34,14 @@
 - [x] T-103 实现用户登录和退出（Spec：FR-AUTH-001）
 - [x] T-104A 实现登录态读取和 `/dashboard` 路由保护（Spec：FR-AUTH-002）
 - [x] T-104 实现角色、权限和路由保护（Spec：FR-AUTH-002～005）
-- [ ] T-105 实现用户、角色和基础设置管理（Spec：FR-AUTH-003～004、FR-SETTING-001～003）
+- [x] T-105 实现用户、角色和基础设置管理（Spec：FR-AUTH-003～004、FR-SETTING-001～003；T-105A、T-105B 子任务及 T-106 验证均完成）
   - [x] T-105A 实现用户与角色管理页面、API、授权 RPC 和审计记录（Spec：FR-AUTH-003～006、FR-AUTH-005、NFR-SEC-001～002；设计：DES-AUTH-001；正向用户创建、普通用户越权和停用用户负向集成验收已通过，临时测试数据已清理）
   - [x] T-105B 实现实验室、部门、基础分类和系统参数管理（Spec：FR-SETTING-001～003；设计：DES-SETTING-001；全量正向/未认证负向验收通过，临时数据已清理）
     - [x] T-105B1 [S] 实现组织结构数据模型、RLS、API 和审计（Spec：FR-SETTING-001；Depends：T-105A；Files：supabase/migrations、src/lib/server、src/app/api/v1/settings；实验室新增/查询/停用集成验收通过）
     - [x] T-105B2 [P] 实现通用分类、计量单位和系统参数数据模型与 API（Spec：FR-SETTING-002～003；Depends：T-105B1 契约；Files：supabase/migrations、src/lib/server、src/app/api/v1/settings；共享动态路由和类型校验已实现）
     - [x] T-105B3 [P] 实现基础设置页面和表单校验（Spec：FR-SETTING-001～003；Depends：T-105B1、T-105B2；Files：src/app/admin/settings、src/components/settings；页面和未认证负向 E2E 已通过）
     - [x] T-105B4 [S] 集成测试、对抗性审查和远程迁移验收（Spec：FR-SETTING-001～003、NFR-SEC-001～002；Depends：T-105B1～B3；全量设置资源新增/列表/停用通过）
-- [ ] T-106 编写登录、越权和用户状态测试（Spec：AC-AUTH-001、NFR-SEC-001）
+- [x] T-106 编写登录、越权和用户状态测试（Spec：AC-AUTH-001、NFR-SEC-001；`npm.cmd run test:auth-audit-integration` 远程验证通过，成功/失败/停用登录、审计查询、越权、RLS 和退出审计均通过，`cleanupVerified` 为 0）
 
 ## 3. 样品与任务主流程
 

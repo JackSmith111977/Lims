@@ -20,7 +20,7 @@
 
 | 验收 ID | 主要证据 | 当前状态 | 复测入口 |
 | --- | --- | --- | --- |
-| `AC-AUTH-001` | `REV-AUTH-001`、`test:auth-audit-integration`、`audit-access.spec.ts` | Passed（已有模块证据） | `npm.cmd run test:auth-audit-integration` |
+| `AC-AUTH-001` | `REV-AUTH-001`、T-106、`test:auth-audit-integration`、`audit-access.spec.ts`；远程临时用户/角色/审计清理为 0 | Passed | `npm.cmd run test:auth-audit-integration` |
 | `AC-SAMPLE-001` | `REV-SAMPLE-REG-001`、`REV-MAIN-FLOW-001`、`test:integration` | Passed（已有模块证据） | `npm.cmd run test:integration` |
 | `AC-SAMPLE-002` | `REV-SAMPLE-FLOW-001`、`test:integration` | Passed（已有模块证据） | `npm.cmd run test:integration` |
 | `AC-TASK-001` | `REV-TASK-REG-001`、`REV-TASK-FLOW-001`、主流程集成 | Passed（已有模块证据） | `npm.cmd run test:integration` |

@@ -32,6 +32,9 @@
 - 2026-07-18 受控浏览器复核：`SchoolWork` 组织仅显示当前活动项目，没有第二个可授权的隔离活动项目。
 - 2026-07-18 只读 CLI 复核：可访问项目清单中目标项目为 `ACTIVE_HEALTHY`，其余项目均为 `INACTIVE`；未发现可直接用于 T-505C 的隔离活动项目。
 - 2026-07-18 本地环境复核：`npm.cmd run supabase:status` 因 Windows Docker Engine 管道不存在失败；未启动本地数据库。
+- 已补充 `T-505C1`：`npm.cmd run demo:preflight` 读取环境配置并在 `status=blocked`、`isolated=false` 或项目 ref 为空时阻断后续写入；单元测试覆盖批准环境、生产项目拒绝、URL 不匹配和凭据形状检查。
+- `npm.cmd run demo:preflight` 当前实跑结果：按预期以 `BLOCKED` 退出，明确报告环境未批准、未隔离、项目 ref 缺失和应用 URL 缺失；未发起远程写操作。
+- `npm.cmd test -- tests/unit/demo-preflight.test.ts`：通过，5/5；`npm.cmd run check:demo-assets`：通过并检查环境配置无凭据。
 - 平台约束复核：[Supabase Free 计划不包含 Branching](https://supabase.com/pricing)，[Branching 是独立的 Preview 环境且按计划计费](https://supabase.com/docs/guides/platform/manage-your-usage/branching)；因此不能未经批准恢复或复用其他暂停项目代替隔离环境。
 
 ## 未关闭项

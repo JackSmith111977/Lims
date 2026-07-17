@@ -20,6 +20,10 @@
 - 每个演示步骤对应 Spec ID 和页面/接口证据，答辩时可以从一个报告回查到任务、样品、数据、审核和审计。
 - 当前没有新增数据导入功能，因此首次准备可以通过既有页面和受控集成脚本完成；演示目录不是新的业务事实源。
 
+### 演示前置检查
+
+任何演示数据写入前必须运行 `npm.cmd run demo:preflight`。该检查读取 [`demo-environment.json`](../../docs/demo/demo-environment.json)，要求环境状态为 `approved`、明确标记 `isolated: true`、项目 ref 与应用的 Supabase URL 一致、项目不在生产拒绝列表中，并且账号配置只包含 `example.invalid` 占位符。检查失败时禁止继续执行页面操作、SQL 或集成脚本；当前仓库配置保持 `blocked`，直到获得隔离环境授权。
+
 ## 2. 角色和合成数据
 
 | 角色 | 演示账号 | 责任 |

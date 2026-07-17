@@ -31,7 +31,7 @@
 | `AC-AUDIT-001` | `REV-TRACEABILITY-001`、`test:traceability-integration`、`traceability-access.spec.ts` | Passed（已有模块证据） | `npm.cmd run test:traceability-integration` |
 | `AC-AUDIT-002` | `REV-BACKUP-RECOVERY-001`、`check:backup-docs` | Passed（文档验收） | `npm.cmd run check:backup-docs` |
 | `AC-DASH-001` | `REV-DASHBOARD-001`、看板集成断言、17/17 未认证 E2E、`cleanupVerified` 零残留证据 | Passed | `npm.cmd run test:dashboard-integration` |
-| `AC-ENV-001` | 远程项目 ref、迁移/集成/清理记录、`T-102F` 工作流检查 | Conditional（T-505C 的隔离演示环境仍待完成） | `scripts/sdd/check-consistency.ps1`、远程演练记录 |
+| `AC-ENV-001` | 远程项目 ref、`demo:preflight`、迁移/集成/清理记录、`T-102F` 工作流检查 | Conditional（前置检查已通过单元验证，T-505C 的隔离演示环境仍待完成） | `npm.cmd run demo:preflight`、`scripts/sdd/check-consistency.ps1`、远程演练记录 |
 | `AC-DEV-001` | Spec 入口、相关设计/任务、需求 ID 和提交记录 | Passed（流程规则已固化） | `scripts/sdd/check-consistency.ps1`、`T-102F` |
 
 ## 3. 系统级负向场景

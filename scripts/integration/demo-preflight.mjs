@@ -1,9 +1,17 @@
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import nextEnv from "@next/env";
+
+const { loadEnvConfig } = nextEnv;
 
 export const DEMO_ENVIRONMENT_PATH = path.join("docs", "demo", "demo-environment.json");
 const PROJECT_REF_PATTERN = /^[a-z0-9]{20}$/;
+
+export function loadRuntimeEnvironment(cwd = process.cwd()) {
+  const { combinedEnv } = loadEnvConfig(cwd, false, { info: () => {}, error: () => {} }, true);
+  return combinedEnv;
+}
 
 export function validateDemoEnvironment(config, runtimeEnv = {}) {
   const errors = [];
@@ -74,9 +82,9 @@ export function loadDemoEnvironment(configPath = DEMO_ENVIRONMENT_PATH) {
   return JSON.parse(fs.readFileSync(absolutePath, "utf8"));
 }
 
-export function runPreflight({ configPath = DEMO_ENVIRONMENT_PATH, runtimeEnv = process.env } = {}) {
+export function runPreflight({ configPath = DEMO_ENVIRONMENT_PATH, runtimeEnv, cwd = process.cwd() } = {}) {
   try {
-    return validateDemoEnvironment(loadDemoEnvironment(configPath), runtimeEnv);
+    return validateDemoEnvironment(loadDemoEnvironment(configPath), runtimeEnv ?? loadRuntimeEnvironment(cwd));
   } catch (error) {
     return {
       ok: false,

@@ -50,4 +50,4 @@
 
 ## 页面级验证前置条件
 
-本地应用已临时指向隔离项目的 URL 和 publishable key；由于服务端审计客户端仍读取本地 `SUPABASE_SERVICE_ROLE_KEY`，而该密钥属于正式项目，不能与隔离项目 URL 混用。页面登录因此不能作为通过证据。不得读取、回显或提交正式项目密钥；继续页面级演练前，必须由用户在本地进程环境中配置隔离项目自己的服务端 secret key，再重新运行应用并按 `docs/demo/demo-runbook.md` 留存证据。
+本地 `.env.local` 当前仍含正式项目的 Supabase URL/公开 key/服务端 key；`npm.cmd run demo:preflight` 已读取 Next.js 实际环境并以 URL 不匹配阻断，因此页面登录不能作为通过证据。不得读取、回显或提交正式项目密钥；继续页面级演练前，必须由用户在本地进程环境中配置同一个隔离项目自己的三件套，再重新运行应用并按 `docs/demo/demo-runbook.md` 留存证据。

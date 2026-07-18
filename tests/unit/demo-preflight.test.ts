@@ -1,6 +1,11 @@
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
+
+import { resetEnv } from "@next/env";
 import { describe, expect, it } from "vitest";
 
-import { validateDemoEnvironment } from "../../scripts/integration/demo-preflight.mjs";
+import { runPreflight, validateDemoEnvironment } from "../../scripts/integration/demo-preflight.mjs";
 
 const approvedConfig = {
   scenarioId: "DEMO-LIMS-001",
@@ -62,5 +67,21 @@ describe("demo environment preflight", () => {
       "demo account configuration must not contain credentials",
       "application Supabase URL does not match the approved project ref",
     ]));
+  });
+
+  it("loads the actual Next.js env files when no runtime override is provided", () => {
+    const cwd = mkdtempSync(path.join(tmpdir(), "lims-demo-preflight-"));
+    const configPath = path.join(cwd, "demo-environment.json");
+    writeFileSync(path.join(cwd, ".env.test.local"), "NEXT_PUBLIC_SUPABASE_URL=https://another-project.supabase.co\n");
+    writeFileSync(configPath, JSON.stringify(approvedConfig));
+
+    try {
+      const result = runPreflight({ configPath, cwd });
+      expect(result.ok).toBe(false);
+      expect(result.errors).toContain("application Supabase URL does not match the approved project ref");
+    } finally {
+      resetEnv();
+      rmSync(cwd, { recursive: true, force: true });
+    }
   });
 });

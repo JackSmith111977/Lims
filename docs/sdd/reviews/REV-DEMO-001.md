@@ -40,7 +40,7 @@
 - 2026-07-18 本地环境复核：`npm.cmd run supabase:status` 因 Windows Docker Engine 管道不存在失败；未启动本地数据库。
 - 已补充 `T-505C1`：`npm.cmd run demo:preflight` 读取 Next.js 实际环境配置，并在 `status=blocked`、`isolated=false`、项目 ref 为空、URL 混用、旧版 key 跨项目或新版 key 未被目标项目接受时阻断后续写入；单元测试覆盖批准环境、生产项目拒绝、URL 不匹配、两类 key 项目匹配和凭据形状检查。
 - `npm.cmd run demo:preflight` 当前实跑结果：`BLOCKED`，报告 `application Supabase URL does not match the approved project ref`；配置隔离项目三件套后才允许页面演练。
-- `npm.cmd test -- tests/unit/demo-preflight.test.ts`：通过，11/11；`npm.cmd run check:demo-assets`：通过并检查环境配置无凭据。
+- `npm.cmd test -- tests/unit/demo-preflight.test.ts`：通过，12/12；`npm.cmd run check:demo-assets`：通过并检查环境配置无凭据。
 - 平台约束复核：[Supabase Free 计划不包含 Branching](https://supabase.com/pricing)，[Branching 是独立的 Preview 环境且按计划计费](https://supabase.com/docs/guides/platform/manage-your-usage/branching)；因此不能未经批准恢复或复用其他暂停项目代替隔离环境。
 
 ## 未关闭项

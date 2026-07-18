@@ -78,17 +78,17 @@ export function validateDemoEnvironment(config, runtimeEnv = {}) {
     }
   }
   const publicKeyClaims = inspectLegacySupabaseKey(runtimeEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY);
-  if (publicKeyClaims?.role && publicKeyClaims.role !== "anon") {
+  if (publicKeyClaims && publicKeyClaims.role !== "anon") {
     errors.push("NEXT_PUBLIC_SUPABASE_ANON_KEY must contain an anon key");
   }
-  if (publicKeyClaims?.projectRef && projectRef && publicKeyClaims.projectRef !== projectRef) {
+  if (publicKeyClaims && publicKeyClaims.projectRef !== projectRef) {
     errors.push("public Supabase key does not match the approved project ref");
   }
   const serverKeyClaims = inspectLegacySupabaseKey(runtimeEnv.SUPABASE_SERVICE_ROLE_KEY);
-  if (serverKeyClaims?.role && serverKeyClaims.role !== "service_role") {
+  if (serverKeyClaims && serverKeyClaims.role !== "service_role") {
     errors.push("SUPABASE_SERVICE_ROLE_KEY must contain a service_role key");
   }
-  if (serverKeyClaims?.projectRef && projectRef && serverKeyClaims.projectRef !== projectRef) {
+  if (serverKeyClaims && serverKeyClaims.projectRef !== projectRef) {
     errors.push("server-only Supabase key does not match the approved project ref");
   }
   if (runtimeEnv.DEMO_PROJECT_REF && runtimeEnv.DEMO_PROJECT_REF !== projectRef) {
@@ -119,12 +119,14 @@ export async function validateRuntimeSupabaseKeys({ config, runtimeEnv = {}, fet
       envName: "NEXT_PUBLIC_SUPABASE_ANON_KEY",
       value: runtimeEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY,
       modernPrefix: "sb_publishable_",
+      legacyRole: "anon",
       label: "public Supabase key",
     },
     {
       envName: "SUPABASE_SERVICE_ROLE_KEY",
       value: runtimeEnv.SUPABASE_SERVICE_ROLE_KEY,
       modernPrefix: "sb_secret_",
+      legacyRole: "service_role",
       label: "server-only Supabase key",
     },
   ];
@@ -135,7 +137,12 @@ export async function validateRuntimeSupabaseKeys({ config, runtimeEnv = {}, fet
       continue;
     }
 
-    if (inspectLegacySupabaseKey(check.value)) continue;
+    const legacyClaims = inspectLegacySupabaseKey(check.value);
+    if (legacyClaims) {
+      if (legacyClaims.role !== check.legacyRole) errors.push(`${check.envName} must contain a ${check.legacyRole} key`);
+      if (legacyClaims.projectRef !== projectRef) errors.push(`${check.label} does not match the approved project ref`);
+      continue;
+    }
     if (!isModernSupabaseKey(check.value, check.modernPrefix)) {
       errors.push(`${check.envName} has an unsupported key format`);
       continue;

@@ -91,6 +91,20 @@ describe("demo environment preflight", () => {
     expect(result.errors).toContain("SUPABASE_SERVICE_ROLE_KEY must contain a service_role key");
   });
 
+  it("rejects parseable legacy tokens without project and role claims", () => {
+    const result = validateDemoEnvironment(approvedConfig, {
+      NEXT_PUBLIC_SUPABASE_URL: "https://abcdefghijklmnopqrst.supabase.co",
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: fakeLegacySupabaseKey({}),
+      SUPABASE_SERVICE_ROLE_KEY: fakeLegacySupabaseKey({}),
+    });
+    expect(result.errors).toEqual(expect.arrayContaining([
+      "NEXT_PUBLIC_SUPABASE_ANON_KEY must contain an anon key",
+      "public Supabase key does not match the approved project ref",
+      "SUPABASE_SERVICE_ROLE_KEY must contain a service_role key",
+      "server-only Supabase key does not match the approved project ref",
+    ]));
+  });
+
   it("rejects a legacy public key from a different Supabase project", () => {
     const result = validateDemoEnvironment(approvedConfig, {
       NEXT_PUBLIC_SUPABASE_URL: "https://abcdefghijklmnopqrst.supabase.co",

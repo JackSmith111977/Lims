@@ -8,6 +8,12 @@
 | `ENV-OPS-001` | P2 | 运维增强 | 当前没有 Storage 对象自动导出脚本，数据库备份不能证明附件文件已恢复 | 手册已明确 Storage 独立边界；后续可增加受控对象清单/校验脚本，不阻塞当前文档验收 | Accepted follow-up |
 | `ENV-PLAYWRIGHT-001` | P2 | Windows runner | Playwright 自动启动 Next 服务曾出现长时间无输出；HTTP 和测试逻辑本身正常 | 2026-07-18 使用已构建生产服务 `3100` 端口并运行 `npx.cmd playwright test --workers=1 --reporter=line`，完整未认证回归 17/17 通过；默认自动 webServer 模式仍不作为通过证据 | Mitigated |
 
+## 当前批次验证增量（2026-07-18）
+
+- `scripts/integration/demo-cleanup.sql` 已补齐库存事务/库存项的受控触发器处理，并补充 `DEMO_` 单位和参数清理；此前远程受控执行已观察到 `publicDemoRows: 0`，但本轮种子重新执行后仍需再执行一次完整清理并复核。
+- `scripts/integration/demo-seed.sql` 已修复两类可重复执行问题：复用不可变的 `DEMO_RULE_ROUND_001`，以及为报告快照写入追溯页面所需的完整任务、样品、数据和审核字段。补丁后的种子脚本已在隔离项目 Dashboard SQL Editor 返回 `Success. No rows returned`；页面级报告追溯需在同一隔离运行时重新登录后复测。
+- 本批次本地质量门禁：`npm.cmd run lint`、`npm.cmd test`（20 个测试文件、86 个测试）、隔离构建、`check:demo-assets`、`check:system-test-plan`、`check:backup-docs`、`check:versioning`、`check-consistency.ps1` 和 `git diff --check` 均通过。上述门禁不替代 T-505C 的页面全链路和最终清理证据。
+
 ## 判定规则
 
 - `P0/P1` 产品缺陷未关闭前不得发布；`Environment gate` 不等于产品缺陷，但必须有复现、责任条件和复测入口。

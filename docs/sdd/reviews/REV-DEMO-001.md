@@ -43,6 +43,12 @@
 - `npm.cmd test -- tests/unit/demo-preflight.test.ts`：通过，12/12；`npm.cmd run check:demo-assets`：通过并检查环境配置无凭据。
 - 平台约束复核：[Supabase Free 计划不包含 Branching](https://supabase.com/pricing)，[Branching 是独立的 Preview 环境且按计划计费](https://supabase.com/docs/guides/platform/manage-your-usage/branching)；因此不能未经批准恢复或复用其他暂停项目代替隔离环境。
 
+## 最新验证增量（2026-07-18）
+
+- 种子脚本已修复不可变处理规则的重复执行问题，并补齐报告追溯快照所需字段；隔离项目 SQL Editor 已返回 `Success. No rows returned`。
+- 清理脚本已补齐库存触发器的受控处理，以及 `DEMO_` 单位/参数清理；此前受控执行曾确认 `publicDemoRows: 0`。
+- 本地 lint、单元测试、隔离构建、演示资产、系统测试计划、备份文档、一致性和版本门禁均通过，但这些结果不能替代页面级证据。
+
 ## 未关闭项
 
 1. 页面级全链路仍未完成：本地 `.env.local` 的 Supabase URL/公开 key/server-only `SUPABASE_SERVICE_ROLE_KEY` 尚未切换为同一个隔离 `test` 项目，门禁已阻断混用；需由开发者在本地安全配置隔离项目三件套后再做登录、角色切换、负向权限、报告追溯和审计页面验证。

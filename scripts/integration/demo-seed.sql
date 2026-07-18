@@ -24,6 +24,7 @@ declare
   v_pending_raw_data_id bigint;
   v_rule_id bigint;
   v_run_id bigint;
+  v_review_id bigint;
   v_report_id bigint;
 begin
   select id into v_admin_id from auth.users where email = 'demo-admin@example.invalid';
@@ -257,14 +258,18 @@ begin
      'mg/L', 'INSTRUMENT', now() - interval '15 hours', v_operator_id, 'DEMO raw instrument reading')
   returning id into v_raw_data_id;
 
-  insert into public.experiment_processing_rule
-    (rule_code, name, version, rule_type, config, status, created_by)
-  values
-    ('DEMO_RULE_ROUND_001', 'DEMO rounding rule', '1.0', 'ROUND',
-     '{"scale":2,"roundingMode":"HALF_UP"}'::jsonb, 'ACTIVE', v_operator_id)
-  on conflict (rule_code, version) do update
-    set name = excluded.name, config = excluded.config, status = excluded.status, created_by = excluded.created_by
-  returning id into v_rule_id;
+  select id into v_rule_id
+  from public.experiment_processing_rule
+  where rule_code = 'DEMO_RULE_ROUND_001' and version = '1.0';
+
+  if v_rule_id is null then
+    insert into public.experiment_processing_rule
+      (rule_code, name, version, rule_type, config, status, created_by)
+    values
+      ('DEMO_RULE_ROUND_001', 'DEMO rounding rule', '1.0', 'ROUND',
+       '{"scale":2,"roundingMode":"HALF_UP"}'::jsonb, 'ACTIVE', v_operator_id)
+    returning id into v_rule_id;
+  end if;
 
   insert into public.experiment_processing_run
     (task_id, rule_id, execution_mode, status, decision, explanation, executed_by, executed_at)
@@ -294,6 +299,12 @@ begin
     (v_task_id, v_reviewer_id, 'APPROVED', 'DEMO review passed: raw value and processing lineage verified',
      now() - interval '10 hours');
 
+  select id into v_review_id
+  from public.result_review
+  where task_id = v_task_id and reviewer_id = v_reviewer_id and result = 'APPROVED'
+  order by id desc
+  limit 1;
+
   update public.experiment_task set status = 'APPROVED', updated_at = now() - interval '9 hours' where id = v_task_id;
   update public.sample set status = 'PROCESSED', updated_at = now() - interval '13 hours' where id = v_sample_id;
 
@@ -321,13 +332,37 @@ begin
   values
     ('DEMO_RPT_001', v_task_id, 1, 'PUBLISHED',
      jsonb_build_object(
-       'task', jsonb_build_object('id', v_task_id, 'taskCode', 'DEMO_T_001', 'status', 'APPROVED'),
-       'samples', jsonb_build_array(jsonb_build_object('id', v_sample_id, 'sampleCode', 'DEMO_S_001', 'status', 'PROCESSED')),
-       'data', jsonb_build_array(
-         jsonb_build_object('id', v_raw_data_id, 'dataType', 'RAW', 'rawValue', 98.76543210),
-         jsonb_build_object('id', v_processed_data_id, 'dataType', 'PROCESSED', 'processedValue', 98.77)
+       'task', jsonb_build_object(
+         'id', v_task_id, 'taskCode', 'DEMO_T_001', 'projectId', v_project_id,
+         'methodId', v_method_id, 'name', 'DEMO Sample Stability Assay',
+         'priority', 'HIGH', 'status', 'APPROVED', 'remark', 'DEMO primary end-to-end task'
        ),
-       'reviews', jsonb_build_array(jsonb_build_object('result', 'APPROVED', 'reviewerId', v_reviewer_id))
+       'samples', jsonb_build_array(jsonb_build_object(
+         'id', v_sample_id, 'sampleCode', 'DEMO_S_001', 'name', 'DEMO Stability Test Sample',
+         'specification', 'DEMO reference material', 'batchNo', 'DEMO_SAMPLE_BATCH_001',
+         'quantity', 10, 'unit', 'mL', 'status', 'PROCESSED'
+       )),
+       'data', jsonb_build_array(
+         jsonb_build_object(
+           'id', v_raw_data_id, 'sampleId', v_sample_id, 'instrumentId', v_instrument_id,
+           'dataType', 'RAW', 'metricName', 'DEMO_MAIN_PEAK_AREA', 'rawValue', 98.76543210,
+           'processedValue', null, 'unit', 'mg/L', 'sourceType', 'INSTRUMENT',
+           'collectedAt', now() - interval '15 hours', 'recordedBy', v_operator_id,
+           'remark', 'DEMO raw instrument reading'
+         ),
+         jsonb_build_object(
+           'id', v_processed_data_id, 'sampleId', v_sample_id, 'instrumentId', v_instrument_id,
+           'dataType', 'PROCESSED', 'metricName', 'DEMO_MAIN_PEAK_AREA', 'rawValue', null,
+           'processedValue', 98.77, 'unit', 'mg/L', 'sourceType', 'API',
+           'collectedAt', now() - interval '14 hours', 'recordedBy', v_operator_id,
+           'remark', 'DEMO rounded processing output'
+         )
+       ),
+       'reviews', jsonb_build_array(jsonb_build_object(
+         'id', v_review_id, 'reviewerId', v_reviewer_id, 'result', 'APPROVED',
+         'comment', 'DEMO review passed: raw value and processing lineage verified',
+         'reviewedAt', now() - interval '10 hours', 'createdAt', now() - interval '10 hours'
+       ))
      ),
      v_reviewer_id, now() - interval '8 hours', now() - interval '7 hours')
   returning id into v_report_id;

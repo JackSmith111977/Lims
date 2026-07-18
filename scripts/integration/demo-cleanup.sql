@@ -88,8 +88,13 @@ begin
   delete from public.result_review where task_id = any(v_task_ids);
   alter table public.result_review enable trigger user;
 
+  alter table public.inventory_transaction disable trigger user;
   delete from public.inventory_transaction
   where item_id = any(v_inventory_ids) or task_id = any(v_task_ids);
+  alter table public.inventory_transaction enable trigger user;
+  alter table public.inventory_item disable trigger user;
+  delete from public.inventory_item where id = any(v_inventory_ids);
+  alter table public.inventory_item enable trigger user;
   delete from public.task_resource where task_id = any(v_task_ids);
   delete from public.task_group_assignee where task_id = any(v_task_ids);
   delete from public.task_assignee where task_id = any(v_task_ids);
@@ -128,6 +133,8 @@ begin
   update public.sys_user set department_id = null where id = any(v_user_ids);
   delete from public.lab_department where id = any(v_department_ids);
   delete from public.lab_laboratory where id = any(v_lab_ids);
+  delete from public.sys_unit where left(code, 5) = 'DEMO_';
+  delete from public.sys_parameter where left(code, 5) = 'DEMO_';
   delete from public.sys_user_role where user_id = any(v_user_ids);
   delete from public.sys_user where id = any(v_user_ids);
 end;

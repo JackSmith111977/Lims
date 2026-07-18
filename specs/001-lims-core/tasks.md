@@ -174,7 +174,8 @@
   - [x] T-505B [S] 编写逐页演示流程和验收证据清单（Files：`docs/demo/demo-runbook.md`；Verify：覆盖登录、设置、项目、样品、任务、数据、审核、报告、追溯、看板和审计）
   - [x] T-505C1 [S] 建立演示环境前置检查和生产项目保护（Spec：NFR-ENV-001～002、AC-ENV-001；Files：`docs/demo/demo-environment.json`、`scripts/integration/demo-preflight.mjs`、`tests/unit/demo-preflight.test.ts`；Verify：阻止未批准/非隔离/生产项目，校验项目 URL 和占位账号）
   - [x] T-505C2 [S] 确认 SchoolWork 为本项目规范远程数据库（Spec：NFR-ENV-001～002；Files：`spec.md`、`plan.md`、`remote-supabase-workflow.md`、`demo-environment.json`；Verify：project ref、正式数据源角色和演示隔离边界均有记录）
-  - [ ] T-505C [S] 在隔离环境生成演示数据并完成全链路演练和清理（Depends：T-503D、T-505A～B；Verify：P0 流程、截图/编号证据、演练后 `DEMO_` 残留为 0；Review：`REV-DEMO-001`）
+  - [x] T-505C3 [S] 创建并初始化隔离演示项目 `test`（Spec：NFR-ENV-001、AC-ENV-001；Files：`demo-environment.json`、`demo-initialization-evidence.md`；Verify：23 个迁移文件通过受控 Dashboard SQL Editor 执行，41 张表/45 个函数/58 条 RLS policy 的只读核验通过）
+  - [ ] T-505C [S] 在隔离环境生成演示数据并完成全链路演练和清理（Depends：T-503D、T-505A～C；Verify：P0 流程、截图/编号证据、演练后 `DEMO_` 残留为 0；Review：`REV-DEMO-001`）
 - [ ] T-506 完成系统测试和缺陷修复（Spec：所有 AC）
   - [x] T-506A [S] 建立系统测试策略、AC 验收矩阵和缺陷记录（Files：`specs/001-lims-core/design-system-test.md`、`docs/testing/system-test-plan.md`、`docs/testing/defect-log.md`；Verify：每个 AC 有证据/复测入口，区分环境门禁和产品缺陷）
   - [x] T-506B [S] 完成测试计划完整性检查和对抗性审查（Files：`scripts/sdd/check-system-test-plan.ps1`、`package.json`、`traceability.md`；Verify：AC 覆盖、负向场景、敏感信息检查；Review：`REV-SYSTEM-TEST-001`）

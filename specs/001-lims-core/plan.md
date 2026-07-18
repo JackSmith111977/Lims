@@ -83,6 +83,7 @@
 - [x] 接入 Supabase CLI 与项目级只读 MCP 配置：用于迁移、类型生成和 AI 辅助查询
 - [x] 执行首个远程数据库迁移并核验核心表：远程版本 `202607120001`
 - [x] 确认本项目远程数据库：Supabase `SchoolWork` 项目（project ref：`fofjsknqdrmgyxtxwxwo`）；其他组织中的暂停项目不属于本系统数据源（Spec：`NFR-ENV-001`）
+- [x] 建立隔离演示数据库：Supabase `test` 项目（project ref：`vrggsiwqttxciaaemhri`）仅承载 `DEMO_` 合成数据，不改变正式数据源边界（Spec：`NFR-ENV-001`、`AC-ENV-001`）
 - [x] 确定远程环境与操作入口：开发、联调、迁移验证、演示和验收使用远程 Supabase；Dashboard 人工操作通过受控浏览器，CLI/API 仅用于有证据的可重复自动化（Spec：`NFR-ENV-001～002`、`NFR-DEV-001`）
 - [x] 确定开发准入：开始需求、设计或编码前读取 Spec 入口、核心 Spec、相关设计/计划/任务和 SDD 流程（Spec：`NFR-DEV-001`）
 - [x] 建立 Git 分支、提交、版本、发布和回滚规约

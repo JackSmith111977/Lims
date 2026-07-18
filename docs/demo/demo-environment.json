@@ -1,14 +1,20 @@
 {
   "scenarioId": "DEMO-LIMS-001",
-  "status": "blocked",
-  "isolated": false,
-  "projectRef": null,
-  "baseUrl": null,
+  "status": "approved",
+  "isolated": true,
+  "projectRef": "vrggsiwqttxciaaemhri",
+  "baseUrl": "http://localhost:3000",
   "prefix": "DEMO_",
   "canonicalProject": {
     "name": "SchoolWork",
     "projectRef": "fofjsknqdrmgyxtxwxwo",
     "role": "application-database"
+  },
+  "isolatedDemoProject": {
+    "name": "test",
+    "projectRef": "vrggsiwqttxciaaemhri",
+    "role": "synthetic-demo-database",
+    "dataPolicy": "DEMO_-prefixed synthetic data only"
   },
   "demoTargetPolicy": "requires-isolated-project",
   "forbiddenProjectRefs": [

@@ -26,4 +26,6 @@
 - `npm.cmd run check:system-test-plan`：通过。
 - 现有单元测试：20 个文件、86 个测试通过（2026-07-18 当前分支复测）。
 - 完整未认证 Playwright：17/17 通过。
-- T-503D 和 T-505C 的远程隔离环境证据仍待补齐，未在本审查中宣称完成。
+- 2026-07-18 正式远程回归：`test:auth-audit-integration`、`test:integration`、`test:method-integration`、`test:inventory-integration`、`test:inventory-alerts-integration`、`test:environment-integration`、`test:resource-integration` 全部通过；每组均有 finally 清理，认证/审计、库存、环境和资源核对为零残留。
+- 本批次未将 CLI 管理 token 不可用的处理/报告类脚本误记为通过；其既有证据仍需在 T-505C 完成后按发布门禁复测。
+- T-503D 的正式远程证据已补充；T-505C 的隔离项目页面级演练、账号清理和 `DEMO_` 残留核对仍待补齐，未在本审查中宣称完成。

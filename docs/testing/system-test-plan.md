@@ -44,7 +44,23 @@
 | `ST-NEG-004` | 重复编号、倒置日期、非法状态、越权关联 | 输入校验拒绝，不产生部分业务记录 |
 | `ST-NEG-005` | 清理脚本使用非演示前缀或恢复校验失败 | 停止操作，保留现场，不执行宽泛删除/解除维护 |
 
-## 4. 发布前判定
+## 4. 2026-07-18 当前分支远程回归记录
+
+在正式远程 Supabase `SchoolWork` 项目上，使用当前分支和 `.env.local` 运行了带 finally 清理的集成测试；本批次未写入隔离演示项目：
+
+| 命令 | 结果 | 清理证据 |
+| --- | --- | --- |
+| `npm.cmd run test:auth-audit-integration` | 通过：成功/失败/停用登录、审计查询、敏感字段排除、越权拒绝、退出审计 | `users=0`、`roles=0`、`emailAudits=0` |
+| `npm.cmd run test:integration` | 通过：样品编号、任务关联/分配、执行流转、交接历史、终态归档 | `cleanedByFinally=true` |
+| `npm.cmd run test:method-integration` | 通过：方法版本、不可变身份、附件存储、RLS、审计 | `cleanedByFinally=true` |
+| `npm.cmd run test:inventory-integration` | 通过：库存事务、余额并发、耗尽/恢复、历史和权限 | `users=0`、`items=0`、`transactions=0`、`roles=0` |
+| `npm.cmd run test:inventory-alerts-integration` | 通过：低库存/有效期告警、任务关联、归档拒绝和审计 | `users/items/transactions/tasks/projects/methods/roles=0` |
+| `npm.cmd run test:environment-integration` | 通过：阈值、边界状态、快照不可变、权限和告警审计 | `users=0`、`laboratories=0`、`thresholds=0`、`records=0`、`roles=0` |
+| `npm.cmd run test:resource-integration` | 通过：设备档案、维护校准、终态保护、库存资源及审计 | 设备/任务/样品/项目/方法和库存临时数据均为 `0` |
+
+该记录不关闭 `T-505C` 或 `T-506C`：页面级隔离演示、演示账号清理，以及依赖 Supabase CLI 管理认证的其余回归仍需按发布门禁补齐。
+
+## 5. 发布前判定
 
 `T-506` 不能仅凭本地测试标记完成。必须在 `T-503D` 和 `T-505C` 关闭后，重新执行全量测试、远程集成、清理验证、缺陷复测、对抗性审查、一致性和版本门禁，并把结果写回本文件和缺陷清单。
 

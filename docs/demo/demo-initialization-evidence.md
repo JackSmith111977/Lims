@@ -56,6 +56,8 @@
 
 这些结果只证明脚本事务和本地契约检查有效，不证明修复后的页面全链路已验收。由于当前受控浏览器对本地追溯 URL 的复测被安全策略拦截，且 Dashboard 临时账号提交曾出现 `Failed to fetch`，本记录暂不把 T-505C 标记为完成；仍需在隔离运行时复测报告追溯、负向权限和审计页面，执行最终清理，通过受支持 Auth UI/API 处理临时账号，并在清理后只读确认 `DEMO_` 残留为 0。
 
+为减少手工统计误差，已补充只读核验脚本 [`scripts/integration/demo-verify.sql`](../../scripts/integration/demo-verify.sql)，它只返回演示 Auth 用户、公开演示行和审计行计数，不执行写操作。
+
 ## 页面级验证前置条件
 
 本地 `.env.local` 当前仍含正式项目的 Supabase URL/公开 key/服务端 key；`npm.cmd run demo:preflight` 已读取 Next.js 实际环境并以 URL 不匹配阻断，因此页面登录不能作为通过证据。不得读取、回显或提交正式项目密钥；继续页面级演练前，必须由用户在本地进程环境中配置同一个隔离项目自己的三件套，再重新运行应用并按 `docs/demo/demo-runbook.md` 留存证据。

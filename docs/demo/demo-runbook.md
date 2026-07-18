@@ -67,7 +67,7 @@
 
 ## 7. 结束和清理
 
-答辩环境需要保留数据时，保留 `DEMO_` 前缀并在演示记录中写明隔离项目。需要重置时，先按备份恢复手册备份，再在批准的隔离项目中执行 [`demo-cleanup.sql`](../../scripts/integration/demo-cleanup.sql)，按外键顺序删除演示用户的公开资料、任务、样品、数据、报告、设备、耗材和审计测试记录；账号本体通过 Dashboard Auth Users 或受支持的 Auth API 删除，最后执行脚本末尾的只读查询确认公开 `DEMO_` 残留为 0。
+答辩环境需要保留数据时，保留 `DEMO_` 前缀并在演示记录中写明隔离项目。需要重置时，先按备份恢复手册备份，再在批准的隔离项目中执行 [`demo-cleanup.sql`](../../scripts/integration/demo-cleanup.sql)，按外键顺序删除演示用户的公开资料、任务、样品、数据、报告、设备、耗材和审计测试记录；账号本体通过 Dashboard Auth Users 或受支持的 Auth API 删除。清理前后可执行只读核验脚本 [`demo-verify.sql`](../../scripts/integration/demo-verify.sql)，并以 `publicDemoRows=0`、`auditDemoRows=0` 和受支持账号清理后的 `authDemoUsers=0` 作为最终证据。
 
 ## P0 覆盖清单
 

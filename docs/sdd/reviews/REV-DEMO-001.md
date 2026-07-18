@@ -31,6 +31,7 @@
 - `demo-runbook.md`：覆盖登录、设置、项目、样品、任务、方法、设备、库存、环境、数据、审核、报告、追溯、看板、审计和清理。
 - 2026-07-18 受控浏览器复核：`SchoolWork` 组织仅显示当前活动项目，没有第二个可授权的隔离活动项目。
 - 2026-07-18 只读 CLI 复核：可访问项目清单中目标项目为 `ACTIVE_HEALTHY`，其余项目均为 `INACTIVE`；未发现可直接用于 T-505C 的隔离活动项目。
+- 用户确认：Supabase `SchoolWork` 项目（project ref：`fofjsknqdrmgyxtxwxwo`）就是本系统的规范远程数据库；该确认解决了正式数据源识别问题，但不自动授予向正式数据环境写入演示数据的权限。
 - 2026-07-18 本地环境复核：`npm.cmd run supabase:status` 因 Windows Docker Engine 管道不存在失败；未启动本地数据库。
 - 已补充 `T-505C1`：`npm.cmd run demo:preflight` 读取环境配置并在 `status=blocked`、`isolated=false` 或项目 ref 为空时阻断后续写入；单元测试覆盖批准环境、生产项目拒绝、URL 不匹配和凭据形状检查。
 - `npm.cmd run demo:preflight` 当前实跑结果：按预期以 `BLOCKED` 退出，明确报告环境未批准、未隔离、项目 ref 缺失和应用 URL 缺失；未发起远程写操作。
@@ -40,5 +41,5 @@
 ## 未关闭项
 
 1. 尚未在隔离 Supabase 项目创建持久演示数据，因此没有伪造“全链路演练已通过”的证据。
-2. 本次环境复核显示本地 `supabase status` 因 Docker Engine 管道不存在而不可用；当前已验证的远程项目是生产项目，不能用于生成 `DEMO_` 数据；Free 计划也无法通过 Branching 快速创建隔离环境。
+2. 本次环境复核显示本地 `supabase status` 因 Docker Engine 管道不存在而不可用；SchoolWork 已确认为正式远程数据源，但仍没有批准的独立演示隔离边界；Free 计划也无法通过 Branching 快速创建隔离环境。
 3. T-505C 依赖 T-503D 的远程自动清理门禁；准备隔离项目/分支和三类演示账号后，按手册执行一次演示数据生成、截图/编号留档和清理计数核对。

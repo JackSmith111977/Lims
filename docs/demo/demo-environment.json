@@ -5,6 +5,12 @@
   "projectRef": null,
   "baseUrl": null,
   "prefix": "DEMO_",
+  "canonicalProject": {
+    "name": "SchoolWork",
+    "projectRef": "fofjsknqdrmgyxtxwxwo",
+    "role": "application-database"
+  },
+  "demoTargetPolicy": "requires-isolated-project",
   "forbiddenProjectRefs": [
     "fofjsknqdrmgyxtxwxwo"
   ],

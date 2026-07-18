@@ -173,6 +173,7 @@
   - [x] T-505A [S] 锁定合成数据目录、角色切换、P0 覆盖和清理边界（Files：`specs/001-lims-core/design-demo-scenario.md`、`docs/demo/demo-data-catalog.json`；Verify：不含真实数据/凭据，所有 P0 有对应演示实体）
   - [x] T-505B [S] 编写逐页演示流程和验收证据清单（Files：`docs/demo/demo-runbook.md`；Verify：覆盖登录、设置、项目、样品、任务、数据、审核、报告、追溯、看板和审计）
   - [x] T-505C1 [S] 建立演示环境前置检查和生产项目保护（Spec：NFR-ENV-001～002、AC-ENV-001；Files：`docs/demo/demo-environment.json`、`scripts/integration/demo-preflight.mjs`、`tests/unit/demo-preflight.test.ts`；Verify：阻止未批准/非隔离/生产项目，校验项目 URL 和占位账号）
+  - [x] T-505C2 [S] 确认 SchoolWork 为本项目规范远程数据库（Spec：NFR-ENV-001～002；Files：`spec.md`、`plan.md`、`remote-supabase-workflow.md`、`demo-environment.json`；Verify：project ref、正式数据源角色和演示隔离边界均有记录）
   - [ ] T-505C [S] 在隔离环境生成演示数据并完成全链路演练和清理（Depends：T-503D、T-505A～B；Verify：P0 流程、截图/编号证据、演练后 `DEMO_` 残留为 0；Review：`REV-DEMO-001`）
 - [ ] T-506 完成系统测试和缺陷修复（Spec：所有 AC）
   - [x] T-506A [S] 建立系统测试策略、AC 验收矩阵和缺陷记录（Files：`specs/001-lims-core/design-system-test.md`、`docs/testing/system-test-plan.md`、`docs/testing/defect-log.md`；Verify：每个 AC 有证据/复测入口，区分环境门禁和产品缺陷）

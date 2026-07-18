@@ -8,6 +8,7 @@
 | 唯一事实源 | 是 |
 | 目标场景 | 高校科研实验室 |
 | 系统形态 | Web 管理系统 |
+| 远程数据库 | Supabase `SchoolWork` 项目（project ref：`fofjsknqdrmgyxtxwxwo`） |
 | 参考标准 | GB/T 40343—2021 |
 | 更新时间 | 2026-07-18 |
 
@@ -337,7 +338,7 @@
 - 指导教师是否要求增加客户/委托方角色。
 - 实验结果字段和报告模板的具体格式。
 - CSV/Excel 导入是否为第一版强制功能。
-- 远程 Supabase 项目标识、隔离演示环境和演示账号审批策略。
+- SchoolWork 远程项目的正式数据边界、隔离演示环境和演示账号审批策略。
 - 学校要求的测试材料和论文格式。
 
 需求变更应在本文件中修改对应编号、状态和验收条件，并同步更新 [traceability.md](E:/Work%20Space/SchoolWork/specs/001-lims-core/traceability.md)、[plan.md](E:/Work%20Space/SchoolWork/specs/001-lims-core/plan.md) 和 [tasks.md](E:/Work%20Space/SchoolWork/specs/001-lims-core/tasks.md)。

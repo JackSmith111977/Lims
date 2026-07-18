@@ -13,6 +13,20 @@ export function loadRuntimeEnvironment(cwd = process.cwd()) {
   return combinedEnv;
 }
 
+export function inspectLegacySupabaseKey(token) {
+  if (typeof token !== "string" || token.split(".").length !== 3) return null;
+
+  try {
+    const payload = JSON.parse(Buffer.from(token.split(".")[1], "base64url").toString("utf8"));
+    return {
+      projectRef: typeof payload?.ref === "string" ? payload.ref : null,
+      role: typeof payload?.role === "string" ? payload.role : null,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export function validateDemoEnvironment(config, runtimeEnv = {}) {
   const errors = [];
   const projectRef = typeof config?.projectRef === "string" ? config.projectRef : null;
@@ -58,6 +72,13 @@ export function validateDemoEnvironment(config, runtimeEnv = {}) {
     } catch {
       errors.push("NEXT_PUBLIC_SUPABASE_URL must be a valid URL");
     }
+  }
+  const serverKeyClaims = inspectLegacySupabaseKey(runtimeEnv.SUPABASE_SERVICE_ROLE_KEY);
+  if (serverKeyClaims?.role && serverKeyClaims.role !== "service_role") {
+    errors.push("SUPABASE_SERVICE_ROLE_KEY must contain a service_role key");
+  }
+  if (serverKeyClaims?.projectRef && projectRef && serverKeyClaims.projectRef !== projectRef) {
+    errors.push("server-only Supabase key does not match the approved project ref");
   }
   if (runtimeEnv.DEMO_PROJECT_REF && runtimeEnv.DEMO_PROJECT_REF !== projectRef) {
     errors.push("DEMO_PROJECT_REF does not match the approved project ref");

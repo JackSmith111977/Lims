@@ -22,10 +22,15 @@ const approvedConfig = {
   ],
 };
 
+function fakeLegacySupabaseKey(payload: Record<string, unknown>) {
+  return ["header", Buffer.from(JSON.stringify(payload)).toString("base64url"), "signature"].join(".");
+}
+
 describe("demo environment preflight", () => {
   it("accepts an approved isolated environment with a matching Supabase URL", () => {
     expect(validateDemoEnvironment(approvedConfig, {
       NEXT_PUBLIC_SUPABASE_URL: "https://abcdefghijklmnopqrst.supabase.co",
+      SUPABASE_SERVICE_ROLE_KEY: fakeLegacySupabaseKey({ ref: "abcdefghijklmnopqrst", role: "service_role" }),
     }).ok).toBe(true);
   });
 
@@ -39,6 +44,7 @@ describe("demo environment preflight", () => {
     };
     expect(validateDemoEnvironment(config, {
       NEXT_PUBLIC_SUPABASE_URL: "https://abcdefghijklmnopqrst.supabase.co",
+      SUPABASE_SERVICE_ROLE_KEY: fakeLegacySupabaseKey({ ref: "abcdefghijklmnopqrst", role: "service_role" }),
     }).ok).toBe(true);
   });
 
@@ -67,6 +73,22 @@ describe("demo environment preflight", () => {
       "demo account configuration must not contain credentials",
       "application Supabase URL does not match the approved project ref",
     ]));
+  });
+
+  it("rejects a legacy server key from a different Supabase project", () => {
+    const result = validateDemoEnvironment(approvedConfig, {
+      NEXT_PUBLIC_SUPABASE_URL: "https://abcdefghijklmnopqrst.supabase.co",
+      SUPABASE_SERVICE_ROLE_KEY: fakeLegacySupabaseKey({ ref: "fofjsknqdrmgyxtxwxwo", role: "service_role" }),
+    });
+    expect(result.errors).toContain("server-only Supabase key does not match the approved project ref");
+  });
+
+  it("rejects a legacy non-service key in the server-only slot", () => {
+    const result = validateDemoEnvironment(approvedConfig, {
+      NEXT_PUBLIC_SUPABASE_URL: "https://abcdefghijklmnopqrst.supabase.co",
+      SUPABASE_SERVICE_ROLE_KEY: fakeLegacySupabaseKey({ ref: "abcdefghijklmnopqrst", role: "anon" }),
+    });
+    expect(result.errors).toContain("SUPABASE_SERVICE_ROLE_KEY must contain a service_role key");
   });
 
   it("loads the actual Next.js env files when no runtime override is provided", () => {

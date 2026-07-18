@@ -36,9 +36,9 @@
 - 2026-07-18 隔离项目合成种子：只读统计返回 Auth 演示账号 3、系统用户 3、角色关联 3、项目 1、任务 2、样品 1、方法 1、原始数据 2、处理结果 1、审核 1、报告 1、审计 5。
 - 用户确认：Supabase `SchoolWork` 项目（project ref：`fofjsknqdrmgyxtxwxwo`）就是本系统的规范远程数据库；演示种子仅允许写入隔离 `test` 项目。
 - 2026-07-18 本地环境复核：`npm.cmd run supabase:status` 因 Windows Docker Engine 管道不存在失败；未启动本地数据库。
-- 已补充 `T-505C1`：`npm.cmd run demo:preflight` 读取环境配置并在 `status=blocked`、`isolated=false` 或项目 ref 为空时阻断后续写入；单元测试覆盖批准环境、生产项目拒绝、URL 不匹配和凭据形状检查。
+- 已补充 `T-505C1`：`npm.cmd run demo:preflight` 读取 Next.js 实际环境配置，并在 `status=blocked`、`isolated=false`、项目 ref 为空、URL 混用或可解析的旧版 server key 跨项目时阻断后续写入；单元测试覆盖批准环境、生产项目拒绝、URL 不匹配、server key 项目匹配和凭据形状检查。
 - `npm.cmd run demo:preflight` 当前实跑结果：`BLOCKED`，报告 `application Supabase URL does not match the approved project ref`；配置隔离项目三件套后才允许页面演练。
-- `npm.cmd test -- tests/unit/demo-preflight.test.ts`：通过，6/6；`npm.cmd run check:demo-assets`：通过并检查环境配置无凭据。
+- `npm.cmd test -- tests/unit/demo-preflight.test.ts`：通过，8/8；`npm.cmd run check:demo-assets`：通过并检查环境配置无凭据。
 - 平台约束复核：[Supabase Free 计划不包含 Branching](https://supabase.com/pricing)，[Branching 是独立的 Preview 环境且按计划计费](https://supabase.com/docs/guides/platform/manage-your-usage/branching)；因此不能未经批准恢复或复用其他暂停项目代替隔离环境。
 
 ## 未关闭项

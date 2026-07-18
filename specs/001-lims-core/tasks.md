@@ -172,7 +172,7 @@
 - [ ] T-505 准备演示数据和演示流程（Spec：所有 P0；设计：DES-DEMO-SCENARIO-001）
   - [x] T-505A [S] 锁定合成数据目录、角色切换、P0 覆盖和清理边界（Files：`specs/001-lims-core/design-demo-scenario.md`、`docs/demo/demo-data-catalog.json`；Verify：不含真实数据/凭据，所有 P0 有对应演示实体）
   - [x] T-505B [S] 编写逐页演示流程和验收证据清单（Files：`docs/demo/demo-runbook.md`；Verify：覆盖登录、设置、项目、样品、任务、数据、审核、报告、追溯、看板和审计）
-  - [x] T-505C1 [S] 建立演示环境前置检查和生产项目保护（Spec：NFR-ENV-001～002、AC-ENV-001；Files：`docs/demo/demo-environment.json`、`scripts/integration/demo-preflight.mjs`、`tests/unit/demo-preflight.test.ts`；Verify：读取 Next.js 实际环境文件，阻止未批准/非隔离/生产项目或 URL 混用，校验项目 URL 和占位账号）
+  - [x] T-505C1 [S] 建立演示环境前置检查和生产项目保护（Spec：NFR-ENV-001～002、AC-ENV-001；Files：`docs/demo/demo-environment.json`、`scripts/integration/demo-preflight.mjs`、`tests/unit/demo-preflight.test.ts`；Verify：读取 Next.js 实际环境文件，阻止未批准/非隔离/生产项目、公开 URL 混用或可解析的旧版 server key 跨项目，校验项目 URL 和占位账号）
   - [x] T-505C2 [S] 确认 SchoolWork 为本项目规范远程数据库（Spec：NFR-ENV-001～002；Files：`spec.md`、`plan.md`、`remote-supabase-workflow.md`、`demo-environment.json`；Verify：project ref、正式数据源角色和演示隔离边界均有记录）
   - [x] T-505C3 [S] 创建并初始化隔离演示项目 `test`（Spec：NFR-ENV-001、AC-ENV-001；Files：`demo-environment.json`、`demo-initialization-evidence.md`；Verify：23 个迁移文件通过受控 Dashboard SQL Editor 执行，41 张表/45 个函数/58 条 RLS policy 的只读核验通过）
   - [ ] T-505C [S] 在隔离环境生成演示数据并完成全链路演练和清理（Depends：T-503D、T-505A～C；Files：`scripts/integration/demo-seed.sql`、`scripts/integration/demo-cleanup.sql`、`docs/demo/demo-initialization-evidence.md`；Verify：种子只读统计、P0 流程、截图/编号证据、演练后 `DEMO_` 残留为 0；Review：`REV-DEMO-001`）

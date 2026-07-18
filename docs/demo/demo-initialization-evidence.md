@@ -8,7 +8,9 @@
 | 操作入口 | 已登录 Supabase Dashboard 的 SQL Editor |
 | 迁移来源 | `supabase/migrations/`，按文件名顺序，共 23 个迁移文件 |
 | 执行结果 | Dashboard 返回 `Success. No rows returned` |
-| 清理结果 | 本次仅初始化空项目 schema，未写入 `DEMO_` 业务数据，待演示完成后验证 |
+| 种子脚本 | `scripts/integration/demo-seed.sql`，仅生成 `DEMO_` 合成数据 |
+| 种子执行结果 | Dashboard 返回 `Success. No rows returned`；只读统计通过 |
+| 清理结果 | 全链路页面演练和远程清理尚未完成，暂不宣称 `DEMO_` 残留为 0 |
 
 ## 只读结构核验
 
@@ -21,3 +23,30 @@
 - 已核对的核心业务锚点表：`environment_record`、`experiment_data`、`experiment_report`、`experiment_task`、`instrument`、`inventory_item`、`lab_laboratory`、`result_review`、`sys_user`
 
 本证据不记录数据库密码、API key、Service Role Key、浏览器会话或临时账号密码。迁移通过 Dashboard 手工执行，因此未把该次执行误记为 Supabase CLI migration ledger；后续变更仍必须回到仓库迁移文件并按远程项目规约核验。
+
+## 合成演示数据种子执行
+
+在三类占位演示账号已创建并自动确认后，通过同一隔离项目的 Dashboard SQL Editor 执行仓库脚本 `scripts/integration/demo-seed.sql`，执行结果为 `Success. No rows returned`。脚本使用事务，并按邮箱解析已存在的 Auth 用户，不包含密码、token 或任何真实业务数据。
+
+执行后的只读统计结果如下：
+
+| 对象 | 数量 |
+| --- | ---: |
+| 必需 Auth 演示账号 | 3 |
+| `sys_user` | 3 |
+| 角色分配 | 3 |
+| 研究项目 | 1 |
+| 实验任务 | 2 |
+| 样品 | 1 |
+| 方法 | 1 |
+| 原始数据 | 2 |
+| 已处理数据 | 1 |
+| 结果审核 | 1 |
+| 实验报告 | 1 |
+| 审计记录 | 5 |
+
+上述结果证明数据库种子事务已提交，但不等同于全链路页面验收。一个仅用于定位应用登录链路的临时诊断账号 `demo-e2e@example.invalid` 尚未完成 Dashboard Auth Users 删除，因此 T-505C 的远程清理门禁仍保持未完成。
+
+## 页面级验证前置条件
+
+本地应用已临时指向隔离项目的 URL 和 publishable key；由于服务端审计客户端仍读取本地 `SUPABASE_SERVICE_ROLE_KEY`，而该密钥属于正式项目，不能与隔离项目 URL 混用。页面登录因此不能作为通过证据。不得读取、回显或提交正式项目密钥；继续页面级演练前，必须由用户在本地进程环境中配置隔离项目自己的服务端 secret key，再重新运行应用并按 `docs/demo/demo-runbook.md` 留存证据。

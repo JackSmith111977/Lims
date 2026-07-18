@@ -31,6 +31,7 @@
 - `demo-data-catalog.json`：包含三类角色占位符、核心实体、P0 覆盖列表和验收场景。
 - `demo-runbook.md`：覆盖登录、设置、项目、样品、任务、方法、设备、库存、环境、数据、审核、报告、追溯、看板、审计和清理。
 - `demo-cleanup.sql`：已加入受控清理路径，使用显式事务和严格前缀范围；明确不直接操作 `auth.users`，账号本体须经 Dashboard Auth Users 或受支持的 Auth API 删除。
+- 2026-07-18 受控浏览器：隔离项目 Auth Users 已进入 `demo-e2e@example.invalid` 删除确认，但提交时 Supabase Auth API 返回 `Failed to fetch`，账号未删除；未改用直接 SQL 操作 `auth.users`。
 - 2026-07-18 受控 Dashboard SQL Editor：隔离项目 `test` 已成功执行 23 个迁移，结构只读核验为 41 张表、45 个函数、58 条 RLS policy。
 - 2026-07-18 隔离项目合成种子：只读统计返回 Auth 演示账号 3、系统用户 3、角色关联 3、项目 1、任务 2、样品 1、方法 1、原始数据 2、处理结果 1、审核 1、报告 1、审计 5。
 - 用户确认：Supabase `SchoolWork` 项目（project ref：`fofjsknqdrmgyxtxwxwo`）就是本系统的规范远程数据库；演示种子仅允许写入隔离 `test` 项目。

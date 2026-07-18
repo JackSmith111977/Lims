@@ -46,7 +46,7 @@
 | 实验报告 | 1 |
 | 审计记录 | 5 |
 
-上述结果证明数据库种子事务已提交，但不等同于全链路页面验收。一个仅用于定位应用登录链路的临时诊断账号 `demo-e2e@example.invalid` 尚未完成 Dashboard Auth Users 删除，因此 T-505C 的远程清理门禁仍保持未完成。
+上述结果证明数据库种子事务已提交，但不等同于全链路页面验收。一个仅用于定位应用登录链路的临时诊断账号 `demo-e2e@example.invalid` 尚未完成 Dashboard Auth Users 删除；2026-07-18 受控浏览器已进入删除确认，但提交时 Supabase Auth API 返回 `Failed to fetch`，未发生删除，因此 T-505C 的远程清理门禁仍保持未完成。
 
 ## 页面级验证前置条件
 

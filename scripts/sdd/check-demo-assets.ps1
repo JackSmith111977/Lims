@@ -6,17 +6,19 @@ $root = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $catalogPath = Join-Path $root 'docs/demo/demo-data-catalog.json'
 $runbookPath = Join-Path $root 'docs/demo/demo-runbook.md'
 $environmentPath = Join-Path $root 'docs/demo/demo-environment.json'
+$cleanupPath = Join-Path $root 'scripts/integration/demo-cleanup.sql'
 $specPath = Join-Path $root 'specs/001-lims-core/spec.md'
 $errors = [System.Collections.Generic.List[string]]::new()
 
-foreach ($path in @($catalogPath, $runbookPath, $environmentPath, $specPath)) {
+foreach ($path in @($catalogPath, $runbookPath, $environmentPath, $cleanupPath, $specPath)) {
     if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { [void]$errors.Add("Missing demo asset: $path") }
 }
 
-if ((Test-Path -LiteralPath $catalogPath) -and (Test-Path -LiteralPath $runbookPath) -and (Test-Path -LiteralPath $environmentPath) -and (Test-Path -LiteralPath $specPath)) {
+if ((Test-Path -LiteralPath $catalogPath) -and (Test-Path -LiteralPath $runbookPath) -and (Test-Path -LiteralPath $environmentPath) -and (Test-Path -LiteralPath $cleanupPath) -and (Test-Path -LiteralPath $specPath)) {
     $catalogText = Get-Content -LiteralPath $catalogPath -Raw -Encoding utf8
     $runbook = Get-Content -LiteralPath $runbookPath -Raw -Encoding utf8
     $environmentText = Get-Content -LiteralPath $environmentPath -Raw -Encoding utf8
+    $cleanup = Get-Content -LiteralPath $cleanupPath -Raw -Encoding utf8
     $spec = Get-Content -LiteralPath $specPath -Raw -Encoding utf8
     try { $catalog = $catalogText | ConvertFrom-Json } catch { [void]$errors.Add('Demo catalog is not valid JSON'); $catalog = $null }
     try { $environment = $environmentText | ConvertFrom-Json } catch { [void]$errors.Add('Demo environment config is not valid JSON'); $environment = $null }
@@ -57,6 +59,15 @@ if ((Test-Path -LiteralPath $catalogPath) -and (Test-Path -LiteralPath $runbookP
     }
     foreach ($requiredTerm in @('DEMO-LIMS-001', 'DEMO_P_001', 'DEMO_T_001', 'DEMO_S_001', 'Cleanup', 'Audit', 'permission')) {
         if ($runbook -notlike "*$requiredTerm*") { [void]$errors.Add("Demo runbook is missing required term: $requiredTerm") }
+    }
+    if ($cleanup -notmatch '(?i)\bbegin\s*;' -or $cleanup -notmatch '(?i)\bcommit\s*;') {
+        [void]$errors.Add('Demo cleanup script must use an explicit transaction')
+    }
+    if ($cleanup -match '(?i)\b(drop\s+table|truncate\s+)' -or $cleanup -match '(?i)delete\s+from\s+auth\.users') {
+        [void]$errors.Add('Demo cleanup script contains a forbidden broad or direct Auth deletion')
+    }
+    if ($cleanup -notmatch "(?i)auth\.users" -or $cleanup -notmatch '(?i)DEMO_') {
+        [void]$errors.Add('Demo cleanup script must document Auth boundary and DEMO_ scope')
     }
 }
 

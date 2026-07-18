@@ -11,6 +11,7 @@
 | 种子脚本 | `scripts/integration/demo-seed.sql`，仅生成 `DEMO_` 合成数据 |
 | 种子执行结果 | Dashboard 返回 `Success. No rows returned`；只读统计通过 |
 | 清理结果 | 全链路页面演练和远程清理尚未完成，暂不宣称 `DEMO_` 残留为 0 |
+| 清理脚本 | [`scripts/integration/demo-cleanup.sql`](../../scripts/integration/demo-cleanup.sql) 已准备；只清理公开 `DEMO_` 数据和演示用户公开资料，不直接操作 `auth.users` |
 
 ## 只读结构核验
 

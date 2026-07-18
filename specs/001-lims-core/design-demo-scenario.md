@@ -4,7 +4,7 @@
 | --- | --- |
 | Design ID | `DES-DEMO-SCENARIO-001` |
 | 来源 Spec | 所有 P0 功能需求、`AC-AUTH-001`、`AC-SAMPLE-001～002`、`AC-TASK-001`、`AC-DATA-001`、`AC-REVIEW-001`、`AC-REPORT-001`、`AC-RESOURCE-001`、`AC-AUDIT-001`、`AC-DASH-001` |
-| 状态 | Proposed（资产已准备，隔离环境演练待执行） |
+| 状态 | Conditional（隔离项目结构和合成种子已完成；页面全链路、账号清理和残留核对待完成） |
 | 数据目录 | [`docs/demo/demo-data-catalog.json`](../../docs/demo/demo-data-catalog.json) |
 | 演示手册 | [`docs/demo/demo-runbook.md`](../../docs/demo/demo-runbook.md) |
 
@@ -22,7 +22,7 @@
 
 ### 演示前置检查
 
-任何演示数据写入前必须运行 `npm.cmd run demo:preflight`。该检查读取 [`demo-environment.json`](../../docs/demo/demo-environment.json)，要求环境状态为 `approved`、明确标记 `isolated: true`、项目 ref 与应用的 Supabase URL 一致、项目不在生产拒绝列表中，并且账号配置只包含 `example.invalid` 占位符。检查失败时禁止继续执行页面操作、SQL 或集成脚本；当前仓库配置保持 `blocked`，直到获得隔离环境授权。
+任何演示数据写入前必须运行 `npm.cmd run demo:preflight`。该检查读取 [`demo-environment.json`](../../docs/demo/demo-environment.json)，要求环境状态为 `approved`、明确标记 `isolated: true`、项目 ref 与应用的 Supabase URL 一致、项目不在生产拒绝列表中，并且账号配置只包含 `example.invalid` 占位符。检查失败时禁止继续执行页面操作、SQL 或集成脚本。本项目当前批准的隔离项目为 Supabase `test`（project ref `vrggsiwqttxciaaemhri`）；正式项目 SchoolWork（project ref `fofjsknqdrmgyxtxwxwo`）仅用于规范远程数据，不得承载演示种子。
 
 ## 2. 角色和合成数据
 
@@ -62,6 +62,6 @@
 
 ## 4. 清理和重置
 
-演示环境若需保留以供答辩，保留 `DEMO_` 数据但禁止混入真实业务。答辩结束或重复演练前，先导出备份并按 `docs/ops/backup-recovery.md` 验证，然后使用受控 SQL/集成清理脚本按外键顺序删除所有 `DEMO_` 对象和演示账号，最后用只读查询确认残留为 0。
+演示环境若需保留以供答辩，保留 `DEMO_` 数据但禁止混入真实业务。答辩结束或重复演练前，先导出备份并按 `docs/ops/backup-recovery.md` 验证，然后在批准的隔离项目中执行 [`scripts/integration/demo-cleanup.sql`](../../scripts/integration/demo-cleanup.sql)。脚本只按严格 `DEMO_` 前缀删除公开数据和演示用户公开资料，不直接操作 `auth.users`；账号本体须通过 Dashboard Auth Users 或受支持的 Auth API 删除，最后使用脚本末尾的只读查询确认公开残留为 0。
 
 清理脚本不得使用通配符删除非演示数据，不得直接删除生产环境的表，不得把清理权限暴露给普通账号。

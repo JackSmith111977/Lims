@@ -3,9 +3,9 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 
 import { resetEnv } from "@next/env";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
-import { runPreflight, validateDemoEnvironment } from "../../scripts/integration/demo-preflight.mjs";
+import { runPreflight, validateDemoEnvironment, validateRuntimeSupabaseKeys } from "../../scripts/integration/demo-preflight.mjs";
 
 const approvedConfig = {
   scenarioId: "DEMO-LIMS-001",
@@ -89,6 +89,44 @@ describe("demo environment preflight", () => {
       SUPABASE_SERVICE_ROLE_KEY: fakeLegacySupabaseKey({ ref: "abcdefghijklmnopqrst", role: "anon" }),
     });
     expect(result.errors).toContain("SUPABASE_SERVICE_ROLE_KEY must contain a service_role key");
+  });
+
+  it("rejects a legacy public key from a different Supabase project", () => {
+    const result = validateDemoEnvironment(approvedConfig, {
+      NEXT_PUBLIC_SUPABASE_URL: "https://abcdefghijklmnopqrst.supabase.co",
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: fakeLegacySupabaseKey({ ref: "fofjsknqdrmgyxtxwxwo", role: "anon" }),
+    });
+    expect(result.errors).toContain("public Supabase key does not match the approved project ref");
+  });
+
+  it("verifies modern publishable and secret keys against the approved project", async () => {
+    const fetchImpl = vi.fn(async () => new Response("{}", { status: 200 }));
+    const keyErrors = await validateRuntimeSupabaseKeys({
+      config: approvedConfig,
+      runtimeEnv: {
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: "sb_publishable_demo",
+        SUPABASE_SERVICE_ROLE_KEY: "sb_secret_demo",
+      },
+      fetchImpl,
+    });
+    expect(keyErrors).toEqual([]);
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+  });
+
+  it("fails closed when a modern key is rejected by the approved project", async () => {
+    const fetchImpl = vi.fn(async () => new Response("", { status: 401 }));
+    const keyErrors = await validateRuntimeSupabaseKeys({
+      config: approvedConfig,
+      runtimeEnv: {
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: "sb_publishable_wrong",
+        SUPABASE_SERVICE_ROLE_KEY: "sb_secret_wrong",
+      },
+      fetchImpl,
+    });
+    expect(keyErrors).toEqual([
+      "public Supabase key was rejected by the approved project",
+      "server-only Supabase key was rejected by the approved project",
+    ]);
   });
 
   it("loads the actual Next.js env files when no runtime override is provided", () => {

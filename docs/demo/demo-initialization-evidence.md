@@ -51,3 +51,5 @@
 ## 页面级验证前置条件
 
 本地 `.env.local` 当前仍含正式项目的 Supabase URL/公开 key/服务端 key；`npm.cmd run demo:preflight` 已读取 Next.js 实际环境并以 URL 不匹配阻断，因此页面登录不能作为通过证据。不得读取、回显或提交正式项目密钥；继续页面级演练前，必须由用户在本地进程环境中配置同一个隔离项目自己的三件套，再重新运行应用并按 `docs/demo/demo-runbook.md` 留存证据。
+
+2026-07-18 已补充隔离运行入口：`docs/demo/demo.env.local.example` 提供 `test` 项目 ref 和 URL，`scripts/integration/with-demo-env.ps1` 仅向当前子进程注入本地填写的三件套，不改写正式 `.env.local`。新版 `sb_publishable_`/`sb_secret_` key 通过隔离项目 `auth/v1/health` 校验；旧版 JWT key 通过 `ref`/`role` 校验。实跑时仅临时切换 URL 而保留正式 key，门禁返回 `public Supabase key was rejected by the approved project` 与 `server-only Supabase key was rejected by the approved project`，因此未进入页面演练。

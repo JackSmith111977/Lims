@@ -66,3 +66,14 @@ MCP 只作为查询、检查和调研入口，不作为迁移事实源。所有�
 - https://supabase.com/docs/guides/deployment/database-migrations
 - https://supabase.com/docs/guides/ai-tools/mcp
 - https://supabase.com/features/mcp-server
+
+## 5. 演示项目凭据与项目绑定校验（2026-07-18）
+
+Supabase 新 API key 使用不可从 JWT 解析项目 ref 的 `sb_publishable_` 与 `sb_secret_` 格式；旧版 `anon` 与 `service_role` 仍是带有 `ref`、`role` 声明的 JWT。演示门禁因此采用两层策略：旧 key 只解析非敏感声明并校验项目 ref/角色；新 key 只通过目标项目的 `/auth/v1/health` 请求验证，不输出响应中的凭据或保存 key。
+
+当前实现：`npm.cmd run demo:preflight` 在运行时读取 Next.js 环境；缺失 key、旧 key 跨项目、key 被目标项目拒绝或网络验证失败都会阻断演示。需要切换隔离环境时，使用根目录未跟踪的 `.env.demo.local`，由 `scripts/integration/with-demo-env.ps1` 将值仅注入当前子进程，不改写正式 `.env.local`。
+
+官方依据：
+
+- https://supabase.com/docs/guides/getting-started/api-keys
+- https://supabase.com/docs/guides/troubleshooting/how-do-i-check-gotrueapi-version-of-a-supabase-project-lQAnOR

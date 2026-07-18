@@ -10,6 +10,8 @@
 
 ## 0. 演示前准备
 
+若仓库根目录 `.env.local` 指向正式 `SchoolWork` 项目，不要直接覆盖它；按 [`isolated-env-setup.md`](isolated-env-setup.md) 使用 `.env.demo.local` 和隔离环境脚本。只有前置检查输出 `PASSED` 后，才可以进入页面级演练。
+
 1. 运行 `npm.cmd run demo:preflight`，确认环境状态为 `PASSED`；出现 `BLOCKED` 时不得继续。
 2. 确认应用使用目标 Supabase 项目，先执行一次备份或确认本次为隔离环境。
 3. 确认三类演示账号已由管理员在隔离环境创建：管理员、实验人员、项目负责人/教师。账号使用占位邮箱和临时密码，不把密码写入文档。

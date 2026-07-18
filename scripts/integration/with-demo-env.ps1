@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidateSet('preflight', 'start')]
+    [ValidateSet('preflight', 'build', 'start')]
     [string]$Action = 'preflight',
     [string]$EnvFile = '.env.demo.local',
     [int]$Port = 3100
@@ -44,6 +44,11 @@ foreach ($name in $allowedNames) {
 Set-Location $root
 if ($Action -eq 'preflight') {
     npm.cmd run demo:preflight
+    exit $LASTEXITCODE
+}
+
+if ($Action -eq 'build') {
+    npm.cmd run build
     exit $LASTEXITCODE
 }
 

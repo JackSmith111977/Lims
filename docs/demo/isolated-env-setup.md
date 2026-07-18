@@ -16,7 +16,13 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\integration\with-d
 
 ## 启动应用
 
-先执行 `npm.cmd run build`，再运行：
+必须使用隔离环境变量重新构建（不能直接复用正式环境构建产物，因为 `NEXT_PUBLIC_*` 会进入浏览器 bundle）：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\integration\with-demo-env.ps1 -Action build
+```
+
+构建通过后再运行：
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\integration\with-demo-env.ps1 -Action start -Port 3100

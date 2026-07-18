@@ -30,7 +30,7 @@
 
 - `npm.cmd run lint`：通过。
 - `npx.cmd tsc --noEmit`：通过。
-- `npm.cmd test`：19 个文件、74 个测试通过。
+- `npm.cmd test`：20 个文件、86 个测试通过（2026-07-18 当前分支复测）。
 - `npm.cmd run build`：通过；Windows 原生 SWC 警告由既有 WASM/webpack 回退处理。
 - OpenAPI YAML 解析及看板路径/Schema 引用检查：通过。
 - 全量未认证 Playwright E2E：17/17 通过；使用已启动的生产服务复测，避免 Playwright 自动启动器在当前 Windows 环境中的超时干扰。

@@ -185,7 +185,7 @@
 
   - [x] T-601 [S] 实现 CSV/Excel 数据交换（Spec：FR-DATA-006、NFR-DATA-002、NFR-SEC-001～002；Design：DES-DATA-EXCHANGE-001；Depends：T-302、T-306；Verify：CSV/XLSX 正向导入、文件/行数/字段边界、原子拒绝、权限/审计和未认证 E2E；当前进度：A～D 已完成，正式项目远程正向/负向、审计、清理和质量门禁通过）
   - [x] T-601A [S] 锁定文件格式、字段映射、大小/行数边界、错误模型和审计摘要（Files：`specs/001-lims-core/design-data-exchange.md`、`api-contract.md`、`contracts/openapi.yaml`、`traceability.md`）
-  - [x] T-601B [S] 实现 CSV/XLSX 解析、统一行校验和批量写入服务/API（Files：`src/lib/server/data-import.ts`、`src/app/api/v1/tasks/[id]/data/import`；Verify：服务单元测试、TypeScript、任务/样品/设备边界）
+  - [x] T-601B [S] 实现 CSV/XLSX 解析、统一行校验和批量写入服务/API（Files：`src/lib/server/data-import.ts`、`src/app/api/v1/tasks/[id]/data/import`；Verify：服务单元测试、TypeScript、任务/样品/设备边界和跨时区 `collectedAt` UTC 规范化）
   - [x] T-601C [P] 实现实验数据页文件导入入口和结果反馈（Files：`src/components/experiment-data`、`src/app/data`；Verify：生产构建、未认证 E2E）
 - [x] T-601D [S] 完成远程集成、审计核对、对抗性审查和质量门禁（Spec：FR-DATA-006；Depends：T-601B～C；Verify：CSV/XLSX 正向导入、非法行零写入、清理和全量门禁；Review：`REV-DATA-EXCHANGE-001`）
 - [x] T-602 [S] 实现模拟仪器数据接口（Spec：FR-DATA-009、NFR-DATA-002、NFR-SEC-001～002；Design：DES-SIMULATED-INSTRUMENT-001；Depends：T-302、T-306、T-401；Verify：正向写入、来源不可伪造、非 ACTIVE/报废设备、任务/样品/数据锁定、权限/审计和未认证 E2E）

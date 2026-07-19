@@ -79,6 +79,12 @@ function hasValue(value: unknown) {
   return value !== null && value !== undefined && String(value).trim() !== "";
 }
 
+function normalizeCollectedAt(value: unknown) {
+  if (typeof value !== "string" || !value.trim()) return value;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? value : parsed.toISOString();
+}
+
 async function loadWorksheet(fileName: string, buffer: Buffer) {
   const extension = fileName.toLowerCase().slice(fileName.lastIndexOf("."));
   if (!extension || ![".csv", ".xlsx"].includes(extension)) {
@@ -138,7 +144,8 @@ export async function parseImportFile(fileName: string, buffer: Buffer): Promise
     const values: Record<string, unknown> = {};
     let rowHasData = false;
     for (const [column, field] of headers.entries()) {
-      const value = cellValue(row.getCell(column));
+      const rawValue = cellValue(row.getCell(column));
+      const value = field === "collectedAt" ? normalizeCollectedAt(rawValue) : rawValue;
       if (hasValue(value)) rowHasData = true;
       values[field] = value;
     }

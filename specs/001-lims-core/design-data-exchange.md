@@ -25,7 +25,7 @@ T-601 为实验人员提供任务级 CSV/Excel 数据导入。入口为受权限
 
 ## 3. 解析和错误模型
 
-服务端使用统一的表格解析适配器把 CSV/Excel 工作表转换为规范字段，再复用 `experiment-data` 的数据类型、值形状、长度和时间校验。错误至少包含 `IMPORT_FILE_REQUIRED`、`IMPORT_FILE_TYPE_UNSUPPORTED`、`IMPORT_FILE_TOO_LARGE`、`IMPORT_ROW_LIMIT_EXCEEDED`、`IMPORT_HEADERS_INVALID` 和 `IMPORT_ROW_INVALID`，行错误包含行号和字段名，但不回显整行内容。
+服务端使用统一的表格解析适配器把 CSV/Excel 工作表转换为规范字段，再复用 `experiment-data` 的数据类型、值形状、长度和时间校验。`collectedAt` 在导入层统一解析为带 `Z` 的 ISO 8601 UTC 字符串，避免 ExcelJS、操作系统时区或 CI runner 时区造成同一文件结果不一致；无法解析的时间保留为非法值并由统一行校验拒绝。错误至少包含 `IMPORT_FILE_REQUIRED`、`IMPORT_FILE_TYPE_UNSUPPORTED`、`IMPORT_FILE_TOO_LARGE`、`IMPORT_ROW_LIMIT_EXCEEDED`、`IMPORT_HEADERS_INVALID` 和 `IMPORT_ROW_INVALID`，行错误包含行号和字段名，但不回显整行内容。
 
 响应返回导入数量和新增数据视图：`{ data: ExperimentDataView[], importedCount }`。已有任务锁定错误继续使用 `DATA_TASK_LOCKED`，认证、授权和对象不存在错误沿用现有管理 API 错误模型。
 

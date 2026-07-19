@@ -116,7 +116,7 @@
 - [x] 锁定数据库备份、恢复、Auth/Storage 边界、验证和回滚策略（DES-BACKUP-RECOVERY-001）
 - [x] 锁定 P0 演示场景、合成数据目录、角色切换和验收证据边界（DES-DEMO-SCENARIO-001）
 - [x] 锁定系统测试层级、AC 验收矩阵、负向场景和缺陷闭环规则（DES-SYSTEM-TEST-001）
-- [x] 设计并实现 CSV/Excel 实验数据交换：服务端解析、行级校验、文件大小/数量边界、`FILE` 来源、页面入口、审计和正负向测试；正式项目 `test:data-import` 通过并自动清理（Spec：`FR-DATA-006`、`NFR-DATA-002`、`NFR-SEC-001～002`；Design：`DES-DATA-EXCHANGE-001`；Task：`T-601`）
+- [x] 设计并实现 CSV/Excel 实验数据交换：服务端解析、行级校验、文件大小/数量边界、`FILE` 来源、页面入口、审计、跨时区 `collectedAt` UTC 规范化和正负向测试；正式项目 `test:data-import` 通过并自动清理（Spec：`FR-DATA-006`、`NFR-DATA-002`、`NFR-SEC-001～002`；Design：`DES-DATA-EXCHANGE-001`；Task：`T-601`）
 - [x] 设计并实现模拟仪器数据接口：设备路径、任务/样品关联、`INSTRUMENT` 来源强制、ACTIVE 状态约束、不可变数据和审计；`T-602B1` 修复 `taskId` 路由字段与共享数据载荷边界后，正式项目正向/负向/审计/清理通过（Spec：`FR-DATA-009`、`NFR-DATA-002`、`NFR-SEC-001～002`；Design：`DES-SIMULATED-INSTRUMENT-001`；Task：`T-602`、`T-602B1`）
 - [x] 设计并实现报告模板配置：JSON 模板资源、`REPORT_TEMPLATE_` 编码边界、设置审计和报告生成时快照；`T-603B1` 修复路径编码 PATCH 的部分更新边界后，正式项目 CRUD/审计/清理通过（Spec：`FR-SETTING-004`、`FR-REPORT-001～006`、`NFR-SEC-001～002`；Design：`DES-REPORT-TEMPLATE-001`；Task：`T-603`、`T-603B1`）
 - [x] 设计并实现报告电子签名回执：发布后签署、SHA-256 快照完整性、签署人/时间、追加审计和外部 CA 边界；`T-604B1` 通过后续迁移显式限定 `extensions.digest`，正式项目签名/负向/审计/清理通过（Spec：`FR-REPORT-007`、`NFR-SEC-001～002`；Design：`DES-REPORT-SIGNATURE-001`；Task：`T-604`、`T-604B1`）

@@ -47,7 +47,8 @@
 - 当前本地分支：`feature/FR-DATA-001-record-results`。
 - 当前工作区包含上一轮 MVP/业务模块改动和本轮导航改动；提交前逐文件审阅，`tmp/` 运行产物不纳入提交。
 - 当前状态：`origin` 已写入本地 Git 配置；本地已有 `main` 基线分支，且为当前功能分支的祖先；76 个项目文件已创建本地提交 `0405586`，`.env*` 与 `tmp/` 未纳入。
-- 当前状态：`main` 基线已成功推送到 `origin/main`；下一步推送 `feature/FR-DATA-001-record-results`，再确认远程默认分支并创建 Draft PR。自动化执行环境不能读取或转移用户终端 token，但 Git 远程认证链路已实际验证可用。
+- 当前状态：`main` 基线已推送到 `origin/main`；`feature/FR-DATA-001-record-results` 已推送并设置 upstream；Draft PR 已创建为 [#1](https://github.com/JackSmith111977/Lims/pull/1)，目标分支为 `main`，状态为 OPEN/Draft。自动化执行环境不能读取或转移用户终端 token，但 Git 和 GitHub CLI 的实际发布链路均已验证可用。
+- 当前状态：发布动作已完成；待 GitHub PR 审查、CI（如仓库启用）和合并。`T-615/T-616` 的已登录态最终视觉验收仍需在认证服务可用的环境中补做。
 
 ## 暂停条件
 

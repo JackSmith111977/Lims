@@ -34,7 +34,7 @@ jobs:
       - name: Check branch name
         env:
           BRANCH_NAME: ${{ github.head_ref }}
-        run: npm run check:branch -- -BranchName "$BRANCH_NAME"
+        run: npm run check:branch -- -BranchName "$env:BRANCH_NAME"
 
   quality:
     name: Quality gates

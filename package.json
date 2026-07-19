@@ -37,6 +37,7 @@
     "supabase:dry-run": "supabase db push --dry-run",
     "supabase:push": "supabase db push",
     "supabase:types": "supabase gen types typescript --linked",
+    "check:branch": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/sdd/check-branch-policy.ps1",
     "check:versioning": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/sdd/check-versioning.ps1"
   },
   "dependencies": {

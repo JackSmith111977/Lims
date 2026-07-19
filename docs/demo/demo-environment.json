@@ -1,0 +1,28 @@
+{
+  "scenarioId": "DEMO-LIMS-001",
+  "status": "approved",
+  "isolated": true,
+  "projectRef": "vrggsiwqttxciaaemhri",
+  "baseUrl": "http://localhost:3000",
+  "prefix": "DEMO_",
+  "canonicalProject": {
+    "name": "SchoolWork",
+    "projectRef": "fofjsknqdrmgyxtxwxwo",
+    "role": "application-database"
+  },
+  "isolatedDemoProject": {
+    "name": "test",
+    "projectRef": "vrggsiwqttxciaaemhri",
+    "role": "synthetic-demo-database",
+    "dataPolicy": "DEMO_-prefixed synthetic data only"
+  },
+  "demoTargetPolicy": "requires-isolated-project",
+  "forbiddenProjectRefs": [
+    "fofjsknqdrmgyxtxwxwo"
+  ],
+  "accounts": [
+    { "roleCode": "SYSTEM_ADMIN", "email": "<demo-admin@example.invalid>" },
+    { "roleCode": "RESEARCHER", "email": "<demo-operator@example.invalid>" },
+    { "roleCode": "PROJECT_LEAD", "email": "<demo-reviewer@example.invalid>" }
+  ]
+}

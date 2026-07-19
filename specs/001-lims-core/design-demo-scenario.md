@@ -1,0 +1,67 @@
+# 毕业设计演示场景设计
+
+| 项目 | 内容 |
+| --- | --- |
+| Design ID | `DES-DEMO-SCENARIO-001` |
+| 来源 Spec | 所有 P0 功能需求、`AC-AUTH-001`、`AC-SAMPLE-001～002`、`AC-TASK-001`、`AC-DATA-001`、`AC-REVIEW-001`、`AC-REPORT-001`、`AC-RESOURCE-001`、`AC-AUDIT-001`、`AC-DASH-001` |
+| 状态 | Approved（隔离项目结构、合成种子、页面全链路、账号清理和零残留核对均已完成） |
+| 数据目录 | [`docs/demo/demo-data-catalog.json`](../../docs/demo/demo-data-catalog.json) |
+| 演示手册 | [`docs/demo/demo-runbook.md`](../../docs/demo/demo-runbook.md) |
+
+## 1. 目标和原则
+
+演示场景使用一个高校科研实验室的标准样品检测任务，连续展示“项目/任务 → 样品 → 方法/设备/耗材 → 数据录入与处理 → 审核 → 报告 → 追溯/统计/审计”闭环。所有数据均为合成数据，不使用真实人员、项目、实验结果或凭据。
+
+演示数据必须满足：
+
+- 所有持久实体使用 `DEMO_` 前缀或明确的 `demo-` 账号标识，可检索、可清理。
+- 账号使用文档中的占位符，不在仓库保存密码、token、service role key 或真实邮箱。
+- 演示前先备份；演示环境与正式环境隔离；演示后按照前缀核对并清理，不能依赖页面隐藏来保证清理。
+- 每个演示步骤对应 Spec ID 和页面/接口证据，答辩时可以从一个报告回查到任务、样品、数据、审核和审计。
+- 当前没有新增数据导入功能，因此首次准备可以通过既有页面和受控集成脚本完成；演示目录不是新的业务事实源。
+
+### 演示前置检查
+
+任何演示数据写入前必须运行 `npm.cmd run demo:preflight`。该检查读取 [`demo-environment.json`](../../docs/demo/demo-environment.json)，要求环境状态为 `approved`、明确标记 `isolated: true`、项目 ref 与应用的 Supabase URL 一致、项目不在生产拒绝列表中，并且账号配置只包含 `example.invalid` 占位符。检查失败时禁止继续执行页面操作、SQL 或集成脚本。本项目当前批准的隔离项目为 Supabase `test`（project ref `vrggsiwqttxciaaemhri`）；正式项目 SchoolWork（project ref `fofjsknqdrmgyxtxwxwo`）仅用于规范远程数据，不得承载演示种子。
+
+## 2. 角色和合成数据
+
+| 角色 | 演示账号 | 责任 |
+| --- | --- | --- |
+| 系统管理员 | `<demo-admin@example.invalid>` | 初始化基础设置、用户/角色、设备、耗材和环境记录 |
+| 实验人员 | `<demo-operator@example.invalid>` | 查看分配任务、处理样品、录入和处理数据 |
+| 项目负责人/教师 | `<demo-reviewer@example.invalid>` | 查看结果、审核、发布报告和查询追溯 |
+
+核心实体固定使用以下代码，具体字段值见 JSON 目录：
+
+| 实体 | 代码 |
+| --- | --- |
+| 实验室/区域 | `DEMO_LAB_01` / `DEMO_ZONE_01` |
+| 科研项目 | `DEMO_P_001` |
+| 实验方法 | `DEMO_M_001`，版本 `1.0` |
+| 仪器设备 | `DEMO_INST_001` |
+| 试剂耗材 | `DEMO_REAGENT_001`，批号 `DEMO_BATCH_001` |
+| 实验任务 | `DEMO_T_001` |
+| 样品 | `DEMO_S_001` |
+| 原始数据 | `DEMO_RAW_001` |
+| 报告 | 使用系统生成的 `DEMO_` 关联报告编号 |
+
+## 3. 演示状态和证据
+
+演示必须保留以下状态节点：
+
+1. 任务从草稿/待登记进入已分配、执行中和待审核。
+2. 样品至少经过登记、处理和可查询的流转节点。
+3. 原始数据保留，处理数据和异常说明可追溯到处理运行。
+4. 结果完成一次通过审核，报告生成、发布并可打开追溯页面。
+5. 看板显示样品、任务、待审核/异常、设备和库存摘要；审计页面显示关键操作。
+
+失败演示可选：使用第二个样品或异常测量值生成一个 `FLAGGED`/退回结果，展示系统不会把异常数据直接当作通过结果，也不会允许未审核任务归档。
+
+证据优先保存页面截图、关键编号、状态历史和审计对象 ID；不截图密码、token、完整连接串或真实个人信息。
+
+## 4. 清理和重置
+
+演示环境若需保留以供答辩，保留 `DEMO_` 数据但禁止混入真实业务。答辩结束或重复演练前，先导出备份并按 `docs/ops/backup-recovery.md` 验证，然后在批准的隔离项目中执行 [`scripts/integration/demo-cleanup.sql`](../../scripts/integration/demo-cleanup.sql)。脚本只按严格 `DEMO_` 前缀删除公开数据和演示用户公开资料，不直接操作 `auth.users`；账号本体须通过 Dashboard Auth Users 或受支持的 Auth API 删除，最后使用脚本末尾的只读查询确认公开残留为 0。
+
+清理脚本不得使用通配符删除非演示数据，不得直接删除生产环境的表，不得把清理权限暴露给普通账号。

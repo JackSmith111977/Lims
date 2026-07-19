@@ -32,3 +32,11 @@
 ## 7. 文档状态透明
 
 文档和需求必须标注 Draft、Proposed、Approved、Implemented、Verified 等状态，禁止将草稿内容表述为已确认事实。
+
+## 8. 开发准入与远程数据库
+
+- 开始任何需求、设计或编码工作前，必须先读取 `specs/README.md`、相关核心 Spec、对应的 Plan/Design/Tasks 和 `docs/sdd/README.md`。
+- 本项目的开发联调、迁移验证、演示和验收使用经授权的远程 Supabase 项目，不以本地 Supabase/Docker 数据库作为默认依赖或验收证据。
+- 远程 Supabase Dashboard 的人工 SQL、迁移、清理和核验通过已登录的受控浏览器操作；CLI/API 仅用于有明确范围、可重复且留存证据的自动化任务。
+- 任何远程操作都必须最小化范围并可清理、可回滚、可审计；不得读取、回显、提交或传播浏览器会话、Token、Service Role Key 和数据库密码。
+- 规范未读取、内容过期或层间不一致时，先停止实现并完成 Spec 治理。

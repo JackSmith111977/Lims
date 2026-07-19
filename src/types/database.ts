@@ -184,6 +184,50 @@ export type Database = {
           },
         ]
       }
+      environment_threshold: {
+        Row: {
+          created_at: string
+          id: number
+          laboratory_id: number
+          metric: string
+          status: string
+          threshold_max: number | null
+          threshold_min: number | null
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          laboratory_id: number
+          metric: string
+          status?: string
+          threshold_max?: number | null
+          threshold_min?: number | null
+          unit: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          laboratory_id?: number
+          metric?: string
+          status?: string
+          threshold_max?: number | null
+          threshold_min?: number | null
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "environment_threshold_laboratory_id_fkey"
+            columns: ["laboratory_id"]
+            isOneToOne: false
+            referencedRelation: "lab_laboratory"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       experiment_data: {
         Row: {
           collected_at: string
@@ -264,6 +308,173 @@ export type Database = {
           },
         ]
       }
+      experiment_processing_rule: {
+        Row: {
+          config: Json
+          created_at: string
+          created_by: string | null
+          id: number
+          name: string
+          rule_code: string
+          rule_type: string
+          status: string
+          version: string
+        }
+        Insert: {
+          config: Json
+          created_at?: string
+          created_by?: string | null
+          id?: number
+          name: string
+          rule_code: string
+          rule_type: string
+          status?: string
+          version: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: number
+          name?: string
+          rule_code?: string
+          rule_type?: string
+          status?: string
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "experiment_processing_rule_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      experiment_processing_run: {
+        Row: {
+          decision: string | null
+          error_code: string | null
+          error_message: string | null
+          executed_at: string
+          executed_by: string
+          execution_mode: string
+          explanation: string | null
+          id: number
+          output_data_id: number | null
+          rule_id: number
+          status: string
+          task_id: number
+        }
+        Insert: {
+          decision?: string | null
+          error_code?: string | null
+          error_message?: string | null
+          executed_at?: string
+          executed_by: string
+          execution_mode: string
+          explanation?: string | null
+          id?: number
+          output_data_id?: number | null
+          rule_id: number
+          status?: string
+          task_id: number
+        }
+        Update: {
+          decision?: string | null
+          error_code?: string | null
+          error_message?: string | null
+          executed_at?: string
+          executed_by?: string
+          execution_mode?: string
+          explanation?: string | null
+          id?: number
+          output_data_id?: number | null
+          rule_id?: number
+          status?: string
+          task_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "experiment_processing_run_executed_by_fkey"
+            columns: ["executed_by"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "experiment_processing_run_output_data_id_fkey"
+            columns: ["output_data_id"]
+            isOneToOne: false
+            referencedRelation: "experiment_data"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "experiment_processing_run_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "experiment_processing_rule"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "experiment_processing_run_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "experiment_task"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      experiment_data_lineage: {
+        Row: {
+          created_at: string
+          id: number
+          output_data_id: number
+          relation_type: string
+          run_id: number
+          source_data_id: number
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          output_data_id: number
+          relation_type?: string
+          run_id: number
+          source_data_id: number
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          output_data_id?: number
+          relation_type?: string
+          run_id?: number
+          source_data_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "experiment_data_lineage_output_data_id_fkey"
+            columns: ["output_data_id"]
+            isOneToOne: false
+            referencedRelation: "experiment_data"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "experiment_data_lineage_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "experiment_processing_run"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "experiment_data_lineage_source_data_id_fkey"
+            columns: ["source_data_id"]
+            isOneToOne: false
+            referencedRelation: "experiment_data"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       experiment_method: {
         Row: {
           created_at: string
@@ -309,6 +520,63 @@ export type Database = {
         }
         Relationships: []
       }
+      experiment_method_history: {
+        Row: {
+          change_type: string
+          from_status: string | null
+          from_version: string | null
+          id: number
+          method_code: string
+          method_id: number
+          occurred_at: string
+          operator_id: string
+          remark: string | null
+          to_status: string
+          to_version: string
+        }
+        Insert: {
+          change_type: string
+          from_status?: string | null
+          from_version?: string | null
+          id?: number
+          method_code: string
+          method_id: number
+          occurred_at?: string
+          operator_id: string
+          remark?: string | null
+          to_status: string
+          to_version: string
+        }
+        Update: {
+          change_type?: string
+          from_status?: string | null
+          from_version?: string | null
+          id?: number
+          method_code?: string
+          method_id?: number
+          occurred_at?: string
+          operator_id?: string
+          remark?: string | null
+          to_status?: string
+          to_version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "experiment_method_history_method_id_fkey"
+            columns: ["method_id"]
+            isOneToOne: false
+            referencedRelation: "experiment_method"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "experiment_method_history_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       experiment_report: {
         Row: {
           archived_at: string | null
@@ -316,6 +584,7 @@ export type Database = {
           generated_by: string
           id: number
           published_at: string | null
+          report_payload: Json
           report_code: string
           status: string
           storage_path: string | null
@@ -328,6 +597,7 @@ export type Database = {
           generated_by: string
           id?: number
           published_at?: string | null
+          report_payload?: Json
           report_code: string
           status?: string
           storage_path?: string | null
@@ -340,6 +610,7 @@ export type Database = {
           generated_by?: string
           id?: number
           published_at?: string | null
+          report_payload?: Json
           report_code?: string
           status?: string
           storage_path?: string | null
@@ -359,6 +630,96 @@ export type Database = {
             columns: ["task_id"]
             isOneToOne: false
             referencedRelation: "experiment_task"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      experiment_report_history: {
+        Row: {
+          from_status: string | null
+          id: number
+          occurred_at: string
+          operator_id: string
+          report_id: number
+          remark: string | null
+          to_status: string
+        }
+        Insert: {
+          from_status?: string | null
+          id?: number
+          occurred_at?: string
+          operator_id: string
+          report_id: number
+          remark?: string | null
+          to_status: string
+        }
+        Update: {
+          from_status?: string | null
+          id?: number
+          occurred_at?: string
+          operator_id?: string
+          report_id?: number
+          remark?: string | null
+          to_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "experiment_report_history_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "experiment_report_history_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "experiment_report"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      experiment_report_signature: {
+        Row: {
+          id: number
+          report_id: number
+          remark: string | null
+          signature_hash: string
+          signature_type: string
+          signed_at: string
+          signed_by: string
+        }
+        Insert: {
+          id?: number
+          report_id: number
+          remark?: string | null
+          signature_hash: string
+          signature_type?: string
+          signed_at?: string
+          signed_by: string
+        }
+        Update: {
+          id?: number
+          report_id?: number
+          remark?: string | null
+          signature_hash?: string
+          signature_type?: string
+          signed_at?: string
+          signed_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "experiment_report_signature_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: true
+            referencedRelation: "experiment_report"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "experiment_report_signature_signed_by_fkey"
+            columns: ["signed_by"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
             referencedColumns: ["id"]
           },
         ]
@@ -482,6 +843,7 @@ export type Database = {
       instrument_maintenance: {
         Row: {
           attachment_id: number | null
+          cycle_days: number | null
           id: number
           instrument_id: number
           maintenance_type: string
@@ -493,6 +855,7 @@ export type Database = {
         }
         Insert: {
           attachment_id?: number | null
+          cycle_days?: number | null
           id?: number
           instrument_id: number
           maintenance_type: string
@@ -504,6 +867,7 @@ export type Database = {
         }
         Update: {
           attachment_id?: number | null
+          cycle_days?: number | null
           id?: number
           instrument_id?: number
           maintenance_type?: string
@@ -538,6 +902,7 @@ export type Database = {
           id: number
           item_code: string
           location: string | null
+          low_stock_threshold: number
           manufacturer: string | null
           name: string
           quantity: number
@@ -554,6 +919,7 @@ export type Database = {
           id?: number
           item_code: string
           location?: string | null
+          low_stock_threshold?: number
           manufacturer?: string | null
           name: string
           quantity?: number
@@ -570,6 +936,7 @@ export type Database = {
           id?: number
           item_code?: string
           location?: string | null
+          low_stock_threshold?: number
           manufacturer?: string | null
           name?: string
           quantity?: number
@@ -680,6 +1047,54 @@ export type Database = {
             columns: ["parent_id"]
             isOneToOne: false
             referencedRelation: "lab_department"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lab_group: {
+        Row: {
+          code: string
+          created_at: string
+          id: number
+          laboratory_id: number
+          leader_id: string | null
+          name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: number
+          laboratory_id: number
+          leader_id?: string | null
+          name: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: number
+          laboratory_id?: number
+          leader_id?: string | null
+          name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lab_group_laboratory_id_fkey"
+            columns: ["laboratory_id"]
+            isOneToOne: false
+            referencedRelation: "lab_laboratory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lab_group_leader_id_fkey"
+            columns: ["leader_id"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
             referencedColumns: ["id"]
           },
         ]
@@ -937,6 +1352,89 @@ export type Database = {
           },
         ]
       }
+      sys_category: {
+        Row: {
+          category_type: string
+          code: string
+          created_at: string
+          description: string | null
+          id: number
+          name: string
+          parent_id: number | null
+          sort_order: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          category_type: string
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: number
+          name: string
+          parent_id?: number | null
+          sort_order?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          category_type?: string
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: number
+          name?: string
+          parent_id?: number | null
+          sort_order?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sys_category_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "sys_category"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sys_parameter: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          id: number
+          name: string
+          status: string
+          updated_at: string
+          value_json: Json
+          value_type: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: number
+          name: string
+          status?: string
+          updated_at?: string
+          value_json: Json
+          value_type: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: number
+          name?: string
+          status?: string
+          updated_at?: string
+          value_json?: Json
+          value_type?: string
+        }
+        Relationships: []
+      }
       sys_permission: {
         Row: {
           action: string
@@ -958,6 +1456,36 @@ export type Database = {
           id?: number
           name?: string
           resource?: string
+        }
+        Relationships: []
+      }
+      sys_position: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          id: number
+          name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: number
+          name: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: number
+          name?: string
+          status?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -1018,35 +1546,83 @@ export type Database = {
           },
         ]
       }
+      sys_unit: {
+        Row: {
+          code: string
+          created_at: string
+          dimension: string | null
+          id: number
+          name: string
+          sort_order: number
+          status: string
+          symbol: string | null
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          dimension?: string | null
+          id?: number
+          name: string
+          sort_order?: number
+          status?: string
+          symbol?: string | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          dimension?: string | null
+          id?: number
+          name?: string
+          sort_order?: number
+          status?: string
+          symbol?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sys_user: {
         Row: {
+          availability_note: string | null
+          availability_status: string
+          availability_until: string | null
           created_at: string
           department_id: number | null
           email: string | null
           id: string
           last_login_at: string | null
+          position_id: number | null
           real_name: string
           status: string
           updated_at: string
           username: string
         }
         Insert: {
+          availability_note?: string | null
+          availability_status?: string
+          availability_until?: string | null
           created_at?: string
           department_id?: number | null
           email?: string | null
           id: string
           last_login_at?: string | null
+          position_id?: number | null
           real_name: string
           status?: string
           updated_at?: string
           username: string
         }
         Update: {
+          availability_note?: string | null
+          availability_status?: string
+          availability_until?: string | null
           created_at?: string
           department_id?: number | null
           email?: string | null
           id?: string
           last_login_at?: string | null
+          position_id?: number | null
           real_name?: string
           status?: string
           updated_at?: string
@@ -1058,6 +1634,60 @@ export type Database = {
             columns: ["department_id"]
             isOneToOne: false
             referencedRelation: "lab_department"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sys_user_position_fk"
+            columns: ["position_id"]
+            isOneToOne: false
+            referencedRelation: "sys_position"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sys_user_qualification: {
+        Row: {
+          certificate_no: string | null
+          created_at: string
+          expires_at: string | null
+          id: number
+          issued_at: string | null
+          notes: string | null
+          qualification_name: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          certificate_no?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: number
+          issued_at?: string | null
+          notes?: string | null
+          qualification_name: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          certificate_no?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: number
+          issued_at?: string | null
+          notes?: string | null
+          qualification_name?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sys_user_qualification_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
             referencedColumns: ["id"]
           },
         ]
@@ -1085,6 +1715,97 @@ export type Database = {
           },
           {
             foreignKeyName: "sys_user_role_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sys_user_skill: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: number
+          level: string | null
+          notes: string | null
+          skill_name: string
+          updated_at: string
+          user_id: string
+          verified_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: number
+          level?: string | null
+          notes?: string | null
+          skill_name: string
+          updated_at?: string
+          user_id: string
+          verified_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: number
+          level?: string | null
+          notes?: string | null
+          skill_name?: string
+          updated_at?: string
+          user_id?: string
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sys_user_skill_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sys_user_training: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          expires_at: string | null
+          id: number
+          notes: string | null
+          provider: string | null
+          result: string | null
+          training_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: number
+          notes?: string | null
+          provider?: string | null
+          result?: string | null
+          training_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: number
+          notes?: string | null
+          provider?: string | null
+          result?: string | null
+          training_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sys_user_training_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "sys_user"
@@ -1137,6 +1858,55 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "sys_user"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_group_assignee: {
+        Row: {
+          assigned_at: string
+          assigned_by: string
+          group_id: number
+          id: number
+          task_id: number
+          unassigned_at: string | null
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by: string
+          group_id: number
+          id?: number
+          task_id: number
+          unassigned_at?: string | null
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string
+          group_id?: number
+          id?: number
+          task_id?: number
+          unassigned_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_group_assignee_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_group_assignee_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "lab_group"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_group_assignee_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "experiment_task"
             referencedColumns: ["id"]
           },
         ]
@@ -1258,6 +2028,152 @@ export type Database = {
     Functions: {
       has_permission: { Args: { _permission_code: string }; Returns: boolean }
       has_role: { Args: { _role_code: string }; Returns: boolean }
+      transition_sample_flow: {
+        Args: {
+          _handover_to?: string
+          _location?: string
+          _node: string
+          _remark?: string
+          _sample_id: number
+        }
+        Returns: Json
+      }
+      replace_task_assignments: {
+        Args: {
+          _group_ids?: number[]
+          _task_id: number
+          _user_ids?: string[]
+        }
+        Returns: Json
+      }
+      transition_task: {
+        Args: {
+          _remark?: string
+          _task_id: number
+          _to_status: string
+        }
+        Returns: Json
+      }
+      record_audit_event: {
+        Args: {
+          _action: string
+          _after_json?: Json
+          _before_json?: Json
+          _object_id: string
+          _object_type: string
+          _required_permission: string
+        }
+        Returns: undefined
+      }
+      validate_processing_inputs: {
+        Args: {
+          _rule_id: number
+          _source_data_ids: number[]
+          _task_id: number
+        }
+        Returns: Database["public"]["Tables"]["experiment_processing_rule"]["Row"]
+      }
+      execute_experiment_processing: {
+        Args: {
+          _decision?: string | null
+          _execution_mode: string
+          _explanation?: string
+          _output_type: string
+          _processed_value: number
+          _rule_id: number
+          _source_data_ids: number[]
+          _status: string
+          _task_id: number
+        }
+        Returns: Json
+      }
+      record_experiment_processing_failure: {
+        Args: {
+          _error_code: string
+          _error_message: string
+          _execution_mode: string
+          _rule_id: number
+          _source_data_ids: number[]
+          _task_id: number
+        }
+        Returns: Json
+      }
+      review_task_result: {
+        Args: {
+          _comment?: string | null
+          _result: string
+          _task_id: number
+        }
+        Returns: Json
+      }
+      generate_report: {
+        Args: { _task_id: number }
+        Returns: Json
+      }
+      submit_report_for_review: {
+        Args: { _remark?: string | null; _report_id: number }
+        Returns: Json
+      }
+      publish_report: {
+        Args: { _remark?: string | null; _report_id: number }
+        Returns: Json
+      }
+      archive_report: {
+        Args: { _remark?: string | null; _report_id: number }
+        Returns: Json
+      }
+      sign_report: {
+        Args: { _remark?: string | null; _report_id: number }
+        Returns: Json
+      }
+      create_instrument: {
+        Args: { _payload: Json }
+        Returns: Json
+      }
+      update_instrument: {
+        Args: { _instrument_id: number; _payload: Json }
+        Returns: Json
+      }
+      record_instrument_maintenance: {
+        Args: { _instrument_id: number; _payload: Json }
+        Returns: Json
+      }
+      create_inventory_item: {
+        Args: { _payload: Json }
+        Returns: Json
+      }
+      update_inventory_item: {
+        Args: { _item_id: number; _payload: Json }
+        Returns: Json
+      }
+      record_inventory_transaction: {
+        Args: { _item_id: number; _payload: Json }
+        Returns: Json
+      }
+      get_inventory_alerts: {
+        Args: { _days?: number }
+        Returns: Json
+      }
+      save_environment_threshold: {
+        Args: { _payload: Json; _threshold_id: number }
+        Returns: Json
+      }
+      record_environment_reading: {
+        Args: { _payload: Json }
+        Returns: Json
+      }
+      get_environment_alerts: {
+        Args: { _days?: number; _laboratory_id?: number | null }
+        Returns: Json
+      }
+      set_role_permissions: {
+        Args: { _permission_codes: string[]; _role_id: number }
+        Returns: undefined
+      }
+      set_user_roles: {
+        Args: { _role_codes: string[]; _target_user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

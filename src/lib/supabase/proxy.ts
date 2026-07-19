@@ -36,7 +36,22 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user && request.nextUrl.pathname.startsWith("/dashboard")) {
+  const isProtectedPage =
+    request.nextUrl.pathname.startsWith("/dashboard") ||
+    request.nextUrl.pathname.startsWith("/admin") ||
+    request.nextUrl.pathname.startsWith("/personnel") ||
+    request.nextUrl.pathname.startsWith("/projects") ||
+    request.nextUrl.pathname.startsWith("/tasks") ||
+    request.nextUrl.pathname.startsWith("/samples") ||
+    request.nextUrl.pathname.startsWith("/methods") ||
+    request.nextUrl.pathname.startsWith("/data") ||
+    request.nextUrl.pathname.startsWith("/reviews") ||
+    request.nextUrl.pathname.startsWith("/reports") ||
+    request.nextUrl.pathname.startsWith("/instruments") ||
+    request.nextUrl.pathname.startsWith("/inventory") ||
+    request.nextUrl.pathname.startsWith("/environment");
+
+  if (!user && isProtectedPage) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
     redirectUrl.searchParams.set("redirectedFrom", request.nextUrl.pathname);

@@ -24,6 +24,12 @@ Spec → Plan → Tasks → Implement → Verify
 
 完整 SDD 流程、模板、质量门禁、并行规则、对抗性审查、版本管理和一致性检查见：[docs/sdd/README.md](E:/Work%20Space/SchoolWork/docs/sdd/README.md)。
 
+## 开发准入
+
+开始任何需求、设计或编码工作前，必须读取本文件、[核心系统 Spec](E:/Work%20Space/SchoolWork/specs/001-lims-core/spec.md)、相关 Plan/Design/Tasks 和 [SDD 流程](E:/Work%20Space/SchoolWork/docs/sdd/README.md)，并使用需求或验收 ID 追踪变更。
+
+本项目的开发、联调、迁移验证、演示和验收直接使用经授权的远程 Supabase 项目，不要求本地数据库。Supabase Dashboard 的人工远程操作通过受控浏览器执行；CLI/API 只在可重复自动化、范围明确且保留证据时使用。具体步骤见：[远程 Supabase 工作流](E:/Work%20Space/SchoolWork/docs/sdd/remote-supabase-workflow.md)。
+
 ## 目录说明
 
 - [constitution.md](E:/Work%20Space/SchoolWork/specs/constitution.md)：Spec 治理原则。

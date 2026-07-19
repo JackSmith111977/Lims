@@ -9,9 +9,14 @@ tags:
   - name: Auth
   - name: Samples
   - name: Tasks
+  - name: Projects
   - name: Reviews
   - name: Reports
   - name: Dashboard
+  - name: Admin
+  - name: Settings
+  - name: Personnel
+  - name: Methods
 paths:
   /auth/login:
     post:
@@ -34,29 +39,716 @@ paths:
                 $ref: '#/components/schemas/ApiResponseLogin'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: 退出登录并记录审计事件
+      operationId: logout
+      responses:
+        '200':
+          description: 退出成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    required: [ok]
+                    properties:
+                      ok: { type: boolean }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
+  /audit-logs:
+    get:
+      tags: [Admin]
+      summary: 查询操作审计日志
+      operationId: listAuditLogs
+      parameters:
+        - in: query
+          name: objectType
+          schema: { type: string, maxLength: 32 }
+        - in: query
+          name: action
+          schema: { type: string, maxLength: 64 }
+        - in: query
+          name: operatorId
+          schema: { type: string, format: uuid }
+        - in: query
+          name: from
+          schema: { type: string, format: date-time }
+        - in: query
+          name: to
+          schema: { type: string, format: date-time }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 200, default: 100 }
+      responses:
+        '200':
+          description: 审计日志列表
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiResponseAuditLogs' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /trace/{objectType}/{id}:
+    get:
+      tags: [Reports]
+      summary: 从报告快照查询任务、样品、数据和审核记录
+      operationId: getTrace
+      parameters:
+        - name: objectType
+          in: path
+          required: true
+          schema: { type: string, enum: [report] }
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200':
+          description: 报告追溯链
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiResponseReportTrace' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /users:
+    get:
+      tags: [Admin]
+      summary: 查询用户
+      operationId: listUsers
+      parameters:
+        - in: query
+          name: keyword
+          schema: { type: string }
+        - in: query
+          name: status
+          schema: { type: string, enum: [ACTIVE, INACTIVE] }
+      responses:
+        '200':
+          description: 用户列表
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiResponseAdminUsers' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Admin]
+      summary: 创建用户
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AdminUserCreateRequest' }
+      responses:
+        '201':
+          description: 用户创建成功
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiResponseAdminUser' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
+  /users/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    patch:
+      tags: [Admin]
+      summary: 修改用户资料或状态
+      operationId: updateUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AdminUserUpdateRequest' }
+      responses:
+        '200':
+          description: 用户更新成功
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiResponseAdminUser' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /users/{id}/roles:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    post:
+      tags: [Admin]
+      summary: 替换用户角色
+      operationId: replaceUserRoles
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [roleCodes]
+              properties:
+                roleCodes:
+                  type: array
+                  items: { type: string }
+      responses:
+        '200': { description: 角色分配成功 }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /roles:
+    get:
+      tags: [Admin]
+      summary: 查询角色及权限
+      operationId: listRoles
+      responses:
+        '200':
+          description: 角色和权限列表
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiResponseAdminRoles' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Admin]
+      summary: 创建角色
+      operationId: createRole
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AdminRoleCreateRequest' }
+      responses:
+        '201': { description: 角色创建成功 }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /roles/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    patch:
+      tags: [Admin]
+      summary: 修改角色
+      operationId: updateRole
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                status: { type: string, enum: [ACTIVE, INACTIVE] }
+      responses:
+        '200': { description: 角色更新成功 }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /roles/{id}/permissions:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [Admin]
+      summary: 替换角色权限
+      operationId: replaceRolePermissions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [permissionCodes]
+              properties:
+                permissionCodes:
+                  type: array
+                  items: { type: string }
+      responses:
+        '200': { description: 权限配置成功 }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /personnel:
+    get:
+      tags: [Personnel]
+      summary: 查询实验室人员
+      operationId: listPersonnel
+      parameters:
+        - in: query
+          name: keyword
+          schema: { type: string }
+        - in: query
+          name: availabilityStatus
+          schema: { type: string, enum: [AVAILABLE, ON_LEAVE, QUALIFICATION_SUSPENDED, UNAVAILABLE] }
+        - in: query
+          name: departmentId
+          schema: { type: integer, format: int64 }
+        - in: query
+          name: positionId
+          schema: { type: integer, format: int64 }
+      responses:
+        '200': { description: 人员列表, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponsePersonnelItems' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /personnel/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [Personnel]
+      summary: 查询人员详情
+      operationId: getPersonnel
+      responses:
+        '200': { description: 人员详情, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponsePersonnel' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Personnel]
+      summary: 更新人员档案
+      operationId: updatePersonnel
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PersonnelUpdateRequest' }
+      responses:
+        '200': { description: 更新成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponsePersonnel' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /personnel/{id}/{recordType}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+      - name: recordType
+        in: path
+        required: true
+        schema: { type: string, enum: [skills, qualifications, training] }
+    get:
+      tags: [Personnel]
+      summary: 查询人员能力记录
+      operationId: listPersonnelRecords
+      responses:
+        '200': { description: 能力记录列表, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponsePersonnelRecords' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    post:
+      tags: [Personnel]
+      summary: 新增人员能力记录
+      operationId: createPersonnelRecord
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PersonnelRecordRequest' }
+      responses:
+        '201': { description: 创建成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponsePersonnelRecord' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /settings/laboratories:
+    get:
+      tags: [Settings]
+      summary: 查询实验室
+      operationId: listSettingsLaboratories
+      responses:
+        '200': { description: 实验室列表, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseSettingsItems' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Settings]
+      summary: 新增实验室
+      operationId: createSettingsLaboratory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SettingCreateRequest' }
+      responses:
+        '201': { description: 创建成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseSetting' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /settings/laboratories/{id}:
+    parameters: [{ $ref: '#/components/parameters/Id' }]
+    patch:
+      tags: [Settings]
+      summary: 修改实验室
+      operationId: updateSettingsLaboratory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SettingUpdateRequest' }
+      responses:
+        '200': { description: 更新成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseSetting' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /settings/departments:
+    get:
+      tags: [Settings]
+      summary: 查询部门
+      operationId: listSettingsDepartments
+      responses:
+        '200': { description: 部门列表, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseSettingsItems' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Settings]
+      summary: 新增部门
+      operationId: createSettingsDepartment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SettingCreateRequest' }
+      responses:
+        '201': { description: 创建成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseSetting' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /settings/departments/{id}:
+    parameters: [{ $ref: '#/components/parameters/Id' }]
+    patch:
+      tags: [Settings]
+      summary: 修改部门
+      operationId: updateSettingsDepartment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SettingUpdateRequest' }
+      responses:
+        '200': { description: 更新成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseSetting' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /settings/groups:
+    get:
+      tags: [Settings]
+      summary: 查询实验组
+      operationId: listSettingsGroups
+      responses:
+        '200': { description: 实验组列表, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseSettingsItems' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Settings]
+      summary: 新增实验组
+      operationId: createSettingsGroup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SettingCreateRequest' }
+      responses:
+        '201': { description: 创建成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseSetting' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /settings/groups/{id}:
+    parameters: [{ $ref: '#/components/parameters/Id' }]
+    patch:
+      tags: [Settings]
+      summary: 修改实验组
+      operationId: updateSettingsGroup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SettingUpdateRequest' }
+      responses:
+        '200': { description: 更新成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseSetting' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /settings/categories:
+    get:
+      tags: [Settings]
+      summary: 查询通用分类
+      operationId: listSettingsCategories
+      parameters:
+        - in: query
+          name: categoryType
+          schema: { type: string }
+      responses:
+        '200': { description: 分类列表, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseSettingsItems' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Settings]
+      summary: 新增通用分类
+      operationId: createSettingsCategory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SettingCreateRequest' }
+      responses:
+        '201': { description: 创建成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseSetting' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /settings/categories/{id}:
+    parameters: [{ $ref: '#/components/parameters/Id' }]
+    patch:
+      tags: [Settings]
+      summary: 修改通用分类
+      operationId: updateSettingsCategory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SettingUpdateRequest' }
+      responses:
+        '200': { description: 更新成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseSetting' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /settings/units:
+    get:
+      tags: [Settings]
+      summary: 查询计量单位
+      operationId: listSettingsUnits
+      responses:
+        '200': { description: 单位列表, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseSettingsItems' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Settings]
+      summary: 新增计量单位
+      operationId: createSettingsUnit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SettingCreateRequest' }
+      responses:
+        '201': { description: 创建成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseSetting' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /settings/units/{id}:
+    parameters: [{ $ref: '#/components/parameters/Id' }]
+    patch:
+      tags: [Settings]
+      summary: 修改计量单位
+      operationId: updateSettingsUnit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SettingUpdateRequest' }
+      responses:
+        '200': { description: 更新成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseSetting' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /settings/parameters:
+    get:
+      tags: [Settings]
+      summary: 查询系统参数
+      operationId: listSettingsParameters
+      responses:
+        '200': { description: 参数列表, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseSettingsItems' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Settings]
+      summary: 新增系统参数
+      operationId: createSettingsParameter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ParameterCreateRequest' }
+      responses:
+        '201': { description: 创建成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseSetting' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /settings/parameters/{code}:
+    parameters:
+      - name: code
+        in: path
+        required: true
+        schema: { type: string }
+    patch:
+      tags: [Settings]
+      summary: 修改系统参数
+      operationId: updateSettingsParameter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ParameterUpdateRequest' }
+      responses:
+        '200': { description: 更新成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseSetting' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /settings/report-templates:
+    get:
+      tags: [Settings]
+      summary: 查询报告模板
+      operationId: listReportTemplates
+      responses:
+        '200': { description: 报告模板列表, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseSettingsItems' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Settings]
+      summary: 创建报告模板
+      operationId: createReportTemplate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReportTemplateCreateRequest' }
+      responses:
+        '201': { description: 创建成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseSetting' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /settings/report-templates/{code}:
+    parameters:
+      - name: code
+        in: path
+        required: true
+        schema: { type: string, pattern: '^REPORT_TEMPLATE_[A-Z0-9_]+$' }
+    patch:
+      tags: [Settings]
+      summary: 修改报告模板
+      operationId: updateReportTemplate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReportTemplateUpdateRequest' }
+      responses:
+        '200': { description: 修改成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseSetting' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /projects:
+    get:
+      tags: [Projects]
+      summary: 查询科研项目
+      operationId: listProjects
+      parameters:
+        - in: query
+          name: keyword
+          schema: { type: string }
+        - in: query
+          name: status
+          schema: { type: string, enum: [DRAFT, ACTIVE, ARCHIVED] }
+        - in: query
+          name: ownerId
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: 项目列表, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseProjectItems' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Projects]
+      summary: 创建科研项目
+      operationId: createProject
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProjectCreateRequest' }
+      responses:
+        '201': { description: 创建成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseProject' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /projects/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Projects]
+      summary: 查看科研项目
+      operationId: getProject
+      responses:
+        '200': { description: 项目详情, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseProject' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Projects]
+      summary: 修改科研项目
+      operationId: updateProject
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProjectUpdateRequest' }
+      responses:
+        '200': { description: 修改成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseProject' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
   /samples:
     get:
       tags: [Samples]
       summary: 查询样品
       operationId: listSamples
       parameters:
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/Size'
         - in: query
           name: keyword
           schema: { type: string }
         - in: query
           name: status
-          schema: { type: string }
+          schema: { type: string, enum: [REGISTERED, PROCESSING, PROCESSED, ARCHIVED, DISPOSED] }
+        - in: query
+          name: projectId
+          schema: { type: integer, format: int64 }
       responses:
         '200':
           description: 样品列表
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponseSamplePage'
+                $ref: '#/components/schemas/ApiResponseSampleItems'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
     post:
       tags: [Samples]
       summary: 登记样品
@@ -76,6 +768,12 @@ paths:
                 $ref: '#/components/schemas/ApiResponseSample'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
   /samples/{id}:
     parameters:
       - $ref: '#/components/parameters/Id'
@@ -92,6 +790,10 @@ paths:
                 $ref: '#/components/schemas/ApiResponseSample'
         '404':
           $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
     patch:
       tags: [Samples]
       summary: 修改样品
@@ -111,6 +813,461 @@ paths:
                 $ref: '#/components/schemas/ApiResponseSample'
         '409':
           $ref: '#/components/responses/Conflict'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /samples/{id}/flows:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Samples]
+      summary: 查询样品流转记录
+      operationId: listSampleFlows
+      responses:
+        '200':
+          description: 流转记录
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseSampleFlows'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [Samples]
+      summary: 登记样品流转
+      operationId: createSampleFlow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SampleFlowRequest'
+      responses:
+        '201':
+          description: 流转登记成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseSampleFlow'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /methods:
+    get:
+      tags: [Methods]
+      summary: 查询实验方法版本
+      operationId: listMethods
+      parameters:
+        - in: query
+          name: keyword
+          schema: { type: string }
+        - in: query
+          name: status
+          schema: { type: string, enum: [DRAFT, ACTIVE, INACTIVE, EXPIRED] }
+      responses:
+        '200':
+          description: 方法版本列表
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiResponseMethodItems' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Methods]
+      summary: 创建实验方法版本
+      operationId: createMethod
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MethodCreateRequest' }
+      responses:
+        '201': { description: 创建成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseMethod' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /methods/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Methods]
+      summary: 查询实验方法详情和变更历史
+      operationId: getMethod
+      responses:
+        '200': { description: 方法详情, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseMethod' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Methods]
+      summary: 更新实验方法可变字段或状态
+      operationId: updateMethod
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MethodUpdateRequest' }
+      responses:
+        '200': { description: 更新成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseMethod' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /methods/{id}/attachments:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [Methods]
+      summary: 上传并登记实验方法附件
+      operationId: createMethodAttachment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MethodAttachmentRequest' }
+          multipart/form-data:
+            schema: { $ref: '#/components/schemas/MethodAttachmentUploadRequest' }
+      responses:
+        '201': { description: 登记成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseMethodAttachment' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /instruments:
+    get:
+      tags: [Instruments]
+      summary: 查询仪器设备
+      operationId: listInstruments
+      parameters:
+        - in: query
+          name: keyword
+          schema: { type: string }
+        - in: query
+          name: status
+          schema: { type: string, enum: [ACTIVE, INACTIVE, MAINTENANCE, SCRAPPED] }
+      responses:
+        '200': { description: 查询成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseInstrumentItems' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Instruments]
+      summary: 创建仪器设备档案
+      operationId: createInstrument
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/InstrumentRequest' }
+      responses:
+        '201': { description: 创建成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseInstrument' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /instruments/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Instruments]
+      summary: 查询仪器设备详情
+      operationId: getInstrument
+      responses:
+        '200': { description: 查询成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseInstrument' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Instruments]
+      summary: 更新仪器设备档案
+      operationId: updateInstrument
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/InstrumentRequest' }
+      responses:
+        '200': { description: 更新成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseInstrument' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /instruments/{id}/simulate-data:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [Instruments]
+      summary: 通过模拟仪器接口接收一条实验数据
+      operationId: simulateInstrumentData
+      security: [{ cookieAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SimulatedInstrumentDataRequest' }
+      responses:
+        '201':
+          description: 模拟仪器数据写入成功
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiResponseExperimentData' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /instruments/maintenance/reminders:
+    get:
+      tags: [Instruments]
+      summary: 查询维护和校准提醒
+      operationId: listInstrumentMaintenanceReminders
+      parameters:
+        - in: query
+          name: days
+          schema: { type: integer, minimum: 0, maximum: 365 }
+      responses:
+        '200': { description: 查询成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseInstrumentMaintenanceItems' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /instruments/{id}/maintenance:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Instruments]
+      summary: 查询设备维护校准历史
+      operationId: listInstrumentMaintenance
+      responses:
+        '200': { description: 查询成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseInstrumentMaintenanceItems' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    post:
+      tags: [Instruments]
+      summary: 追加设备维护校准记录
+      operationId: createInstrumentMaintenance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/InstrumentMaintenanceRequest' }
+      responses:
+        '201': { description: 创建成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseInstrumentMaintenance' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /inventory/alerts:
+    get:
+      tags: [Inventory]
+      summary: 查询库存和有效期提醒
+      operationId: listInventoryAlerts
+      parameters:
+        - in: query
+          name: days
+          schema: { type: integer, minimum: 0, maximum: 365, default: 30 }
+      responses:
+        '200': { description: 查询成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseInventoryAlerts' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /environment/thresholds:
+    get:
+      tags: [Environment]
+      summary: 查询环境阈值
+      operationId: listEnvironmentThresholds
+      parameters:
+        - in: query
+          name: laboratoryId
+          schema: { type: integer, format: int64 }
+      responses:
+        '200': { description: 查询成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseEnvironmentThresholds' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Environment]
+      summary: 创建环境阈值
+      operationId: createEnvironmentThreshold
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EnvironmentThresholdRequest' }
+      responses:
+        '201': { description: 创建成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseEnvironmentThreshold' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /environment/thresholds/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    patch:
+      tags: [Environment]
+      summary: 修改环境阈值
+      operationId: updateEnvironmentThreshold
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EnvironmentThresholdUpdateRequest' }
+      responses:
+        '200': { description: 修改成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseEnvironmentThreshold' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /environment/records:
+    get:
+      tags: [Environment]
+      summary: 查询环境采集记录
+      operationId: listEnvironmentRecords
+      parameters:
+        - in: query
+          name: laboratoryId
+          schema: { type: integer, format: int64 }
+        - in: query
+          name: metric
+          schema: { type: string }
+        - in: query
+          name: status
+          schema: { type: string, enum: [NORMAL, WARNING, EXCEEDED] }
+      responses:
+        '200': { description: 查询成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseEnvironmentRecords' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Environment]
+      summary: 追加环境采集记录
+      operationId: createEnvironmentRecord
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EnvironmentRecordRequest' }
+      responses:
+        '201': { description: 创建成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseEnvironmentRecord' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /environment/alerts:
+    get:
+      tags: [Environment]
+      summary: 查询环境超阈值提醒
+      operationId: listEnvironmentAlerts
+      parameters:
+        - in: query
+          name: days
+          schema: { type: integer, minimum: 0, maximum: 365, default: 30 }
+        - in: query
+          name: laboratoryId
+          schema: { type: integer, format: int64 }
+      responses:
+        '200': { description: 查询成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseEnvironmentAlerts' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /inventory/items:
+    get:
+      tags: [Inventory]
+      summary: 查询试剂耗材主档
+      operationId: listInventoryItems
+      parameters:
+        - in: query
+          name: keyword
+          schema: { type: string }
+        - in: query
+          name: status
+          schema: { type: string, enum: [ACTIVE, INACTIVE, EXPIRED, DEPLETED] }
+      responses:
+        '200': { description: 查询成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseInventoryItems' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Inventory]
+      summary: 创建试剂耗材主档
+      operationId: createInventoryItem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/InventoryItemCreateRequest' }
+      responses:
+        '201': { description: 创建成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseInventoryItem' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /inventory/items/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Inventory]
+      summary: 查询试剂耗材详情
+      operationId: getInventoryItem
+      responses:
+        '200': { description: 查询成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseInventoryItem' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Inventory]
+      summary: 修改试剂耗材非余额字段
+      operationId: updateInventoryItem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/InventoryItemUpdateRequest' }
+      responses:
+        '200': { description: 修改成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseInventoryItem' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /inventory/items/{id}/transactions:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Inventory]
+      summary: 查询库存变动历史
+      operationId: listInventoryTransactions
+      responses:
+        '200': { description: 查询成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseInventoryTransactions' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    post:
+      tags: [Inventory]
+      summary: 追加库存变动
+      operationId: createInventoryTransaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/InventoryTransactionRequest' }
+      responses:
+        '201': { description: 创建成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseInventoryTransaction' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
   /tasks:
     get:
       tags: [Tasks]
@@ -184,6 +1341,205 @@ paths:
                 $ref: '#/components/schemas/ApiResponseTask'
         '409':
           $ref: '#/components/responses/Conflict'
+  /tasks/{id}/assignments:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [Tasks]
+      summary: 更新任务分配
+      operationId: replaceTaskAssignments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskAssignmentRequest'
+      responses:
+        '200':
+          description: 分配更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseTaskAssignment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /tasks/{id}/transition:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [Tasks]
+      summary: 流转任务状态
+      operationId: transitionTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskTransitionRequest'
+      responses:
+        '200':
+          description: 状态更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseTaskTransition'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /tasks/{id}/history:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Tasks]
+      summary: 查询任务状态历史
+      operationId: listTaskHistory
+      responses:
+        '200':
+          description: 状态历史
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseTaskHistory'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /tasks/{id}/data:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Data]
+      summary: 查询任务实验数据
+      operationId: listTaskData
+      responses:
+        '200':
+          description: 查询成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseExperimentDataItems'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    post:
+      tags: [Data]
+      summary: 录入任务实验数据
+      operationId: createTaskData
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ExperimentDataCreateRequest' }
+      responses:
+        '201':
+          description: 录入成功
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiResponseExperimentData' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /tasks/{id}/data/import:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [Data]
+      summary: 导入任务实验数据文件
+      operationId: importTaskData
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: string, format: binary, description: CSV 或 XLSX 文件，最大 5 MiB、最多 500 行 }
+      responses:
+        '201':
+          description: 导入成功
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiResponseExperimentDataImport' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '413': { $ref: '#/components/responses/ContentTooLarge' }
+        '415': { $ref: '#/components/responses/UnsupportedMediaType' }
+  /processing-rules:
+    get:
+      tags: [Data]
+      summary: 查询活动数据处理规则
+      operationId: listProcessingRules
+      responses:
+        '200':
+          description: 查询成功
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiResponseProcessingRuleItems' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /tasks/{id}/data/process:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [Data]
+      summary: 执行实验数据处理
+      operationId: processTaskData
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProcessingRequest' }
+      responses:
+        '201':
+          description: 处理完成
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiResponseProcessingRun' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/UnprocessableEntity' }
+  /tasks/{id}/data/process-runs:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Data]
+      summary: 查询任务数据处理运行
+      operationId: listTaskProcessingRuns
+      responses:
+        '200':
+          description: 查询成功
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiResponseProcessingRunItems' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
   /tasks/{id}/reviews:
     parameters:
       - $ref: '#/components/parameters/Id'
@@ -203,9 +1559,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponseReview'
+                $ref: '#/components/schemas/ApiResponseReviewContext'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
         '409':
           $ref: '#/components/responses/Conflict'
+    get:
+      tags: [Reviews]
+      summary: 查询任务审核上下文
+      operationId: listTaskReviews
+      responses:
+        '200':
+          description: 查询成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseReviewContext'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
   /tasks/{id}/reports:
     parameters:
       - $ref: '#/components/parameters/Id'
@@ -222,11 +1596,158 @@ paths:
                 $ref: '#/components/schemas/ApiResponseReport'
         '409':
           $ref: '#/components/responses/Conflict'
+  /reports:
+    get:
+      tags: [Reports]
+      summary: 查询实验报告
+      operationId: listReports
+      responses:
+        '200':
+          description: 查询成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseReports'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /reports/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Reports]
+      summary: 查询报告详情
+      operationId: getReport
+      responses:
+        '200':
+          description: 查询成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseReport'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /reports/{id}/export:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Reports]
+      summary: 导出报告快照
+      operationId: exportReport
+      responses:
+        '200':
+          description: JSON 报告文件
+          content:
+            application/json:
+              schema: { type: object, additionalProperties: true }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /reports/{id}/submit-review:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [Reports]
+      summary: 提交报告审核
+      operationId: submitReportForReview
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReportTransitionRequest' }
+      responses:
+        '200':
+          description: 提交成功
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiResponseReport' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /reports/{id}/publish:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [Reports]
+      summary: 发布报告
+      operationId: publishReport
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReportTransitionRequest' }
+      responses:
+        '200':
+          description: 发布成功
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiResponseReport' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /reports/{id}/archive:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [Reports]
+      summary: 归档报告
+      operationId: archiveReport
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReportTransitionRequest' }
+      responses:
+        '200':
+          description: 归档成功
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiResponseReport' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /reports/{id}/sign:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [Reports]
+      summary: 对已发布报告创建电子签名回执
+      operationId: signReport
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReportTransitionRequest' }
+      responses:
+        '201':
+          description: 签名成功
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiResponseReportSignature' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
   /dashboard/overview:
     get:
       tags: [Dashboard]
       summary: 获取工作台概览
       operationId: getDashboardOverview
+      parameters:
+        - { $ref: '#/components/parameters/DashboardProjectId' }
+        - { $ref: '#/components/parameters/DashboardPersonnelId' }
+        - { $ref: '#/components/parameters/DashboardSampleStatus' }
+        - { $ref: '#/components/parameters/DashboardTaskStatus' }
+        - { $ref: '#/components/parameters/DashboardFrom' }
+        - { $ref: '#/components/parameters/DashboardTo' }
+        - { $ref: '#/components/parameters/DashboardInventoryDays' }
       responses:
         '200':
           description: 工作台统计
@@ -234,6 +1755,75 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiResponseDashboard'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /dashboard/task-statistics:
+    get:
+      tags: [Dashboard]
+      summary: 获取任务统计
+      operationId: getDashboardTaskStatistics
+      parameters:
+        - { $ref: '#/components/parameters/DashboardProjectId' }
+        - { $ref: '#/components/parameters/DashboardPersonnelId' }
+        - { $ref: '#/components/parameters/DashboardTaskStatus' }
+        - { $ref: '#/components/parameters/DashboardFrom' }
+        - { $ref: '#/components/parameters/DashboardTo' }
+      responses:
+        '200': { description: 任务统计, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseDashboardTaskStatistics' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /dashboard/inventory-alerts:
+    get:
+      tags: [Dashboard]
+      summary: 获取看板库存预警统计
+      operationId: getDashboardInventoryAlerts
+      parameters:
+        - { $ref: '#/components/parameters/DashboardInventoryDays' }
+      responses:
+        '200': { description: 库存预警统计, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponseDashboardInventory' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /personnel/{id}/{recordType}/{recordId}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+      - name: recordType
+        in: path
+        required: true
+        schema: { type: string, enum: [skills, qualifications, training] }
+      - name: recordId
+        in: path
+        required: true
+        schema: { type: integer, format: int64 }
+    patch:
+      tags: [Personnel]
+      summary: 修改人员能力记录
+      operationId: updatePersonnelRecord
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PersonnelRecordRequest' }
+      responses:
+        '200': { description: 更新成功, content: { application/json: { schema: { $ref: '#/components/schemas/ApiResponsePersonnelRecord' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Personnel]
+      summary: 删除人员能力记录
+      operationId: deletePersonnelRecord
+      responses:
+        '204': { description: 删除成功 }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
 components:
   securitySchemes:
     bearerAuth:
@@ -255,6 +1845,34 @@ components:
       name: size
       in: query
       schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+    DashboardProjectId:
+      name: projectId
+      in: query
+      schema: { type: integer, format: int64, minimum: 1 }
+    DashboardPersonnelId:
+      name: personnelId
+      in: query
+      schema: { type: string, format: uuid }
+    DashboardSampleStatus:
+      name: sampleStatus
+      in: query
+      schema: { type: string, enum: [REGISTERED, PROCESSING, PROCESSED, ARCHIVED, DISPOSED] }
+    DashboardTaskStatus:
+      name: taskStatus
+      in: query
+      schema: { type: string, enum: [DRAFT, ASSIGNED, IN_PROGRESS, PENDING_REVIEW, RETURNED, APPROVED, ARCHIVED] }
+    DashboardFrom:
+      name: from
+      in: query
+      schema: { type: string, format: date-time }
+    DashboardTo:
+      name: to
+      in: query
+      schema: { type: string, format: date-time }
+    DashboardInventoryDays:
+      name: inventoryDays
+      in: query
+      schema: { type: integer, minimum: 0, maximum: 365, default: 30 }
   responses:
     BadRequest:
       description: 请求参数错误
@@ -263,6 +1881,16 @@ components:
           schema: { $ref: '#/components/schemas/ApiError' }
     Unauthorized:
       description: 未认证
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+    Forbidden:
+      description: 无权限
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+    ServiceUnavailable:
+      description: 服务配置不可用
       content:
         application/json:
           schema: { $ref: '#/components/schemas/ApiError' }
@@ -276,6 +1904,21 @@ components:
       content:
         application/json:
           schema: { $ref: '#/components/schemas/ApiError' }
+    ContentTooLarge:
+      description: 上传文件超过大小或行数限制
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+    UnsupportedMediaType:
+      description: 不支持的文件类型
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+    UnprocessableEntity:
+      description: 处理失败或异常数据
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiError' }
   schemas:
     ApiError:
       type: object
@@ -286,39 +1929,677 @@ components:
         traceId: { type: string }
     LoginRequest:
       type: object
-      required: [username, password]
+      required: [email, password]
       properties:
-        username: { type: string }
+        email: { type: string, format: email }
         password: { type: string, format: password }
     LoginData:
       type: object
+      required: [user]
       properties:
-        accessToken: { type: string }
-        expiresIn: { type: integer, format: int64 }
-        userId: { type: integer, format: int64 }
-        username: { type: string }
-        roles:
+        user:
+          type: object
+          required: [id]
+          properties:
+            id: { type: string, format: uuid }
+            email: { type: string, format: email, nullable: true }
+    AdminUserCreateRequest:
+      type: object
+      required: [email, password, username, realName]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, format: password, minLength: 8 }
+        username: { type: string, maxLength: 64 }
+        realName: { type: string, maxLength: 64 }
+        roleCodes:
           type: array
           items: { type: string }
+    AdminUserUpdateRequest:
+      type: object
+      properties:
+        username: { type: string, maxLength: 64 }
+        realName: { type: string, maxLength: 64 }
+        status: { type: string, enum: [ACTIVE, INACTIVE] }
+        departmentId: { type: integer, format: int64, nullable: true }
+    AdminUser:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        username: { type: string }
+        realName: { type: string }
+        email: { type: string, format: email, nullable: true }
+        status: { type: string }
+        roles:
+          type: array
+          items: { $ref: '#/components/schemas/AdminRole' }
+    AdminRoleCreateRequest:
+      type: object
+      required: [code, name]
+      properties:
+        code: { type: string, maxLength: 32 }
+        name: { type: string, maxLength: 64 }
+    AdminRole:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        code: { type: string }
+        name: { type: string }
+        status: { type: string }
+        permissions:
+          type: array
+          items: { $ref: '#/components/schemas/AdminPermission' }
+    AdminPermission:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        code: { type: string }
+        name: { type: string }
+        resource: { type: string }
+        action: { type: string }
+    ApiResponseAdminUser:
+      type: object
+      properties:
+        data: { $ref: '#/components/schemas/AdminUser' }
+    ApiResponseAdminUsers:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/AdminUser' }
+    ApiResponseAdminRoles:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            roles:
+              type: array
+              items: { $ref: '#/components/schemas/AdminRole' }
+            permissions:
+              type: array
+              items: { $ref: '#/components/schemas/AdminPermission' }
+    SettingCreateRequest:
+      type: object
+      required: [code, name]
+      properties:
+        code: { type: string, maxLength: 64 }
+        name: { type: string, maxLength: 128 }
+        categoryType: { type: string }
+        laboratoryId: { type: integer, format: int64, nullable: true }
+        parentId: { type: integer, format: int64, nullable: true }
+        description: { type: string, nullable: true }
+        status: { type: string, enum: [ACTIVE, INACTIVE] }
+        sortOrder: { type: integer }
+        symbol: { type: string, nullable: true }
+        dimension: { type: string, nullable: true }
+    SettingUpdateRequest:
+      allOf:
+        - $ref: '#/components/schemas/SettingCreateRequest'
+    ParameterCreateRequest:
+      type: object
+      required: [code, name, valueType, value]
+      properties:
+        code: { type: string, maxLength: 64 }
+        name: { type: string, maxLength: 128 }
+        valueType: { type: string, enum: [STRING, NUMBER, BOOLEAN, JSON] }
+        value: {}
+        description: { type: string, nullable: true }
+        status: { type: string, enum: [ACTIVE, INACTIVE] }
+    ParameterUpdateRequest:
+      allOf:
+        - $ref: '#/components/schemas/ParameterCreateRequest'
+    ReportTemplateCreateRequest:
+      type: object
+      required: [code, name, value]
+      properties:
+        code: { type: string, pattern: '^REPORT_TEMPLATE_[A-Z0-9_]+$' }
+        name: { type: string, maxLength: 128 }
+        value:
+          type: object
+          properties:
+            title: { type: string, maxLength: 128 }
+            description: { type: string, maxLength: 255 }
+            fields:
+              type: array
+              minItems: 1
+              maxItems: 64
+              items: { type: string, minLength: 1, maxLength: 64 }
+        description: { type: string, nullable: true }
+        status: { type: string, enum: [ACTIVE, INACTIVE] }
+    ReportTemplateUpdateRequest:
+      allOf:
+        - $ref: '#/components/schemas/ReportTemplateCreateRequest'
+    Setting:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        code: { type: string }
+        name: { type: string }
+        status: { type: string }
+    ApiResponseSetting:
+      type: object
+      properties:
+        data: { $ref: '#/components/schemas/Setting' }
+    ApiResponseSettingsItems:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Setting' }
+    PersonnelUpdateRequest:
+      type: object
+      properties:
+        realName: { type: string, maxLength: 64 }
+        departmentId: { type: integer, format: int64, nullable: true }
+        positionId: { type: integer, format: int64, nullable: true }
+        availabilityStatus: { type: string, enum: [AVAILABLE, ON_LEAVE, QUALIFICATION_SUSPENDED, UNAVAILABLE] }
+        availabilityNote: { type: string, maxLength: 255, nullable: true }
+        availabilityUntil: { type: string, format: date, nullable: true }
+    PersonnelRecordRequest:
+      type: object
+      properties:
+        skillName: { type: string, maxLength: 128 }
+        level: { type: string, maxLength: 32, nullable: true }
+        qualificationName: { type: string, maxLength: 128 }
+        certificateNo: { type: string, maxLength: 64, nullable: true }
+        status: { type: string, enum: [ACTIVE, SUSPENDED, EXPIRED] }
+        trainingName: { type: string, maxLength: 128 }
+        provider: { type: string, maxLength: 128, nullable: true }
+        verifiedAt: { type: string, format: date, nullable: true }
+        issuedAt: { type: string, format: date, nullable: true }
+        completedAt: { type: string, format: date, nullable: true }
+        expiresAt: { type: string, format: date, nullable: true }
+        result: { type: string, maxLength: 32, nullable: true }
+        notes: { type: string, nullable: true }
+    PersonnelTaskSummary:
+      type: object
+      properties:
+        total: { type: integer }
+        byStatus:
+          type: object
+          additionalProperties: { type: integer }
+        tasks:
+          type: array
+          items: { type: object }
+    PersonnelAlert:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        severity: { type: string, enum: [WARNING, BLOCKING] }
+    Personnel:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        username: { type: string }
+        realName: { type: string }
+        departmentId: { type: integer, format: int64, nullable: true }
+        positionId: { type: integer, format: int64, nullable: true }
+        status: { type: string, enum: [ACTIVE, INACTIVE] }
+        availabilityStatus: { type: string, enum: [AVAILABLE, ON_LEAVE, QUALIFICATION_SUSPENDED, UNAVAILABLE] }
+        availabilityNote: { type: string, nullable: true }
+        availabilityUntil: { type: string, format: date, nullable: true }
+        taskSummary: { $ref: '#/components/schemas/PersonnelTaskSummary' }
+        alerts:
+          type: array
+          items: { $ref: '#/components/schemas/PersonnelAlert' }
+        skills: { type: array, items: { type: object } }
+        qualifications: { type: array, items: { type: object } }
+        training: { type: array, items: { type: object } }
+    ApiResponsePersonnel:
+      type: object
+      properties:
+        data: { $ref: '#/components/schemas/Personnel' }
+    ApiResponsePersonnelItems:
+      type: object
+      properties:
+        data: { type: array, items: { $ref: '#/components/schemas/Personnel' } }
+    ApiResponsePersonnelRecord:
+      type: object
+      properties:
+        data: { type: object }
+    ApiResponsePersonnelRecords:
+      type: object
+      properties:
+        data: { type: array, items: { type: object } }
+    MethodCreateRequest:
+      type: object
+      required: [methodCode, name, version]
+      properties:
+        methodCode: { type: string, maxLength: 32 }
+        name: { type: string, maxLength: 128 }
+        version: { type: string, maxLength: 32 }
+        scope: { type: string, maxLength: 255, nullable: true }
+        detectionLimit: { type: number, minimum: 0, nullable: true }
+        status: { type: string, enum: [DRAFT, ACTIVE, INACTIVE, EXPIRED] }
+        documentId: { type: integer, format: int64, nullable: true }
+        effectiveAt: { type: string, format: date-time, nullable: true }
+        expiredAt: { type: string, format: date-time, nullable: true }
+    MethodUpdateRequest:
+      type: object
+      properties:
+        name: { type: string, maxLength: 128 }
+        scope: { type: string, maxLength: 255, nullable: true }
+        detectionLimit: { type: number, minimum: 0, nullable: true }
+        status: { type: string, enum: [DRAFT, ACTIVE, INACTIVE, EXPIRED] }
+        documentId: { type: integer, format: int64, nullable: true }
+        effectiveAt: { type: string, format: date-time, nullable: true }
+        expiredAt: { type: string, format: date-time, nullable: true }
+    MethodAttachmentRequest:
+      type: object
+      required: [fileName, storagePath, fileSize, contentType]
+      properties:
+        fileName: { type: string, maxLength: 255 }
+        storagePath: { type: string, maxLength: 512 }
+        fileSize: { type: integer, format: int64, minimum: 0 }
+        contentType: { type: string, maxLength: 128 }
+    MethodHistory:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        methodId: { type: integer, format: int64 }
+        methodCode: { type: string }
+        fromVersion: { type: string, nullable: true }
+        toVersion: { type: string }
+        fromStatus: { type: string, nullable: true }
+        toStatus: { type: string }
+        changeType: { type: string, enum: [CREATE_VERSION, UPDATE, STATUS_CHANGE] }
+        operatorId: { type: string, format: uuid }
+        remark: { type: string, nullable: true }
+        occurredAt: { type: string, format: date-time }
+    MethodAttachment:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        objectType: { type: string }
+        objectId: { type: string }
+        fileName: { type: string }
+        storagePath: { type: string }
+        fileSize: { type: integer, format: int64 }
+        contentType: { type: string }
+        uploadedBy: { type: string, format: uuid }
+        uploadedAt: { type: string, format: date-time }
+    MethodAttachmentUploadRequest:
+      type: object
+      required: [file]
+      properties:
+        file: { type: string, format: binary, description: 实验方法或相关标准规范文件 }
+    Method:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        methodCode: { type: string }
+        name: { type: string }
+        version: { type: string }
+        scope: { type: string, nullable: true }
+        detectionLimit: { type: number, nullable: true }
+        status: { type: string, enum: [DRAFT, ACTIVE, INACTIVE, EXPIRED] }
+        documentId: { type: integer, format: int64, nullable: true }
+        effectiveAt: { type: string, format: date-time, nullable: true }
+        expiredAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        history: { type: array, items: { $ref: '#/components/schemas/MethodHistory' } }
+        attachments: { type: array, items: { $ref: '#/components/schemas/MethodAttachment' } }
+    ApiResponseMethod:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { $ref: '#/components/schemas/Method' }
+        traceId: { type: string }
+    ApiResponseMethodItems:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { type: array, items: { $ref: '#/components/schemas/Method' } }
+        traceId: { type: string }
+    ApiResponseMethodAttachment:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { $ref: '#/components/schemas/MethodAttachment' }
+        traceId: { type: string }
+    InstrumentRequest:
+      type: object
+      properties:
+        instrumentCode: { type: string, maxLength: 32 }
+        name: { type: string, maxLength: 128 }
+        type: { type: string, maxLength: 64 }
+        model: { type: string, maxLength: 64, nullable: true }
+        manufacturer: { type: string, maxLength: 128, nullable: true }
+        location: { type: string, maxLength: 128, nullable: true }
+        ownerId: { type: string, format: uuid, nullable: true }
+        status: { type: string, enum: [ACTIVE, INACTIVE, MAINTENANCE, SCRAPPED] }
+        commissionedAt: { type: string, format: date, nullable: true }
+    Instrument:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        instrumentCode: { type: string }
+        name: { type: string }
+        type: { type: string }
+        model: { type: string, nullable: true }
+        manufacturer: { type: string, nullable: true }
+        location: { type: string, nullable: true }
+        ownerId: { type: string, format: uuid, nullable: true }
+        status: { type: string, enum: [ACTIVE, INACTIVE, MAINTENANCE, SCRAPPED] }
+        commissionedAt: { type: string, format: date, nullable: true }
+        nextCalibrationAt: { type: string, format: date, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        usageCount: { type: integer }
+        lastUsedAt: { type: string, format: date-time, nullable: true }
+    ApiResponseInstrument:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { $ref: '#/components/schemas/Instrument' }
+        traceId: { type: string }
+    ApiResponseInstrumentItems:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { type: array, items: { $ref: '#/components/schemas/Instrument' } }
+        traceId: { type: string }
+    InstrumentMaintenanceRequest:
+      type: object
+      required: [maintenanceType, occurredOn]
+      properties:
+        maintenanceType: { type: string, enum: [MAINTENANCE, REPAIR, INSPECTION, CALIBRATION] }
+        occurredOn: { type: string, format: date }
+        result: { type: string, maxLength: 255, nullable: true }
+        cycleDays: { type: integer, minimum: 1, nullable: true }
+        nextDueOn: { type: string, format: date, nullable: true }
+        remark: { type: string, maxLength: 2000, nullable: true }
+    InstrumentMaintenance:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        instrumentId: { type: integer, format: int64 }
+        maintenanceType: { type: string, enum: [MAINTENANCE, REPAIR, INSPECTION, CALIBRATION] }
+        occurredOn: { type: string, format: date }
+        operatorId: { type: string, format: uuid }
+        result: { type: string, nullable: true }
+        cycleDays: { type: integer, nullable: true }
+        nextDueOn: { type: string, format: date, nullable: true }
+        remark: { type: string, nullable: true }
+    ApiResponseInstrumentMaintenance:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { $ref: '#/components/schemas/InstrumentMaintenance' }
+        traceId: { type: string }
+    ApiResponseInstrumentMaintenanceItems:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { type: array, items: { $ref: '#/components/schemas/InstrumentMaintenance' } }
+        traceId: { type: string }
+    InventoryItemCreateRequest:
+      type: object
+      required: [itemCode, type, name, unit]
+      properties:
+        itemCode: { type: string, maxLength: 32 }
+        type: { type: string, maxLength: 32 }
+        name: { type: string, maxLength: 128 }
+        batchNo: { type: string, maxLength: 64, nullable: true }
+        manufacturer: { type: string, maxLength: 128, nullable: true }
+        unit: { type: string, maxLength: 16 }
+        expiryDate: { type: string, format: date, nullable: true }
+        storageCondition: { type: string, maxLength: 255, nullable: true }
+        location: { type: string, maxLength: 128, nullable: true }
+        lowStockThreshold: { type: number, minimum: 0, maximum: 999999999999 }
+    InventoryItemUpdateRequest:
+      type: object
+      properties:
+        type: { type: string, maxLength: 32 }
+        name: { type: string, maxLength: 128 }
+        batchNo: { type: string, maxLength: 64, nullable: true }
+        manufacturer: { type: string, maxLength: 128, nullable: true }
+        unit: { type: string, maxLength: 16 }
+        expiryDate: { type: string, format: date, nullable: true }
+        storageCondition: { type: string, maxLength: 255, nullable: true }
+        location: { type: string, maxLength: 128, nullable: true }
+        status: { type: string, enum: [ACTIVE, INACTIVE] }
+        lowStockThreshold: { type: number, minimum: 0, maximum: 999999999999 }
+    InventoryTransactionRequest:
+      type: object
+      required: [transactionType, quantity]
+      properties:
+        transactionType: { type: string, enum: [INBOUND, OUTBOUND, RETURN, SCRAP] }
+        quantity: { type: number, exclusiveMinimum: 0 }
+        taskId: { type: integer, format: int64, description: 仅 OUTBOUND 领用记录可关联未归档实验任务 }
+        remark: { type: string, maxLength: 2000, nullable: true }
+    InventoryItem:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        itemCode: { type: string }
+        type: { type: string }
+        name: { type: string }
+        batchNo: { type: string, nullable: true }
+        manufacturer: { type: string, nullable: true }
+        quantity: { type: number, minimum: 0 }
+        unit: { type: string }
+        expiryDate: { type: string, format: date, nullable: true }
+        storageCondition: { type: string, nullable: true }
+        location: { type: string, nullable: true }
+        status: { type: string }
+        lowStockThreshold: { type: number, minimum: 0 }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    InventoryTransaction:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        itemId: { type: integer, format: int64 }
+        taskId: { type: integer, format: int64, nullable: true }
+        transactionType: { type: string }
+        quantity: { type: number, exclusiveMinimum: 0 }
+        operatorId: { type: string, format: uuid }
+        occurredAt: { type: string, format: date-time }
+        remark: { type: string, nullable: true }
+    ApiResponseInventoryItem:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { $ref: '#/components/schemas/InventoryItem' }
+        traceId: { type: string }
+    ApiResponseInventoryItems:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { type: array, items: { $ref: '#/components/schemas/InventoryItem' } }
+        traceId: { type: string }
+    ApiResponseInventoryTransaction:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { $ref: '#/components/schemas/InventoryTransaction' }
+        traceId: { type: string }
+    ApiResponseInventoryTransactions:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { type: array, items: { $ref: '#/components/schemas/InventoryTransaction' } }
+        traceId: { type: string }
+    InventoryAlert:
+      type: object
+      properties:
+        itemId: { type: integer, format: int64 }
+        itemCode: { type: string }
+        itemName: { type: string }
+        alertType: { type: string, enum: [LOW_STOCK, EXPIRING, EXPIRED] }
+        severity: { type: string, enum: [WARNING, CRITICAL] }
+        quantity: { type: number }
+        lowStockThreshold: { type: number }
+        expiryDate: { type: string, format: date, nullable: true }
+        daysUntilExpiry: { type: integer, nullable: true }
+        unit: { type: string }
+        location: { type: string, nullable: true }
+    ApiResponseInventoryAlerts:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { type: array, items: { $ref: '#/components/schemas/InventoryAlert' } }
+        traceId: { type: string }
+    EnvironmentThresholdRequest:
+      type: object
+      required: [laboratoryId, metric, unit]
+      properties:
+        laboratoryId: { type: integer, format: int64 }
+        metric: { type: string, maxLength: 64 }
+        unit: { type: string, maxLength: 16 }
+        thresholdMin: { type: number, nullable: true, maximum: 999999999999 }
+        thresholdMax: { type: number, nullable: true, maximum: 999999999999 }
+        status: { type: string, enum: [ACTIVE, INACTIVE], default: ACTIVE }
+    EnvironmentThresholdUpdateRequest:
+      type: object
+      properties:
+        thresholdMin: { type: number, nullable: true, maximum: 999999999999 }
+        thresholdMax: { type: number, nullable: true, maximum: 999999999999 }
+        status: { type: string, enum: [ACTIVE, INACTIVE] }
+    EnvironmentThreshold:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        laboratoryId: { type: integer, format: int64 }
+        metric: { type: string }
+        unit: { type: string }
+        thresholdMin: { type: number, nullable: true }
+        thresholdMax: { type: number, nullable: true }
+        status: { type: string, enum: [ACTIVE, INACTIVE] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    EnvironmentRecordRequest:
+      type: object
+      required: [laboratoryId, metric, value, unit]
+      properties:
+        laboratoryId: { type: integer, format: int64 }
+        metric: { type: string, maxLength: 64 }
+        value: { type: number, maximum: 999999999999 }
+        unit: { type: string, maxLength: 16 }
+        sourceType: { type: string, enum: [MANUAL, SENSOR, API], default: MANUAL }
+        collectedAt: { type: string, format: date-time, nullable: true }
+    EnvironmentRecord:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        laboratoryId: { type: integer, format: int64 }
+        metric: { type: string }
+        value: { type: number }
+        unit: { type: string }
+        thresholdMin: { type: number, nullable: true }
+        thresholdMax: { type: number, nullable: true }
+        collectedAt: { type: string, format: date-time }
+        sourceType: { type: string, enum: [MANUAL, SENSOR, API] }
+        recordedBy: { type: string, format: uuid, nullable: true }
+        status: { type: string, enum: [NORMAL, WARNING, EXCEEDED] }
+    EnvironmentAlert:
+      allOf:
+        - $ref: '#/components/schemas/EnvironmentRecord'
+        - type: object
+          properties:
+            laboratoryCode: { type: string }
+            laboratoryName: { type: string }
+    ApiResponseEnvironmentThreshold:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { $ref: '#/components/schemas/EnvironmentThreshold' }
+        traceId: { type: string }
+    ApiResponseEnvironmentThresholds:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { type: array, items: { $ref: '#/components/schemas/EnvironmentThreshold' } }
+        traceId: { type: string }
+    ApiResponseEnvironmentRecord:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { $ref: '#/components/schemas/EnvironmentRecord' }
+        traceId: { type: string }
+    ApiResponseEnvironmentRecords:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { type: array, items: { $ref: '#/components/schemas/EnvironmentRecord' } }
+        traceId: { type: string }
+    ApiResponseEnvironmentAlerts:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { type: array, items: { $ref: '#/components/schemas/EnvironmentAlert' } }
+        traceId: { type: string }
     SampleCreateRequest:
       type: object
       required: [projectId, name, quantity, unit]
       properties:
+        sampleCode: { type: string, maxLength: 32 }
         projectId: { type: integer, format: int64 }
-        name: { type: string }
-        specification: { type: string }
-        batchNo: { type: string }
-        quantity: { type: number }
-        unit: { type: string }
-        source: { type: string }
-        storageCondition: { type: string }
+        name: { type: string, maxLength: 128 }
+        specification: { type: string, maxLength: 255, nullable: true }
+        batchNo: { type: string, maxLength: 64, nullable: true }
+        quantity: { type: number, minimum: 0 }
+        unit: { type: string, maxLength: 16 }
+        source: { type: string, maxLength: 128, nullable: true }
+        storageCondition: { type: string, maxLength: 255, nullable: true }
+        taskIds: { type: array, items: { type: integer, format: int64 } }
     SampleUpdateRequest:
       type: object
       properties:
-        status: { type: string }
-        storageCondition: { type: string }
-        location: { type: string }
-        remark: { type: string }
+        sampleCode: { type: string, maxLength: 32 }
+        projectId: { type: integer, format: int64 }
+        name: { type: string, maxLength: 128 }
+        specification: { type: string, maxLength: 255, nullable: true }
+        batchNo: { type: string, maxLength: 64, nullable: true }
+        quantity: { type: number, minimum: 0 }
+        unit: { type: string, maxLength: 16 }
+        source: { type: string, maxLength: 128, nullable: true }
+        storageCondition: { type: string, maxLength: 255, nullable: true }
+        taskIds: { type: array, items: { type: integer, format: int64 } }
+    SampleFlowRequest:
+      type: object
+      required: [node]
+      properties:
+        node:
+          type: string
+          enum: [COLLECT, DISTRIBUTE, TRANSFER, PROCESS, ARCHIVE, DISPOSE]
+        location: { type: string, maxLength: 128, nullable: true }
+        handoverTo: { type: string, format: uuid, nullable: true }
+        remark: { type: string, maxLength: 2000, nullable: true }
+    SampleFlow:
+      type: object
+      required: [id, sampleId, toStatus, node, operatorId, occurredAt]
+      properties:
+        id: { type: integer, format: int64 }
+        sampleId: { type: integer, format: int64 }
+        fromStatus: { type: string, nullable: true }
+        toStatus: { type: string }
+        node: { type: string }
+        operatorId: { type: string, format: uuid }
+        location: { type: string, nullable: true }
+        handoverTo: { type: string, format: uuid, nullable: true }
+        remark: { type: string, nullable: true }
+        occurredAt: { type: string, format: date-time }
     Sample:
       type: object
       properties:
@@ -329,24 +2610,183 @@ components:
         status: { type: string }
         quantity: { type: number }
         unit: { type: string }
+        specification: { type: string, nullable: true }
+        batchNo: { type: string, nullable: true }
+        source: { type: string, nullable: true }
+        storageCondition: { type: string, nullable: true }
+        registeredAt: { type: string, format: date-time }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        currentLocation: { type: string, nullable: true }
+        project: { type: object, nullable: true }
+        tasks: { type: array, items: { type: object } }
     TaskCreateRequest:
       type: object
-      required: [projectId, methodId, name, priority]
+      required: [taskCode, projectId, methodId, name, priority]
       properties:
+        taskCode: { type: string, maxLength: 32 }
         projectId: { type: integer, format: int64 }
         methodId: { type: integer, format: int64 }
         name: { type: string }
-        priority: { type: string }
+        priority: { type: string, enum: [LOW, NORMAL, HIGH] }
         plannedStart: { type: string, format: date }
         plannedEnd: { type: string, format: date }
+        remark: { type: string, nullable: true }
         sampleIds:
           type: array
           items: { type: integer, format: int64 }
     TaskUpdateRequest:
       type: object
       properties:
-        status: { type: string }
-        remark: { type: string }
+        taskCode: { type: string, maxLength: 32 }
+        projectId: { type: integer, format: int64 }
+        methodId: { type: integer, format: int64 }
+        name: { type: string }
+        priority: { type: string, enum: [LOW, NORMAL, HIGH] }
+        plannedStart: { type: string, format: date, nullable: true }
+        plannedEnd: { type: string, format: date, nullable: true }
+        remark: { type: string, nullable: true }
+        sampleIds:
+          type: array
+          items: { type: integer, format: int64 }
+    TaskAssignmentRequest:
+      type: object
+      properties:
+        userIds:
+          type: array
+          items: { type: string, format: uuid }
+        groupIds:
+          type: array
+          items: { type: integer, format: int64 }
+    TaskTransitionRequest:
+      type: object
+      required: [toStatus]
+      properties:
+        toStatus:
+          type: string
+          enum: [ASSIGNED, IN_PROGRESS, PENDING_REVIEW, RETURNED, APPROVED, ARCHIVED]
+        remark: { type: string, maxLength: 2000, nullable: true }
+    TaskAssignment:
+      type: object
+      properties:
+        taskId: { type: integer, format: int64 }
+        userId: { type: string, format: uuid, nullable: true }
+        groupId: { type: integer, format: int64, nullable: true }
+        assignedBy: { type: string, format: uuid }
+        assignedAt: { type: string, format: date-time }
+    TaskTransition:
+      type: object
+      properties:
+        taskId: { type: integer, format: int64 }
+        fromStatus: { type: string, nullable: true }
+        toStatus: { type: string }
+        operatorId: { type: string, format: uuid }
+        remark: { type: string, nullable: true }
+        occurredAt: { type: string, format: date-time }
+    TaskHistory:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        taskId: { type: integer, format: int64 }
+        fromStatus: { type: string, nullable: true }
+        toStatus: { type: string }
+        operatorId: { type: string, format: uuid }
+        remark: { type: string, nullable: true }
+        occurredAt: { type: string, format: date-time }
+    ExperimentDataCreateRequest:
+      type: object
+      required: [sampleId, dataType, metricName, sourceType, collectedAt]
+      properties:
+        sampleId: { type: integer, format: int64 }
+        instrumentId: { type: integer, format: int64, nullable: true }
+        dataType: { type: string, enum: [RAW, PROCESSED, RESULT] }
+        metricName: { type: string, maxLength: 64 }
+        rawValue: { type: number, format: double, nullable: true }
+        processedValue: { type: number, format: double, nullable: true }
+        unit: { type: string, maxLength: 16, nullable: true }
+        sourceType: { type: string, enum: [MANUAL, FILE, INSTRUMENT, API] }
+        collectedAt: { type: string, format: date-time }
+        remark: { type: string, maxLength: 4000, nullable: true }
+    SimulatedInstrumentDataRequest:
+      type: object
+      required: [taskId, sampleId, dataType, metricName, collectedAt]
+      properties:
+        taskId: { type: integer, format: int64 }
+        sampleId: { type: integer, format: int64 }
+        dataType: { type: string, enum: [RAW, PROCESSED, RESULT] }
+        metricName: { type: string, maxLength: 64 }
+        rawValue: { type: number, format: double, nullable: true }
+        processedValue: { type: number, format: double, nullable: true }
+        unit: { type: string, maxLength: 16, nullable: true }
+        collectedAt: { type: string, format: date-time }
+        remark: { type: string, maxLength: 4000, nullable: true }
+    ExperimentData:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        taskId: { type: integer, format: int64 }
+        sampleId: { type: integer, format: int64 }
+        instrumentId: { type: integer, format: int64, nullable: true }
+        dataType: { type: string, enum: [RAW, PROCESSED, RESULT] }
+        metricName: { type: string }
+        rawValue: { type: number, nullable: true }
+        processedValue: { type: number, nullable: true }
+        unit: { type: string, nullable: true }
+        sourceType: { type: string }
+        collectedAt: { type: string, format: date-time }
+        recordedBy: { type: string, format: uuid }
+        recordedAt: { type: string, format: date-time }
+        remark: { type: string, nullable: true }
+        method: { type: object, nullable: true }
+        sample: { type: object, nullable: true }
+        instrument: { type: object, nullable: true }
+    ProcessingRequest:
+      type: object
+      required: [ruleId, sourceDataIds, executionMode]
+      properties:
+        ruleId: { type: integer, format: int64 }
+        sourceDataIds:
+          type: array
+          minItems: 1
+          maxItems: 1
+          items: { type: integer, format: int64 }
+        executionMode: { type: string, enum: [MANUAL, SIMULATED] }
+    ProcessingRule:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        ruleCode: { type: string }
+        name: { type: string }
+        version: { type: string }
+        ruleType: { type: string, enum: [ROUND, THRESHOLD] }
+        config: { type: object }
+        status: { type: string, enum: [DRAFT, ACTIVE, RETIRED] }
+    ProcessingLineage:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        sourceDataId: { type: integer, format: int64 }
+        outputDataId: { type: integer, format: int64 }
+        relationType: { type: string, enum: [DERIVED_FROM] }
+    ProcessingRun:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        taskId: { type: integer, format: int64 }
+        ruleId: { type: integer, format: int64 }
+        executionMode: { type: string, enum: [MANUAL, SIMULATED] }
+        status: { type: string, enum: [RUNNING, SUCCEEDED, FLAGGED, FAILED] }
+        outputDataId: { type: integer, format: int64, nullable: true }
+        decision: { type: string, enum: [PASS, FAIL, REVIEW], nullable: true }
+        explanation: { type: string, nullable: true }
+        errorCode: { type: string, nullable: true }
+        errorMessage: { type: string, nullable: true }
+        executedBy: { type: string, format: uuid }
+        executedAt: { type: string, format: date-time }
+        rule: { $ref: '#/components/schemas/ProcessingRule' }
+        lineage:
+          type: array
+          items: { $ref: '#/components/schemas/ProcessingLineage' }
     Task:
       type: object
       properties:
@@ -357,6 +2797,55 @@ components:
         name: { type: string }
         priority: { type: string }
         status: { type: string }
+        plannedStart: { type: string, format: date, nullable: true }
+        plannedEnd: { type: string, format: date, nullable: true }
+        remark: { type: string, nullable: true }
+        sampleIds: { type: array, items: { type: integer, format: int64 } }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    ProjectCreateRequest:
+      type: object
+      required: [projectCode, name]
+      properties:
+        projectCode: { type: string, maxLength: 32 }
+        name: { type: string, maxLength: 128 }
+        ownerId: { type: string, format: uuid }
+        description: { type: string, nullable: true }
+        status: { type: string, enum: [DRAFT, ACTIVE] }
+        startDate: { type: string, format: date, nullable: true }
+        endDate: { type: string, format: date, nullable: true }
+    ProjectUpdateRequest:
+      type: object
+      properties:
+        projectCode: { type: string, maxLength: 32 }
+        name: { type: string, maxLength: 128 }
+        ownerId: { type: string, format: uuid }
+        description: { type: string, nullable: true }
+        status: { type: string, enum: [DRAFT, ACTIVE, ARCHIVED] }
+        startDate: { type: string, format: date, nullable: true }
+        endDate: { type: string, format: date, nullable: true }
+    Project:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        projectCode: { type: string }
+        name: { type: string }
+        ownerId: { type: string, format: uuid }
+        description: { type: string, nullable: true }
+        status: { type: string, enum: [DRAFT, ACTIVE, ARCHIVED] }
+        startDate: { type: string, format: date, nullable: true }
+        endDate: { type: string, format: date, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        taskCount: { type: integer }
+    ApiResponseProject:
+      type: object
+      properties:
+        data: { $ref: '#/components/schemas/Project' }
+    ApiResponseProjectItems:
+      type: object
+      properties:
+        data: { type: array, items: { $ref: '#/components/schemas/Project' } }
     ReviewRequest:
       type: object
       required: [result]
@@ -368,9 +2857,60 @@ components:
       properties:
         id: { type: integer, format: int64 }
         taskId: { type: integer, format: int64 }
+        reviewerId: { type: string, format: uuid }
         result: { type: string }
-        comment: { type: string }
+        comment: { type: string, nullable: true }
         reviewedAt: { type: string, format: date-time }
+        createdAt: { type: string, format: date-time }
+    ReviewTask:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        taskCode: { type: string }
+        name: { type: string }
+        status: { type: string }
+        priority: { type: string }
+        projectId: { type: integer, format: int64 }
+        methodId: { type: integer, format: int64 }
+        updatedAt: { type: string, format: date-time }
+    ReviewData:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        sampleId: { type: integer, format: int64 }
+        instrumentId: { type: integer, format: int64, nullable: true }
+        dataType: { type: string }
+        metricName: { type: string }
+        rawValue: { type: number, nullable: true }
+        processedValue: { type: number, nullable: true }
+        unit: { type: string, nullable: true }
+        sourceType: { type: string }
+        collectedAt: { type: string, format: date-time }
+        recordedBy: { type: string, format: uuid }
+        remark: { type: string, nullable: true }
+    ReviewProcessingRun:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        ruleId: { type: integer, format: int64 }
+        executionMode: { type: string }
+        status: { type: string }
+        outputDataId: { type: integer, format: int64, nullable: true }
+        decision: { type: string, nullable: true }
+        explanation: { type: string, nullable: true }
+        errorCode: { type: string, nullable: true }
+        errorMessage: { type: string, nullable: true }
+        executedBy: { type: string, format: uuid }
+        executedAt: { type: string, format: date-time }
+        lineage: { type: array, items: { type: object } }
+    ReviewContext:
+      type: object
+      properties:
+        task: { $ref: '#/components/schemas/ReviewTask' }
+        data: { type: array, items: { $ref: '#/components/schemas/ReviewData' } }
+        processingRuns: { type: array, items: { $ref: '#/components/schemas/ReviewProcessingRun' } }
+        reviews: { type: array, items: { $ref: '#/components/schemas/Review' } }
+        latestReview: { allOf: [{ $ref: '#/components/schemas/Review' }], nullable: true }
     Report:
       type: object
       properties:
@@ -378,14 +2918,119 @@ components:
         reportCode: { type: string }
         taskId: { type: integer, format: int64 }
         versionNo: { type: integer }
-        status: { type: string }
-    Dashboard:
+        status: { type: string, enum: [DRAFT, REVIEW, PUBLISHED, ARCHIVED] }
+        reportPayload: { type: object, additionalProperties: true }
+        storagePath: { type: string, nullable: true }
+        generatedBy: { type: string, format: uuid }
+        generatedAt: { type: string, format: date-time }
+        publishedAt: { type: string, format: date-time, nullable: true }
+        archivedAt: { type: string, format: date-time, nullable: true }
+        history: { type: array, items: { $ref: '#/components/schemas/ReportHistory' } }
+        signature: { allOf: [{ $ref: '#/components/schemas/ReportSignature' }], nullable: true }
+    ReportHistory:
       type: object
       properties:
-        sampleCount: { type: integer }
-        taskCount: { type: integer }
-        pendingReviewCount: { type: integer }
-        inventoryAlertCount: { type: integer }
+        id: { type: integer, format: int64 }
+        reportId: { type: integer, format: int64 }
+        fromStatus: { type: string, nullable: true }
+        toStatus: { type: string }
+        operatorId: { type: string, format: uuid }
+        remark: { type: string, nullable: true }
+        occurredAt: { type: string, format: date-time }
+    ReportTransitionRequest:
+      type: object
+      properties:
+        remark: { type: string, maxLength: 1000 }
+    ReportSignature:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        reportId: { type: integer, format: int64 }
+        signatureType: { type: string, enum: [ELECTRONIC_SHA256] }
+        signatureHash: { type: string, pattern: '^[a-f0-9]{64}$' }
+        signedBy: { type: string, format: uuid }
+        signedAt: { type: string, format: date-time }
+        remark: { type: string, nullable: true }
+    ReportTrace:
+      type: object
+      required: [report, task, samples, data, reviews]
+      properties:
+        report: { $ref: '#/components/schemas/Report' }
+        task: { $ref: '#/components/schemas/Task' }
+        samples: { type: array, items: { $ref: '#/components/schemas/Sample' } }
+        data: { type: array, items: { $ref: '#/components/schemas/ExperimentData' } }
+        reviews: { type: array, items: { $ref: '#/components/schemas/Review' } }
+    Dashboard:
+      type: object
+      required: [filters, availableSections, samples, tasks, pendingReviews, abnormalData, instruments, inventory]
+      properties:
+        filters: { $ref: '#/components/schemas/DashboardFilters' }
+        availableSections: { type: array, items: { type: string } }
+        samples: { allOf: [{ $ref: '#/components/schemas/DashboardStatusStatistics' }], nullable: true }
+        tasks: { allOf: [{ $ref: '#/components/schemas/DashboardTaskStatistics' }], nullable: true }
+        pendingReviews: { type: array, nullable: true, items: { $ref: '#/components/schemas/DashboardPendingReview' } }
+        abnormalData: { allOf: [{ $ref: '#/components/schemas/DashboardAbnormalData' }], nullable: true }
+        instruments: { allOf: [{ $ref: '#/components/schemas/DashboardStatusStatistics' }], nullable: true }
+        inventory: { allOf: [{ $ref: '#/components/schemas/DashboardInventory' }], nullable: true }
+    DashboardFilters:
+      type: object
+      properties:
+        projectId: { type: integer, format: int64, nullable: true }
+        personnelId: { type: string, format: uuid, nullable: true }
+        sampleStatus: { type: string, nullable: true }
+        taskStatus: { type: string, nullable: true }
+        from: { type: string, format: date-time, nullable: true }
+        to: { type: string, format: date-time, nullable: true }
+        inventoryDays: { type: integer, minimum: 0, maximum: 365 }
+    DashboardStatusStatistics:
+      type: object
+      required: [total, byStatus]
+      properties:
+        total: { type: integer, minimum: 0 }
+        byStatus: { type: object, additionalProperties: { type: integer, minimum: 0 } }
+    DashboardTaskStatistics:
+      allOf:
+        - $ref: '#/components/schemas/DashboardStatusStatistics'
+        - type: object
+          required: [completedCount, completionRate]
+          properties:
+            completedCount: { type: integer, minimum: 0 }
+            completionRate: { type: number, minimum: 0, maximum: 100 }
+    DashboardPendingReview:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        taskCode: { type: string }
+        name: { type: string }
+        projectId: { type: integer, format: int64 }
+        status: { type: string, enum: [PENDING_REVIEW] }
+        plannedEnd: { type: string, format: date-time, nullable: true }
+        updatedAt: { type: string, format: date-time }
+    DashboardAbnormalData:
+      type: object
+      required: [total, byStatus, byDecision, items]
+      properties:
+        total: { type: integer, minimum: 0 }
+        byStatus: { type: object, additionalProperties: { type: integer, minimum: 0 } }
+        byDecision: { type: object, additionalProperties: { type: integer, minimum: 0 } }
+        items: { type: array, items: { $ref: '#/components/schemas/DashboardAbnormalDataItem' } }
+    DashboardAbnormalDataItem:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        taskId: { type: integer, format: int64 }
+        status: { type: string, enum: [FLAGGED, FAILED, SUCCEEDED, RUNNING] }
+        decision: { type: string, enum: [PASS, FAIL, REVIEW], nullable: true }
+        explanation: { type: string, nullable: true }
+        executedAt: { type: string, format: date-time }
+    DashboardInventory:
+      type: object
+      required: [totalAlerts, byType, bySeverity, alerts]
+      properties:
+        totalAlerts: { type: integer, minimum: 0 }
+        byType: { type: object, additionalProperties: { type: integer, minimum: 0 } }
+        bySeverity: { type: object, additionalProperties: { type: integer, minimum: 0 } }
+        alerts: { type: array, items: { $ref: '#/components/schemas/InventoryAlert' } }
     ApiResponseLogin:
       type: object
       properties:
@@ -400,20 +3045,26 @@ components:
         message: { type: string }
         data: { $ref: '#/components/schemas/Sample' }
         traceId: { type: string }
-    ApiResponseSamplePage:
+    ApiResponseSampleItems:
       type: object
       properties:
         code: { type: string }
         message: { type: string }
-        data:
-          type: object
-          properties:
-            items:
-              type: array
-              items: { $ref: '#/components/schemas/Sample' }
-            page: { type: integer }
-            size: { type: integer }
-            total: { type: integer, format: int64 }
+        data: { type: array, items: { $ref: '#/components/schemas/Sample' } }
+        traceId: { type: string }
+    ApiResponseSampleFlow:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { $ref: '#/components/schemas/SampleFlow' }
+        traceId: { type: string }
+    ApiResponseSampleFlows:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { type: array, items: { $ref: '#/components/schemas/SampleFlow' } }
         traceId: { type: string }
     ApiResponseTask:
       type: object
@@ -437,12 +3088,85 @@ components:
             size: { type: integer }
             total: { type: integer, format: int64 }
         traceId: { type: string }
+    ApiResponseTaskAssignment:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { type: object }
+        traceId: { type: string }
+    ApiResponseTaskTransition:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { $ref: '#/components/schemas/TaskTransition' }
+        traceId: { type: string }
+    ApiResponseTaskHistory:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/TaskHistory' }
+        traceId: { type: string }
+    ApiResponseExperimentData:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { $ref: '#/components/schemas/ExperimentData' }
+        traceId: { type: string }
+    ApiResponseExperimentDataItems:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { type: array, items: { $ref: '#/components/schemas/ExperimentData' } }
+        traceId: { type: string }
+    ApiResponseExperimentDataImport:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { type: array, items: { $ref: '#/components/schemas/ExperimentData' } }
+        importedCount: { type: integer, minimum: 1 }
+        traceId: { type: string }
+    ApiResponseProcessingRuleItems:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { type: array, items: { $ref: '#/components/schemas/ProcessingRule' } }
+        traceId: { type: string }
+    ApiResponseProcessingRun:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { $ref: '#/components/schemas/ProcessingRun' }
+        traceId: { type: string }
+    ApiResponseProcessingRunItems:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { type: array, items: { $ref: '#/components/schemas/ProcessingRun' } }
+        traceId: { type: string }
     ApiResponseReview:
       type: object
       properties:
         code: { type: string }
         message: { type: string }
         data: { $ref: '#/components/schemas/Review' }
+        traceId: { type: string }
+    ApiResponseReviewContext:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { $ref: '#/components/schemas/ReviewContext' }
         traceId: { type: string }
     ApiResponseReport:
       type: object
@@ -451,6 +3175,24 @@ components:
         message: { type: string }
         data: { $ref: '#/components/schemas/Report' }
         traceId: { type: string }
+    ApiResponseReportSignature:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { $ref: '#/components/schemas/ReportSignature' }
+        traceId: { type: string }
+    ApiResponseReports:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data: { type: array, items: { $ref: '#/components/schemas/Report' } }
+        traceId: { type: string }
+    ApiResponseReportTrace:
+      type: object
+      properties:
+        data: { $ref: '#/components/schemas/ReportTrace' }
     ApiResponseDashboard:
       type: object
       properties:
@@ -458,5 +3200,47 @@ components:
         message: { type: string }
         data: { $ref: '#/components/schemas/Dashboard' }
         traceId: { type: string }
+    ApiResponseDashboardTaskStatistics:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data:
+          type: object
+          properties:
+            filters: { $ref: '#/components/schemas/DashboardFilters' }
+            tasks: { allOf: [{ $ref: '#/components/schemas/DashboardTaskStatistics' }], nullable: true }
+            pendingReviews: { type: array, items: { $ref: '#/components/schemas/DashboardPendingReview' } }
+        traceId: { type: string }
+    ApiResponseDashboardInventory:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        data:
+          type: object
+          properties:
+            filters: { $ref: '#/components/schemas/DashboardFilters' }
+            inventory: { allOf: [{ $ref: '#/components/schemas/DashboardInventory' }], nullable: true }
+        traceId: { type: string }
+    AuditLog:
+      type: object
+      required: [id, objectType, objectId, action, occurredAt]
+      properties:
+        id: { type: integer, format: int64 }
+        operatorId: { type: string, format: uuid, nullable: true }
+        objectType: { type: string }
+        objectId: { type: string }
+        action: { type: string }
+        beforeJson: { type: object, nullable: true, additionalProperties: true }
+        afterJson: { type: object, nullable: true, additionalProperties: true }
+        ipAddress: { type: string, nullable: true }
+        occurredAt: { type: string, format: date-time }
+    ApiResponseAuditLogs:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/AuditLog' }
 security:
   - bearerAuth: []

@@ -1,0 +1,43 @@
+{
+  "scenarioId": "DEMO-LIMS-001",
+  "title": "高校科研实验室标准样品检测",
+  "dataPolicy": "synthetic-only",
+  "prefix": "DEMO_",
+  "roles": [
+    { "roleCode": "SYSTEM_ADMIN", "account": "<demo-admin@example.invalid>", "purpose": "初始化和审计" },
+    { "roleCode": "RESEARCHER", "account": "<demo-operator@example.invalid>", "purpose": "执行任务和录入数据" },
+    { "roleCode": "PROJECT_LEAD", "account": "<demo-reviewer@example.invalid>", "purpose": "审核和报告" }
+  ],
+  "entities": [
+    { "type": "laboratory", "code": "DEMO_LAB_01", "name": "演示科研实验室" },
+    { "type": "area", "code": "DEMO_ZONE_01", "name": "样品前处理区" },
+    { "type": "project", "code": "DEMO_P_001", "name": "标准样品稳定性验证" },
+    { "type": "method", "code": "DEMO_M_001", "version": "1.0", "name": "液相色谱定量方法" },
+    { "type": "instrument", "code": "DEMO_INST_001", "name": "演示液相色谱仪" },
+    { "type": "inventory", "code": "DEMO_REAGENT_001", "batch": "DEMO_BATCH_001", "name": "乙腈" },
+    { "type": "task", "code": "DEMO_T_001", "name": "样品稳定性检测任务" },
+    { "type": "sample", "code": "DEMO_S_001", "name": "稳定性测试样品" },
+    { "type": "raw-data", "code": "DEMO_RAW_001", "name": "主峰面积原始读数" },
+    { "type": "environment", "code": "DEMO_ENV_001", "name": "前处理区温湿度记录" }
+  ],
+  "p0Coverage": [
+    "FR-AUTH-001", "FR-AUTH-002", "FR-AUTH-003", "FR-AUTH-004", "FR-AUTH-005",
+    "FR-PER-001", "FR-PER-002",
+    "FR-SAMPLE-001", "FR-SAMPLE-002", "FR-SAMPLE-003", "FR-SAMPLE-004", "FR-SAMPLE-005", "FR-SAMPLE-006",
+    "FR-TASK-001", "FR-TASK-002", "FR-TASK-003", "FR-TASK-004", "FR-TASK-005", "FR-TASK-006",
+    "FR-METHOD-001", "FR-METHOD-002",
+    "FR-DATA-001", "FR-DATA-002", "FR-DATA-003", "FR-DATA-004", "FR-DATA-005",
+    "FR-REVIEW-001", "FR-REVIEW-002", "FR-REVIEW-003", "FR-REVIEW-004",
+    "FR-REPORT-001", "FR-REPORT-002", "FR-REPORT-003", "FR-REPORT-004",
+    "FR-EQUIP-001", "FR-EQUIP-002", "FR-EQUIP-003",
+    "FR-INVENTORY-001", "FR-INVENTORY-002", "FR-INVENTORY-003", "FR-INVENTORY-004",
+    "FR-ENV-001", "FR-ENV-002", "FR-ENV-003",
+    "FR-AUDIT-001", "FR-AUDIT-002", "FR-AUDIT-003", "FR-AUDIT-004", "FR-AUDIT-005",
+    "FR-DASH-001", "FR-DASH-002", "FR-DASH-003",
+    "FR-SETTING-001", "FR-SETTING-002"
+  ],
+  "acceptanceScenarios": [
+    "AC-AUTH-001", "AC-SAMPLE-001", "AC-SAMPLE-002", "AC-TASK-001", "AC-DATA-001",
+    "AC-REVIEW-001", "AC-REPORT-001", "AC-RESOURCE-001", "AC-AUDIT-001", "AC-DASH-001"
+  ]
+}

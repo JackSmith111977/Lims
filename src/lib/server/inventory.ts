@@ -1,0 +1,283 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+import { AdminApiError, requireId, requireObject, requireText } from "@/lib/server/admin";
+import type { Database, Json } from "@/types/database";
+
+export const INVENTORY_STATUSES = ["ACTIVE", "INACTIVE", "EXPIRED", "DEPLETED"] as const;
+export const INVENTORY_TRANSACTION_TYPES = ["INBOUND", "OUTBOUND", "RETURN", "SCRAP"] as const;
+export type InventoryStatus = (typeof INVENTORY_STATUSES)[number];
+export type InventoryTransactionType = (typeof INVENTORY_TRANSACTION_TYPES)[number];
+
+export const INVENTORY_ITEM_FIELDS = "id, item_code, type, name, batch_no, manufacturer, quantity, unit, expiry_date, storage_condition, location, status, low_stock_threshold, created_at, updated_at";
+export const INVENTORY_TRANSACTION_FIELDS = "id, item_id, task_id, transaction_type, quantity, operator_id, occurred_at, remark";
+
+type InventoryItemRow = Database["public"]["Tables"]["inventory_item"]["Row"];
+type InventoryTransactionRow = Database["public"]["Tables"]["inventory_transaction"]["Row"];
+
+export type InventoryItemView = {
+  id: number;
+  itemCode: string;
+  type: string;
+  name: string;
+  batchNo: string | null;
+  manufacturer: string | null;
+  quantity: number;
+  unit: string;
+  lowStockThreshold: number;
+  expiryDate: string | null;
+  storageCondition: string | null;
+  location: string | null;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type InventoryTransactionView = {
+  id: number;
+  itemId: number;
+  taskId: number | null;
+  transactionType: string;
+  quantity: number;
+  operatorId: string;
+  occurredAt: string;
+  remark: string | null;
+};
+
+export type InventoryAlertView = {
+  itemId: number;
+  itemCode: string;
+  itemName: string;
+  alertType: string;
+  severity: string;
+  quantity: number;
+  lowStockThreshold: number;
+  expiryDate: string | null;
+  daysUntilExpiry: number | null;
+  unit: string;
+  location: string | null;
+};
+
+function serializeItem(row: InventoryItemRow): InventoryItemView {
+  return {
+    id: row.id,
+    itemCode: row.item_code,
+    type: row.type,
+    name: row.name,
+    batchNo: row.batch_no,
+    manufacturer: row.manufacturer,
+    quantity: row.quantity,
+    unit: row.unit,
+    lowStockThreshold: row.low_stock_threshold,
+    expiryDate: row.expiry_date,
+    storageCondition: row.storage_condition,
+    location: row.location,
+    status: row.status,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function serializeTransaction(row: InventoryTransactionRow): InventoryTransactionView {
+  return {
+    id: row.id,
+    itemId: row.item_id,
+    taskId: row.task_id,
+    transactionType: row.transaction_type,
+    quantity: row.quantity,
+    operatorId: row.operator_id,
+    occurredAt: row.occurred_at,
+    remark: row.remark,
+  };
+}
+
+function serializeAlert(row: Record<string, unknown>): InventoryAlertView {
+  return {
+    itemId: Number(row.item_id),
+    itemCode: String(row.item_code),
+    itemName: String(row.item_name),
+    alertType: String(row.alert_type),
+    severity: String(row.severity),
+    quantity: Number(row.quantity),
+    lowStockThreshold: Number(row.low_stock_threshold),
+    expiryDate: typeof row.expiry_date === "string" ? row.expiry_date : null,
+    daysUntilExpiry: row.days_until_expiry === null || row.days_until_expiry === undefined ? null : Number(row.days_until_expiry),
+    unit: String(row.unit),
+    location: typeof row.location === "string" ? row.location : null,
+  };
+}
+
+function optionalText(value: unknown, field: string, maxLength: number) {
+  if (value === undefined) return undefined;
+  if (value === null || value === "") return null;
+  return requireText(value, field, maxLength);
+}
+
+function optionalDate(value: unknown, field: string) {
+  if (value === undefined) return undefined;
+  if (value === null || value === "") return null;
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    throw new AdminApiError(400, "INVALID_INVENTORY_DATE", `${field} must use YYYY-MM-DD.`);
+  }
+  const date = new Date(`${value}T00:00:00.000Z`);
+  if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== value) {
+    throw new AdminApiError(400, "INVALID_INVENTORY_DATE", `${field} is not a valid date.`);
+  }
+  return value;
+}
+
+function parseQuantity(value: unknown) {
+  const quantity = typeof value === "number" ? value : Number(typeof value === "string" ? value.trim() : NaN);
+  if (!Number.isFinite(quantity) || quantity <= 0 || quantity > 999999999999) {
+    throw new AdminApiError(400, "INVALID_INVENTORY_QUANTITY", "quantity must be a positive finite number.");
+  }
+  if (Math.round(quantity * 1_000_000) / 1_000_000 !== quantity) {
+    throw new AdminApiError(400, "INVALID_INVENTORY_QUANTITY", "quantity supports at most six decimal places.");
+  }
+  return quantity;
+}
+
+function parseThreshold(value: unknown) {
+  const threshold = typeof value === "number" ? value : Number(typeof value === "string" ? value.trim() : NaN);
+  if (!Number.isFinite(threshold) || threshold < 0 || threshold > 999999999999) {
+    throw new AdminApiError(400, "INVALID_INVENTORY_THRESHOLD", "lowStockThreshold must be a non-negative finite number.");
+  }
+  if (Math.round(threshold * 1_000_000) / 1_000_000 !== threshold) {
+    throw new AdminApiError(400, "INVALID_INVENTORY_THRESHOLD", "lowStockThreshold supports at most six decimal places.");
+  }
+  return threshold;
+}
+
+export function buildInventoryItemPayload(bodyValue: unknown, update = false) {
+  const body = requireObject(bodyValue);
+  for (const field of ["id", "quantity", "createdAt", "updatedAt"]) {
+    if (body[field] !== undefined) throw new AdminApiError(400, "INVALID_INVENTORY_FIELD", `${field} is generated by the server.`);
+  }
+  if (update && body.itemCode !== undefined) throw new AdminApiError(409, "INVENTORY_IDENTITY_IMMUTABLE", "itemCode cannot be changed after creation.");
+
+  const payload: Record<string, Json> = {};
+  if (!update || body.itemCode !== undefined) payload.item_code = requireText(body.itemCode, "itemCode", 32);
+  if (!update || body.type !== undefined) payload.type = requireText(body.type, "type", 32);
+  if (!update || body.name !== undefined) payload.name = requireText(body.name, "name", 128);
+  if (!update || body.unit !== undefined) payload.unit = requireText(body.unit, "unit", 16);
+  for (const [input, output, maxLength] of [["batchNo", "batch_no", 64], ["manufacturer", "manufacturer", 128], ["storageCondition", "storage_condition", 255], ["location", "location", 128]] as const) {
+    const value = optionalText(body[input], input, maxLength);
+    if (value !== undefined) payload[output] = value;
+  }
+  const expiryDate = optionalDate(body.expiryDate, "expiryDate");
+  if (expiryDate !== undefined) payload.expiry_date = expiryDate;
+  if (body.lowStockThreshold !== undefined) payload.low_stock_threshold = parseThreshold(body.lowStockThreshold);
+  if (body.status !== undefined) {
+    const status = requireText(body.status, "status", 16).toUpperCase();
+    if (!INVENTORY_STATUSES.includes(status as InventoryStatus) || ["EXPIRED", "DEPLETED"].includes(status)) {
+      throw new AdminApiError(400, "INVALID_INVENTORY_STATUS", "Client may only set ACTIVE or INACTIVE status.");
+    }
+    payload.status = status;
+  }
+  if (update && Object.keys(payload).length === 0) throw new AdminApiError(400, "EMPTY_UPDATE", "No editable inventory fields supplied.");
+  return payload;
+}
+
+export function buildInventoryTransactionPayload(bodyValue: unknown) {
+  const body = requireObject(bodyValue);
+  for (const field of ["id", "itemId", "operatorId", "occurredAt", "balanceBefore", "balanceAfter"]) {
+    if (body[field] !== undefined) throw new AdminApiError(400, "INVALID_INVENTORY_TRANSACTION_FIELD", `${field} is generated by the server.`);
+  }
+  const transactionType = requireText(body.transactionType, "transactionType", 16).toUpperCase();
+  if (!INVENTORY_TRANSACTION_TYPES.includes(transactionType as InventoryTransactionType)) {
+    throw new AdminApiError(400, "INVALID_INVENTORY_TRANSACTION_TYPE", "Unsupported inventory transaction type.");
+  }
+  const taskId = body.taskId === undefined || body.taskId === null || body.taskId === "" ? null : requireId(String(body.taskId));
+  if (taskId !== null && transactionType !== "OUTBOUND") {
+    throw new AdminApiError(400, "INVALID_INVENTORY_TASK_LINK", "Only OUTBOUND inventory usage can link an experiment task.");
+  }
+  return {
+    transaction_type: transactionType,
+    quantity: parseQuantity(body.quantity),
+    task_id: taskId,
+    remark: body.remark === undefined || body.remark === null || body.remark === "" ? null : requireText(body.remark, "remark", 2000),
+  };
+}
+
+function mapInventoryError(error: { code?: string; message?: string }, fallback: string): never {
+  const message = error.message ?? "";
+  const lowered = message.toLowerCase();
+  if (error.code === "42501" || lowered.includes("permission denied")) throw new AdminApiError(403, "INVENTORY_PERMISSION_DENIED", "Current user cannot manage inventory.");
+  if (error.code === "P0002" || lowered.includes("not found")) throw new AdminApiError(404, "INVENTORY_ITEM_NOT_FOUND", "Inventory item does not exist.");
+  if (error.code === "23505") throw new AdminApiError(409, "INVENTORY_CODE_EXISTS", "itemCode already exists.");
+  if (error.code === "55000" || lowered.includes("insufficient") || lowered.includes("immutable") || lowered.includes("managed by")) throw new AdminApiError(409, "INVENTORY_CONFLICT", "Inventory operation conflicts with the current stock state.");
+  if (error.code === "22023" || error.code === "23514" || error.code === "23502") throw new AdminApiError(400, "INVALID_INVENTORY", "Inventory fields or transaction are invalid.");
+  throw new AdminApiError(400, fallback, "Inventory operation failed.");
+}
+
+export async function loadInventoryItems(supabase: SupabaseClient<Database>, filters: { keyword?: string | null; status?: string | null } = {}) {
+  if (filters.status && !INVENTORY_STATUSES.includes(filters.status as InventoryStatus)) throw new AdminApiError(400, "INVALID_INVENTORY_STATUS", "Unsupported inventory status.");
+  let query = supabase.from("inventory_item").select(INVENTORY_ITEM_FIELDS).order("item_code", { ascending: true });
+  if (filters.status) query = query.eq("status", filters.status);
+  const { data, error } = await query;
+  if (error) throw new AdminApiError(500, "INVENTORY_LOOKUP_FAILED", "Unable to read inventory items.");
+  const keyword = filters.keyword?.trim().toLowerCase() ?? "";
+  return ((data ?? []) as unknown as InventoryItemRow[])
+    .filter((row) => !keyword || `${row.item_code} ${row.name} ${row.type} ${row.batch_no ?? ""} ${row.manufacturer ?? ""} ${row.location ?? ""}`.toLowerCase().includes(keyword))
+    .map(serializeItem);
+}
+
+export async function loadInventoryItem(supabase: SupabaseClient<Database>, idValue: string) {
+  const id = requireId(idValue);
+  const { data, error } = await supabase.from("inventory_item").select(INVENTORY_ITEM_FIELDS).eq("id", id).maybeSingle();
+  if (error) throw new AdminApiError(500, "INVENTORY_LOOKUP_FAILED", "Unable to read inventory item.");
+  if (!data) throw new AdminApiError(404, "INVENTORY_ITEM_NOT_FOUND", "Inventory item does not exist.");
+  return serializeItem(data as unknown as InventoryItemRow);
+}
+
+export async function loadInventoryTransactions(supabase: SupabaseClient<Database>, idValue: string) {
+  const id = requireId(idValue);
+  await loadInventoryItem(supabase, idValue);
+  const { data, error } = await supabase.from("inventory_transaction").select(INVENTORY_TRANSACTION_FIELDS).eq("item_id", id).order("occurred_at", { ascending: false }).order("id", { ascending: false });
+  if (error) throw new AdminApiError(500, "INVENTORY_TRANSACTION_LOOKUP_FAILED", "Unable to read inventory transactions.");
+  return ((data ?? []) as unknown as InventoryTransactionRow[]).map(serializeTransaction);
+}
+
+export async function loadInventoryAlerts(supabase: SupabaseClient<Database>, days = 30) {
+  if (!Number.isSafeInteger(days) || days < 0 || days > 365) {
+    throw new AdminApiError(400, "INVALID_INVENTORY_ALERT_WINDOW", "days must be between 0 and 365.");
+  }
+  const { data, error } = await supabase.rpc("get_inventory_alerts", { _days: days });
+  if (error) throw new AdminApiError(500, "INVENTORY_ALERT_LOOKUP_FAILED", "Unable to read inventory alerts.");
+  const rows = Array.isArray(data) ? data as Record<string, unknown>[] : [];
+  return rows.map(serializeAlert).sort((left, right) => {
+    const severity = { CRITICAL: 0, WARNING: 1 } as Record<string, number>;
+    return (severity[left.severity] ?? 2) - (severity[right.severity] ?? 2)
+      || (left.daysUntilExpiry ?? 9999) - (right.daysUntilExpiry ?? 9999)
+      || left.itemCode.localeCompare(right.itemCode)
+      || left.alertType.localeCompare(right.alertType);
+  });
+}
+
+export async function createInventoryItem(supabase: SupabaseClient<Database>, bodyValue: unknown) {
+  const payload = buildInventoryItemPayload(bodyValue);
+  const { data, error } = await supabase.rpc("create_inventory_item", { _payload: payload });
+  if (error) mapInventoryError(error, "INVENTORY_CREATE_FAILED");
+  const row = data && typeof data === "object" && !Array.isArray(data) ? data as Record<string, Json | undefined> : null;
+  if (!row || typeof row.id !== "number") throw new AdminApiError(500, "INVENTORY_CREATE_FAILED", "Inventory create returned no item.");
+  return serializeItem(row as unknown as InventoryItemRow);
+}
+
+export async function updateInventoryItem(supabase: SupabaseClient<Database>, idValue: string, bodyValue: unknown) {
+  const id = requireId(idValue);
+  const payload = buildInventoryItemPayload(bodyValue, true);
+  const { data, error } = await supabase.rpc("update_inventory_item", { _item_id: id, _payload: payload });
+  if (error) mapInventoryError(error, "INVENTORY_UPDATE_FAILED");
+  const row = data && typeof data === "object" && !Array.isArray(data) ? data as Record<string, Json | undefined> : null;
+  if (!row || typeof row.id !== "number") throw new AdminApiError(500, "INVENTORY_UPDATE_FAILED", "Inventory update returned no item.");
+  return serializeItem(row as unknown as InventoryItemRow);
+}
+
+export async function createInventoryTransaction(supabase: SupabaseClient<Database>, idValue: string, bodyValue: unknown) {
+  const id = requireId(idValue);
+  const payload = buildInventoryTransactionPayload(bodyValue);
+  const { data, error } = await supabase.rpc("record_inventory_transaction", { _item_id: id, _payload: payload });
+  if (error) mapInventoryError(error, "INVENTORY_TRANSACTION_CREATE_FAILED");
+  const row = data && typeof data === "object" && !Array.isArray(data) ? data as Record<string, Json | undefined> : null;
+  if (!row || typeof row.id !== "number") throw new AdminApiError(500, "INVENTORY_TRANSACTION_CREATE_FAILED", "Inventory transaction returned no record.");
+  return serializeTransaction(row as unknown as InventoryTransactionRow);
+}

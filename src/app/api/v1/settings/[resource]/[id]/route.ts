@@ -12,6 +12,7 @@ import {
   getSettingConfig,
   mapSettingDatabaseError,
   serializeSetting,
+  isCodeSettingResource,
   settingsQuery,
   validateSettingParent,
 } from "@/lib/server/settings";
@@ -23,10 +24,10 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     const { supabase, user: operator } = await requireAdminPermission("settings.manage");
     const { resource, table, fields, objectType } = getSettingConfig((await params).resource);
     const rawId = (await params).id;
-    const id = resource === "parameters" ? rawId : requireId(rawId);
+    const id = isCodeSettingResource(resource) ? rawId : requireId(rawId);
     const body = await request.json();
     const payload = buildSettingPayload(resource, body, true);
-    if (resource === "parameters") {
+    if (isCodeSettingResource(resource)) {
       const parameterLookup = await settingsQuery(supabase, table).select(fields).eq("code", rawId).maybeSingle();
       if (parameterLookup.error) throw new AdminApiError(500, "SETTINGS_LOOKUP_FAILED", "无法读取设置数据。");
       if (!parameterLookup.data) throw new AdminApiError(404, "SETTING_NOT_FOUND", "设置对象不存在。");

@@ -4,8 +4,8 @@
 | --- | --- |
 | 来源 | `design.md` ER 图、`spec.md` 数据模型要求 |
 | 数据库 | Supabase PostgreSQL |
-| 状态 | Draft |
-| 更新时间 | 2026-07-11 |
+| 状态 | Approved（MVP 已实现范围） |
+| 更新时间 | 2026-07-19 |
 
 ## 1. 统一约定
 
@@ -82,7 +82,7 @@
 
 - `sys_category(id, category_type, code, name, parent_id, description, sort_order, status, created_at, updated_at)`：统一承载项目、样品、任务、设备和资源分类；`category_type + code` 唯一，父节点必须属于同一类型。
 - `sys_unit(id, code, name, symbol, dimension, sort_order, status, created_at, updated_at)`：计量单位字典，`code` 唯一。
-- `sys_parameter(id, code, name, value_type, value_json, description, status, created_at, updated_at)`：运行时系统参数，`value_type` 为 STRING/NUMBER/BOOLEAN/JSON；禁止保存密码、密钥和令牌。
+- `sys_parameter(id, code, name, value_type, value_json, description, status, created_at, updated_at)`：运行时系统参数和报告模板配置；普通参数的 `value_type` 为 STRING/NUMBER/BOOLEAN/JSON，`REPORT_TEMPLATE_` 前缀记录的模板必须为 JSON 对象；禁止保存密码、密钥和令牌。报告模板快照写入 `experiment_report.report_payload.template`。
 
 所有基础设置表启用 RLS，写操作要求 `settings.manage`，停用优先于物理删除，变更写入 `audit_log`。
 
@@ -203,6 +203,12 @@
 
 约束：历史记录只允许追加；每次报告状态变化必须同时写入历史和审计。
 
+### 6.4 `experiment_report_signature`
+
+`id`、`report_id`、`signature_type`、`signature_hash`、`signed_by(UUID)`、`signed_at(TIMESTAMPTZ)`、`remark`。
+
+约束：同一报告最多一条电子签名；只允许对 `PUBLISHED` 报告签名；签名哈希由服务端对报告编号、版本和不可变快照计算 SHA-256；签名记录只允许新增，不能更新或删除。详细边界见 [`design-report-signature.md`](design-report-signature.md)。
+
 ## 7. 设备、库存和环境表
 
 ### 7.1 `instrument`
@@ -266,10 +272,9 @@
 - 审核、报告发布、库存扣减等状态变更必须通过服务端业务函数执行。
 - Auth 用户删除或停用时，业务档案采用停用策略，不级联删除实验历史。
 
-## 11. 下一步
+## 11. MVP 边界与后续扩展
 
-- [x] 根据 Supabase PostgreSQL 生成数据库 migration 脚本：`supabase/migrations/202607120001_initial_schema.sql`。
-- [x] 在演示 Supabase 项目执行 migration 并记录结果：远程迁移版本 `202607120001`，`sys_user` 核心表 REST 查询返回 HTTP 200。
-- [x] 确认状态值字典和错误码：设置状态 ACTIVE/INACTIVE，API 错误码见 `design-settings.md`。
-- [ ] 确认是否使用软删除字段。
-- [ ] 根据 API 查询场景复核索引。
+- 当前 MVP 已通过 Supabase migration 固化核心表、状态值、错误码和关键索引；后续索引只在有查询证据时新增。
+- 当前不引入通用 `deleted_at` 软删除字段；任务、样品、报告和用户继续使用停用、作废、归档或历史追加记录表达生命周期。
+- Auth 用户由 Supabase Auth 管理，业务用户资料由 `sys_user` 关联；首个管理员通过受控 bootstrap 流程产生，不在数据模型中伪造默认账号。
+- 状态变化应使用历史记录或审计日志保留过程；附件继续使用独立文件记录与业务实体关联。

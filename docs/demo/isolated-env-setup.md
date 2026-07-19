@@ -29,3 +29,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\integration\with-d
 ```
 
 只有 `Demo preflight: PASSED` 后才允许开始 `demo-runbook.md` 的页面级演练。演练结束仍须通过受控 Dashboard/Auth UI 清理账号，并在隔离项目执行 `demo-cleanup.sql` 后做只读残留核对。
+
+## 页面验收临时凭据边界（`NFR-ENV-001`、`NFR-SEC-002`、`AC-ENV-001`、`T-505C`）
+
+如果三个规范占位账号已经存在但没有可用临时密码，页面验收可以由具备隔离项目权限的本机受控流程为这些账号生成一次性随机密码。密码只能存在于当前进程内并仅用于本次隔离登录，不得写入仓库、环境文件、日志、截图或聊天；不得为正式 `SchoolWork` 项目执行该操作。演练完成后，必须先通过支持的 Auth API 或 Dashboard Auth Users 删除演示账号，再执行 `demo-cleanup.sql` 并用只读查询确认公开 `DEMO_` 残留为 0。该流程只服务于 T-505C/T-506C 的隔离验收，不改变产品登录契约。

@@ -109,6 +109,9 @@ export function validateDemoEnvironment(config, runtimeEnv = {}) {
   };
 }
 
+/**
+ * @param {{ config?: Record<string, unknown>, runtimeEnv?: Record<string, string>, fetchImpl?: typeof fetch, timeoutMs?: number }} options
+ */
 export async function validateRuntimeSupabaseKeys({ config, runtimeEnv = {}, fetchImpl = globalThis.fetch, timeoutMs = 5000 } = {}) {
   const errors = [];
   const projectRef = typeof config?.projectRef === "string" ? config.projectRef : null;

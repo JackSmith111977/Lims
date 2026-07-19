@@ -4,7 +4,7 @@
 | --- | --- |
 | Design ID | `DES-DEMO-SCENARIO-001` |
 | 来源 Spec | 所有 P0 功能需求、`AC-AUTH-001`、`AC-SAMPLE-001～002`、`AC-TASK-001`、`AC-DATA-001`、`AC-REVIEW-001`、`AC-REPORT-001`、`AC-RESOURCE-001`、`AC-AUDIT-001`、`AC-DASH-001` |
-| 状态 | Conditional（隔离项目结构和合成种子已完成；页面全链路、账号清理和残留核对待完成） |
+| 状态 | Approved（隔离项目结构、合成种子、页面全链路、账号清理和零残留核对均已完成） |
 | 数据目录 | [`docs/demo/demo-data-catalog.json`](../../docs/demo/demo-data-catalog.json) |
 | 演示手册 | [`docs/demo/demo-runbook.md`](../../docs/demo/demo-runbook.md) |
 

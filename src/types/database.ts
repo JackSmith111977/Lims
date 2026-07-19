@@ -679,6 +679,51 @@ export type Database = {
           },
         ]
       }
+      experiment_report_signature: {
+        Row: {
+          id: number
+          report_id: number
+          remark: string | null
+          signature_hash: string
+          signature_type: string
+          signed_at: string
+          signed_by: string
+        }
+        Insert: {
+          id?: number
+          report_id: number
+          remark?: string | null
+          signature_hash: string
+          signature_type?: string
+          signed_at?: string
+          signed_by: string
+        }
+        Update: {
+          id?: number
+          report_id?: number
+          remark?: string | null
+          signature_hash?: string
+          signature_type?: string
+          signed_at?: string
+          signed_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "experiment_report_signature_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: true
+            referencedRelation: "experiment_report"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "experiment_report_signature_signed_by_fkey"
+            columns: ["signed_by"]
+            isOneToOne: false
+            referencedRelation: "sys_user"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       experiment_task: {
         Row: {
           created_at: string
@@ -2074,6 +2119,10 @@ export type Database = {
         Returns: Json
       }
       archive_report: {
+        Args: { _remark?: string | null; _report_id: number }
+        Returns: Json
+      }
+      sign_report: {
         Args: { _remark?: string | null; _report_id: number }
         Returns: Json
       }

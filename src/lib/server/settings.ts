@@ -19,6 +19,7 @@ export const SETTING_RESOURCES = [
   "categories",
   "units",
   "parameters",
+  "report-templates",
 ] as const;
 
 export type SettingResource = (typeof SETTING_RESOURCES)[number];
@@ -30,6 +31,7 @@ const RESOURCE_CONFIG: Record<SettingResource, { table: keyof Database["public"]
   categories: { table: "sys_category", fields: "id, category_type, parent_id, code, name, description, sort_order, status, created_at, updated_at", objectType: "sys_category" },
   units: { table: "sys_unit", fields: "id, code, name, symbol, dimension, sort_order, status, created_at, updated_at", objectType: "sys_unit" },
   parameters: { table: "sys_parameter", fields: "id, code, name, value_type, value_json, description, status, created_at, updated_at", objectType: "sys_parameter" },
+  "report-templates": { table: "sys_parameter", fields: "id, code, name, value_type, value_json, description, status, created_at, updated_at", objectType: "report_template" },
 };
 
 export type SettingsDbError = { code?: string; message: string };
@@ -38,6 +40,7 @@ export type SettingsQuery = PromiseLike<SettingsDbResult> & {
   select(columns?: string): SettingsQuery;
   order(column: string, options?: { ascending?: boolean }): SettingsQuery;
   eq(column: string, value: unknown): SettingsQuery;
+  like(column: string, pattern: string): SettingsQuery;
   insert(values: unknown): SettingsQuery;
   update(values: unknown): SettingsQuery;
   single(): Promise<SettingsDbResult>;
@@ -101,6 +104,26 @@ function parseParameterValue(value: unknown, valueType: string): Json {
   throw new AdminApiError(400, "INVALID_PARAMETER_VALUE", "参数值不是有效 JSON。");
 }
 
+function parseReportTemplateValue(value: unknown): Json {
+  const parsed = parseParameterValue(value, "JSON");
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    throw new AdminApiError(400, "INVALID_REPORT_TEMPLATE", "报告模板必须是 JSON 对象。");
+  }
+  const template = parsed as Record<string, unknown>;
+  if (template.title !== undefined) requireText(template.title, "title", 128);
+  if (template.description !== undefined) requireText(template.description, "description", 255);
+  if (template.fields !== undefined) {
+    if (!Array.isArray(template.fields) || template.fields.length === 0 || template.fields.length > 64 || template.fields.some((field) => typeof field !== "string" || field.trim().length === 0 || field.length > 64)) {
+      throw new AdminApiError(400, "INVALID_REPORT_TEMPLATE", "报告模板 fields 必须是 1～64 个非空字符串。");
+    }
+  }
+  return parsed;
+}
+
+export function isCodeSettingResource(resource: SettingResource) {
+  return resource === "parameters" || resource === "report-templates";
+}
+
 export function buildSettingPayload(resource: SettingResource, bodyValue: unknown, update = false) {
   const body = requireObject(bodyValue);
   const status = parseStatus(body.status);
@@ -149,6 +172,20 @@ export function buildSettingPayload(resource: SettingResource, bodyValue: unknow
     if (body.symbol !== undefined) payload.symbol = optionalText(body.symbol, "symbol", 32) ?? null;
     if (body.dimension !== undefined) payload.dimension = optionalText(body.dimension, "dimension", 32) ?? null;
     if (sortOrder !== undefined) payload.sort_order = sortOrder;
+    if (status !== undefined) payload.status = status;
+    return payload;
+  }
+
+  if (resource === "report-templates") {
+    const code = body.code === undefined && update ? undefined : requireText(body.code, "code", 64);
+    if (code !== undefined && !/^REPORT_TEMPLATE_[A-Z0-9_]+$/.test(code)) throw new AdminApiError(400, "INVALID_REPORT_TEMPLATE_CODE", "报告模板编码必须使用 REPORT_TEMPLATE_ 前缀。");
+    if (body.valueType !== undefined && body.valueType !== "JSON") throw new AdminApiError(400, "INVALID_REPORT_TEMPLATE", "报告模板 valueType 必须为 JSON。");
+    const payload: Record<string, unknown> = {};
+    if (!update || body.code !== undefined) payload.code = code;
+    if (!update || body.name !== undefined) payload.name = requireText(body.name, "name", 128);
+    if (!update || body.value !== undefined) payload.value_json = parseReportTemplateValue(body.value);
+    payload.value_type = "JSON";
+    if (body.description !== undefined) payload.description = optionalText(body.description, "description", 255) ?? null;
     if (status !== undefined) payload.status = status;
     return payload;
   }

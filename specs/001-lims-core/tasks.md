@@ -3,7 +3,7 @@
 | 项目 | 内容 |
 | --- | --- |
 | 来源 | `spec.md` 与 `plan.md` |
-| 状态 | Draft |
+| 状态 | Approved（MVP 收尾中） |
 | 说明 | 本文件是实现任务来源；毕业论文、答辩和整体进度仍记录在 `docs/task/` |
 
 ## 1. 基础分析与设计
@@ -169,22 +169,61 @@
   - [x] T-504A [S] 锁定托管备份、逻辑备份、Auth/Storage 边界和 RPO/RTO 口径（Files：`specs/001-lims-core/design-backup-recovery.md`、`plan.md`；Verify：覆盖 Supabase 计划差异、密钥处理和恢复路径）
   - [x] T-504B [S] 编写数据库备份、恢复、验证、回滚和演练说明（Files：`docs/ops/backup-recovery.md`；Verify：操作步骤、故障降级、敏感信息和完整性检查清单）
   - [x] T-504C [S] 完成文档完整性检查、对抗性审查和一致性门禁（Files：`scripts/sdd/check-backup-recovery.ps1`、`package.json`、`traceability.md`；Verify：文档检查、CLI 能力检查、SDD 一致性和版本门禁；Review：`REV-BACKUP-RECOVERY-001`）
-- [ ] T-505 准备演示数据和演示流程（Spec：所有 P0；设计：DES-DEMO-SCENARIO-001）
+- [x] T-505 准备演示数据和演示流程（Spec：所有 P0；设计：DES-DEMO-SCENARIO-001；T-505A～C、T-505C1～C3 和 `REV-DEMO-001` 已完成，隔离页面演练与清理证据闭环）
   - [x] T-505A [S] 锁定合成数据目录、角色切换、P0 覆盖和清理边界（Files：`specs/001-lims-core/design-demo-scenario.md`、`docs/demo/demo-data-catalog.json`；Verify：不含真实数据/凭据，所有 P0 有对应演示实体）
   - [x] T-505B [S] 编写逐页演示流程和验收证据清单（Files：`docs/demo/demo-runbook.md`；Verify：覆盖登录、设置、项目、样品、任务、数据、审核、报告、追溯、看板和审计）
   - [x] T-505C1 [S] 建立演示环境前置检查和生产项目保护（Spec：NFR-ENV-001～002、AC-ENV-001；Files：`docs/demo/demo-environment.json`、`scripts/integration/demo-preflight.mjs`、`scripts/integration/with-demo-env.ps1`、`docs/demo/isolated-env-setup.md`、`tests/unit/demo-preflight.test.ts`；Verify：读取 Next.js 实际环境文件，阻止未批准/非隔离/生产项目、公开 URL 混用、旧版 key 跨项目或新版 key 未被目标项目接受，校验项目 URL、key 和占位账号）
   - [x] T-505C2 [S] 确认 SchoolWork 为本项目规范远程数据库（Spec：NFR-ENV-001～002；Files：`spec.md`、`plan.md`、`remote-supabase-workflow.md`、`demo-environment.json`；Verify：project ref、正式数据源角色和演示隔离边界均有记录）
   - [x] T-505C3 [S] 创建并初始化隔离演示项目 `test`（Spec：NFR-ENV-001、AC-ENV-001；Files：`demo-environment.json`、`demo-initialization-evidence.md`；Verify：23 个迁移文件通过受控 Dashboard SQL Editor 执行，41 张表/45 个函数/58 条 RLS policy 的只读核验通过）
-  - [ ] T-505C [S] 在隔离环境生成演示数据并完成全链路演练和清理（Depends：T-503D、T-505A～C；Files：`scripts/integration/demo-seed.sql`、`scripts/integration/demo-cleanup.sql`、`docs/demo/demo-initialization-evidence.md`；Verify：种子只读统计、P0 流程、截图/编号证据、演练后 `DEMO_` 残留为 0；Review：`REV-DEMO-001`）
-- [ ] T-506 完成系统测试和缺陷修复（Spec：所有 AC）
+  - [x] T-505C [S] 在隔离环境生成演示数据并完成全链路演练和清理（Depends：T-503D、T-505A～C；Files：`scripts/integration/demo-seed.sql`、`scripts/integration/demo-cleanup.sql`、`docs/demo/demo-initialization-evidence.md`；Verify：种子只读统计、P0 流程、截图/编号证据、演练后 `DEMO_` 残留为 0；Review：`REV-DEMO-001`；当前进度：隔离前置、种子只读统计、隔离构建、未认证 E2E、三角色页面演练、编号证据、Auth 清理和四类零残留复核均已完成）
+- [x] T-506 完成系统测试和缺陷修复（Spec：所有 AC；T-506A～C 和 `REV-SYSTEM-TEST-001` 已完成，质量门禁与缺陷闭环通过）
   - [x] T-506A [S] 建立系统测试策略、AC 验收矩阵和缺陷记录（Files：`specs/001-lims-core/design-system-test.md`、`docs/testing/system-test-plan.md`、`docs/testing/defect-log.md`；Verify：每个 AC 有证据/复测入口，区分环境门禁和产品缺陷）
   - [x] T-506B [S] 完成测试计划完整性检查和对抗性审查（Files：`scripts/sdd/check-system-test-plan.ps1`、`package.json`、`traceability.md`；Verify：AC 覆盖、负向场景、敏感信息检查；Review：`REV-SYSTEM-TEST-001`）
-  - [ ] T-506C [S] 执行全量系统测试、关闭缺陷并形成测试报告（Depends：T-503D、T-505C、T-506A～B；Verify：所有 AC、P0/P1 缺陷、远程清理和回归门禁通过）
+  - [x] T-506C [S] 执行全量系统测试、关闭缺陷并形成测试报告（Depends：T-503D、T-505C、T-506A～B；Verify：所有 AC、P0/P1 缺陷、远程清理和回归门禁通过；当前进度：未认证 E2E 17/17、正向页面 AC、P0/P1 缺陷闭环、隔离清理和全量门禁汇总均已完成）
 
 ## 7. 扩展任务
 
-- [ ] T-601 实现 CSV/Excel 数据交换（Spec：FR-DATA-006）
-- [ ] T-602 实现模拟仪器数据接口（Spec：FR-DATA-009）
-- [ ] T-603 实现报告模板配置（Spec：FR-SETTING-004）
-- [ ] T-604 实现电子签名或正式签署流程（Spec：FR-REPORT-007）
-- [ ] T-605 评估真实仪器或传感器接口（Spec：FR-EQUIP-007、FR-ENV-006）
+  - [x] T-601 [S] 实现 CSV/Excel 数据交换（Spec：FR-DATA-006、NFR-DATA-002、NFR-SEC-001～002；Design：DES-DATA-EXCHANGE-001；Depends：T-302、T-306；Verify：CSV/XLSX 正向导入、文件/行数/字段边界、原子拒绝、权限/审计和未认证 E2E；当前进度：A～D 已完成，正式项目远程正向/负向、审计、清理和质量门禁通过）
+  - [x] T-601A [S] 锁定文件格式、字段映射、大小/行数边界、错误模型和审计摘要（Files：`specs/001-lims-core/design-data-exchange.md`、`api-contract.md`、`contracts/openapi.yaml`、`traceability.md`）
+  - [x] T-601B [S] 实现 CSV/XLSX 解析、统一行校验和批量写入服务/API（Files：`src/lib/server/data-import.ts`、`src/app/api/v1/tasks/[id]/data/import`；Verify：服务单元测试、TypeScript、任务/样品/设备边界）
+  - [x] T-601C [P] 实现实验数据页文件导入入口和结果反馈（Files：`src/components/experiment-data`、`src/app/data`；Verify：生产构建、未认证 E2E）
+- [x] T-601D [S] 完成远程集成、审计核对、对抗性审查和质量门禁（Spec：FR-DATA-006；Depends：T-601B～C；Verify：CSV/XLSX 正向导入、非法行零写入、清理和全量门禁；Review：`REV-DATA-EXCHANGE-001`）
+- [x] T-602 [S] 实现模拟仪器数据接口（Spec：FR-DATA-009、NFR-DATA-002、NFR-SEC-001～002；Design：DES-SIMULATED-INSTRUMENT-001；Depends：T-302、T-306、T-401；Verify：正向写入、来源不可伪造、非 ACTIVE/报废设备、任务/样品/数据锁定、权限/审计和未认证 E2E）
+  - [x] T-602A [S] 固化模拟仪器接口边界、来源和设备状态约束（Files：`specs/001-lims-core/design-simulated-instrument.md`、`api-contract.md`、`contracts/openapi.yaml`、`traceability.md`）
+  - [x] T-602B [S] 实现服务端模拟仪器写入服务和 API（Files：`src/lib/server/simulated-instrument.ts`、`src/app/api/v1/instruments/[id]/simulate-data`；Verify：服务单元测试、TypeScript、审计）
+  - [x] T-602B1 [S] 修复模拟接口 `taskId` 路由字段与共享数据载荷的边界：提取后不再传入通用服务端字段校验（Spec：`FR-DATA-009`、`NFR-SEC-001`；Depends：T-602B；Verify：服务单测、模拟仪器远程正向/伪造字段回归）
+  - [x] T-602C [P] 补充未认证 E2E 和界面/接口验收证据（Files：`tests/e2e/instrument-access.spec.ts`、`tests/unit/simulated-instrument.test.ts`；Verify：401、权限、设备状态和任务锁定）
+  - [x] T-602D [S] 完成远程集成、对抗性审查和质量门禁（Spec：`FR-DATA-009`、`NFR-SEC-001～002`；Depends：T-602B～C；Verify：正向写入、审计、清理和全量门禁；Review：`REV-SIMULATED-INSTRUMENT-001`）
+- [x] T-603 [S] 实现报告模板配置（Spec：FR-SETTING-004、FR-REPORT-001～006、NFR-SEC-001～002；Design：DES-REPORT-TEMPLATE-001；Depends：T-105B、T-305；Verify：模板 CRUD/校验/权限/审计、快照隔离、迁移和未认证 E2E）
+  - [x] T-603A [S] 固化模板 JSON、编码前缀、权限、快照和降级边界（Files：`specs/001-lims-core/design-report-template.md`、`design-settings.md`、`api-contract.md`、`traceability.md`）
+  - [x] T-603B [S] 实现模板设置资源和报告快照迁移（Files：`src/lib/server/settings.ts`、`src/components/settings`、`supabase/migrations`；Verify：JSON/字段校验、RLS、触发器）
+  - [x] T-603B1 [S] 修复报告模板 PATCH 的路径编码边界：更新请求体可省略 `code`，由路径编码定位资源（Spec：`FR-SETTING-004`、`FR-REPORT-001～006`；Depends：T-603B；Verify：模板更新远程回归、审计和权限）
+  - [x] T-603C [P] 补充模板页面/API 契约测试和报告快照单测（Files：`tests/unit`、`tests/e2e/admin-access.spec.ts`；Verify：CRUD、越权、401、模板快照）
+  - [x] T-603D [S] 完成远程迁移、集成、对抗性审查和质量门禁（Review：`REV-REPORT-TEMPLATE-001`）
+- [x] T-604 [S] 实现报告电子签名回执（Spec：FR-REPORT-007、NFR-SEC-001～002；Design：DES-REPORT-SIGNATURE-001；Depends：T-305、T-603；Verify：发布后签名、快照哈希、重复/状态/权限/伪造字段拒绝、审计、未认证 E2E）
+  - [x] T-604A [S] 固化签名语义、哈希算法、报告状态、权限和外部证书边界（Files：`specs/001-lims-core/design-report-signature.md`、`design-reporting.md`、`data-model.md`、`api-contract.md`、`traceability.md`）
+- [x] T-604B [S] 实现签名表、事务 RPC、服务端 API 和页面入口（Spec：FR-REPORT-007、NFR-SEC-001～002；Files：`supabase/migrations`、`src/lib/server/reporting.ts`、`src/app/api/v1/reports/[id]/sign`、`src/components/reporting`；Verify：SHA-256、不可变和状态机）
+- [x] T-604B1 [S] 修复签名 RPC 在 Supabase `security definer` 搜索路径下的 `pgcrypto.digest` 解析：显式限定 `extensions.digest` 和 `text` 算法参数（Spec：`FR-REPORT-007`、`NFR-SEC-001～002`；Depends：T-604B；Verify：新增迁移、远程签名/重复签名/直接写入拒绝、审计和清理）
+- [x] T-604C [P] 补充签名单元/E2E/API 契约测试（Files：`tests/unit`、`tests/e2e/report-access.spec.ts`；Verify：401、权限、重复签名、签名回执）
+  - [x] T-604D [S] 完成远程迁移、集成、对抗性审查和质量门禁（Review：`REV-REPORT-SIGNATURE-001`）
+- [x] T-605 评估真实仪器或传感器接口（Spec：FR-EQUIP-007、FR-ENV-006；Research：`RES-REAL-INSTRUMENT-001`；Review：`REV-REAL-INSTRUMENT-EVALUATION-001`）
+
+## 8. MVP 收尾任务
+
+- [x] T-606 [S] 收敛根入口与登录跳转（Spec：`FR-AUTH-001～002`、`FR-DASH-001～005`；Design：`DES-MVP-CLOSEOUT-001`；Files：`src/app/page.tsx`、`src/app/login/page.tsx`；Verify：未认证入口 E2E 2/2、旧骨架文案消失）
+- [x] T-607 [S] 实现受控的一次性首个 `SYSTEM_ADMIN` 初始化脚本（Spec：`FR-AUTH-003～006`、`NFR-SEC-001～002`、`NFR-ENV-001～002`；Design：`DES-AUTH-001`、`DES-MVP-CLOSEOUT-001`；Files：`scripts/ops/bootstrap-admin.mjs`、`docs/ops/initial-admin-bootstrap.md`、`package.json`；Verify：脚本语法、只读 dry-run、正式初始化、真实登录、工作台和管理员页面权限均通过）
+- [x] T-608 [S] 清理旧骨架与冲突设计状态（Spec：`NFR-DEV-001`；Design：`DES-MVP-CLOSEOUT-001`；Files：`specs/001-lims-core/ui.md`、`data-model.md`、`design.md`、相关测试文档；Verify：旧状态/文案检索、历史记录保留、SDD 一致性）
+- [x] T-609 [S] 完成 MVP 收尾验收和交付记录（Spec：`AC-AUTH-001`、`AC-DASH-001`、`AC-DEV-001`；Design：`DES-MVP-CLOSEOUT-001`；Depends：T-606～T-608；Verify：管理员初始化、角色菜单、业务入口、全量质量门禁和缺陷关闭）
+
+## 9. 工作台导航可用性优化
+
+- [x] T-610 [S] 固化工作台导航分组、入口裁剪、响应式布局和可访问性规则（Spec：`FR-AUTH-002`、`FR-DASH-001～005`、`NFR-USE-001`；Design：`DES-DASHBOARD-NAV-001`；Files：`specs/001-lims-core/design-dashboard-navigation.md`、`ui.md`、`traceability.md`；Verify：设计评审和一致性检查通过）
+- [x] T-611 [P] 实现权限过滤的分组导航组件和当前路径状态（Spec：`FR-AUTH-002`、`NFR-USE-001`；Design：`DES-DASHBOARD-NAV-001`；Depends：T-610；Files：`src/app/dashboard/page.tsx`、`src/components/dashboard/dashboard-navigation.tsx`；Verify：服务端权限过滤、路由、当前项、键盘焦点和多视口布局）
+- [x] T-612 [P] 补充工作台导航单元和受控浏览器验收（Spec：`AC-DASH-001`、`NFR-USE-001`；Design：`DES-DASHBOARD-NAV-001`；Depends：T-611；Files：`tests/unit/dashboard-navigation.test.ts`；Verify：路径匹配 2 个测试用例/4 个断言、未认证和越权回归、桌面/手机视口检查、375px 无横向溢出）
+- [x] T-613 [S] 完成对抗性 UI 检查、构建和 Spec 门禁回填（Spec：`FR-AUTH-002`、`FR-DASH-001～005`、`NFR-USE-001`、`AC-DASH-001`；Design：`DES-DASHBOARD-NAV-001`；Depends：T-611、T-612；Verify：lint、Vitest、TypeScript、build、Playwright、SDD consistency、差异检查）
+
+## 10. 工作台导航二次视觉优化
+
+- [x] T-614 [S] 根据实际页面反馈收敛导航面板层级、间距和入口状态样式（Spec：`FR-AUTH-002`、`FR-DASH-001～005`、`NFR-USE-001`；Design：`DES-DASHBOARD-NAV-001`；Files：`src/components/dashboard/dashboard-navigation.tsx`；Verify：普通项降低视觉噪声、当前项保持可辨识、链接点击区域不小于 44px）
+- [ ] T-615 [P] 补充导航结构/响应式回归验证并完成页面截图检查（Spec：`AC-DASH-001`、`NFR-USE-001`；Design：`DES-DASHBOARD-NAV-001`；Depends：T-614；Files：`tests/unit/dashboard-navigation.test.ts`、`tests/e2e/dashboard-access.spec.ts`；Verify：单元测试、lint、生产构建、未认证 E2E 18/18、375px 结构规则已通过；登录态截图仍待本地 Auth 503 修复）
+- [ ] T-616 [S] 完成二次视觉优化的对抗性检查、SDD 一致性回填和变更说明（Spec：`NFR-DEV-001`、`AC-DEV-001`；Design：`DES-DASHBOARD-NAV-001`；Depends：T-614、T-615；Verify：一致性检查、版本检查已通过；待 T-615 的登录态视觉验收完成）

@@ -32,12 +32,18 @@ begin
   where operator_id = any(user_ids)
      or (object_type = 'experiment_report'
          and object_id = any(array(select report_id::varchar from unnest(report_ids) as report_id)));
+  delete from public.audit_log
+  where object_type = 'experiment_report_signature'
+    and object_id in (select id::varchar from public.experiment_report_signature where report_id = any(report_ids));
 
   alter table public.experiment_report_history disable trigger user;
+  alter table public.experiment_report_signature disable trigger user;
   alter table public.experiment_report disable trigger user;
   delete from public.experiment_report_history where report_id = any(report_ids);
+  delete from public.experiment_report_signature where report_id = any(report_ids);
   delete from public.experiment_report where id = any(report_ids);
   alter table public.experiment_report enable trigger user;
+  alter table public.experiment_report_signature enable trigger user;
   alter table public.experiment_report_history enable trigger user;
 
   delete from public.task_assignee where task_id = any(task_ids);

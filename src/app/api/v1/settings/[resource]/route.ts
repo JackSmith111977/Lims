@@ -26,6 +26,7 @@ export async function GET(request: Request, { params }: RouteContext) {
     if (resource === "categories" && url.searchParams.get("categoryType")) {
       query = query.eq("category_type", url.searchParams.get("categoryType")!);
     }
+    if (resource === "report-templates") query = query.like("code", "REPORT_TEMPLATE_%");
     const { data, error } = await query;
     if (error) throw new AdminApiError(500, "SETTINGS_LOOKUP_FAILED", "无法读取设置数据。");
     const rows = Array.isArray(data) ? data : [];

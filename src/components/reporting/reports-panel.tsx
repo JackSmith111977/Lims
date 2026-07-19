@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 
-import type { ReportView } from "@/lib/server/reporting";
+import type { ReportSignatureView, ReportView } from "@/lib/server/reporting";
 
-async function requestJson(url: string, init?: RequestInit) {
+async function requestJson<T = ReportView>(url: string, init?: RequestInit) {
   const response = await fetch(url, init);
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(payload.error?.message ?? "请求失败。");
-  return payload as { data: ReportView };
+  return payload as { data: T };
 }
 
 type ReportsPanelProps = {
@@ -24,6 +24,7 @@ export function ReportsPanel({ initialReports, canManage, canPublish }: ReportsP
   const [remark, setRemark] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [signatureMessage, setSignatureMessage] = useState<string | null>(null);
 
   async function selectReport(id: number) {
     setError(null);
@@ -74,6 +75,25 @@ export function ReportsPanel({ initialReports, canManage, canPublish }: ReportsP
     }
   }
 
+  async function sign() {
+    if (!selected) return;
+    setBusy(true);
+    setError(null);
+    setSignatureMessage(null);
+    try {
+      const payload = await requestJson<ReportSignatureView>(`/api/v1/reports/${selected.id}/sign`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ remark: remark.trim() || undefined }) });
+      const signed = { ...selected, signature: payload.data };
+      setSelected(signed);
+      setReports((current) => current.map((report) => report.id === signed.id ? signed : report));
+      setRemark("");
+      setSignatureMessage(`电子签名已生成：${payload.data.signatureHash}`);
+    } catch (signError) {
+      setError(signError instanceof Error ? signError.message : "报告签署失败。");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <div className="grid gap-6 lg:grid-cols-[20rem_1fr]">
       <aside className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
@@ -112,8 +132,11 @@ export function ReportsPanel({ initialReports, canManage, canPublish }: ReportsP
               {canManage && selected.status === "DRAFT" ? <button className="rounded-lg bg-amber-500 px-3 py-2 text-sm font-medium text-white disabled:opacity-50" disabled={busy} onClick={() => void transition("submit-review")}>提交审核</button> : null}
               {canPublish && selected.status === "REVIEW" ? <button className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white disabled:opacity-50" disabled={busy} onClick={() => void transition("publish")}>发布</button> : null}
               {canPublish && selected.status === "PUBLISHED" ? <button className="rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 disabled:opacity-50" disabled={busy} onClick={() => void transition("archive")}>归档</button> : null}
+              {canPublish && selected.status === "PUBLISHED" && !selected.signature ? <button className="rounded-lg border border-violet-300 bg-violet-50 px-3 py-2 text-sm text-violet-700 disabled:opacity-50" disabled={busy} onClick={() => void sign()}>电子签名</button> : null}
               {selected.status === "DRAFT" || selected.status === "REVIEW" ? <input className="min-w-64 rounded-lg border border-slate-300 px-3 py-2 text-sm" value={remark} onChange={(event) => setRemark(event.target.value)} placeholder="状态变更说明（可选）" /> : null}
             </div>
+            {signatureMessage ? <p className="mt-3 rounded-lg bg-violet-50 p-3 text-xs text-violet-800">{signatureMessage}</p> : null}
+            {selected.signature ? <p className="mt-3 rounded-lg bg-emerald-50 p-3 text-xs text-emerald-800">已签署：{selected.signature.signatureHash}（{new Date(selected.signature.signedAt).toLocaleString("zh-CN")}）</p> : null}
             <div className="mt-6 grid gap-4 md:grid-cols-3"><div className="rounded-xl bg-slate-50 p-4"><p className="text-xs text-slate-500">生成时间</p><p className="mt-1 text-sm font-medium">{new Date(selected.generatedAt).toLocaleString("zh-CN")}</p></div><div className="rounded-xl bg-slate-50 p-4"><p className="text-xs text-slate-500">历史变更</p><p className="mt-1 text-sm font-medium">{selected.history.length} 条</p></div><div className="rounded-xl bg-slate-50 p-4"><p className="text-xs text-slate-500">快照对象</p><p className="mt-1 text-sm font-medium">任务、样品、数据、审核</p></div></div>
             <div className="mt-6"><h3 className="font-semibold">报告快照</h3><pre className="mt-3 max-h-[28rem] overflow-auto rounded-xl bg-slate-950 p-4 text-xs leading-6 text-slate-200">{JSON.stringify(selected.reportPayload, null, 2)}</pre></div>
             <div className="mt-6"><h3 className="font-semibold">状态历史</h3><div className="mt-3 space-y-2">{selected.history.map((item) => <div key={item.id} className="rounded-lg border border-slate-200 p-3 text-sm"><span className="font-medium">{item.fromStatus ?? "新建"} → {item.toStatus}</span><span className="ml-3 text-xs text-slate-500">{new Date(item.occurredAt).toLocaleString("zh-CN")}</span>{item.remark ? <p className="mt-1 text-slate-600">{item.remark}</p> : null}</div>)}</div></div>

@@ -15,6 +15,30 @@ npm run dev
 
 打开 <http://localhost:3000> 查看工作台，登录入口为 `/login`。
 
+## 测试账号（仅测试环境）
+
+当前 MVP 测试环境的固定测试管理员种子如下，账号具有 `SYSTEM_ADMIN` 角色：
+
+| 项目 | 值 |
+| --- | --- |
+| 邮箱 | `test@qq.com` |
+| 初始密码 | `test1234` |
+| 用途 | 本地联调、功能验收和当前测试项目验证 |
+
+该账号和密码不是生产凭据。正式启用前必须替换为组织指定的管理员账号和强密码。切换入口不是把凭据写死在代码中，而是运行 [`scripts/ops/bootstrap-admin.mjs`](scripts/ops/bootstrap-admin.mjs) 时提供以下两个环境变量：
+
+```powershell
+$env:BOOTSTRAP_ADMIN_EMAIL = "正式管理员邮箱"
+$env:BOOTSTRAP_ADMIN_PASSWORD = "正式管理员强密码"
+npm.cmd run bootstrap:admin
+Remove-Item Env:BOOTSTRAP_ADMIN_EMAIL -ErrorAction SilentlyContinue
+Remove-Item Env:BOOTSTRAP_ADMIN_PASSWORD -ErrorAction SilentlyContinue
+```
+
+对应脚本读取位置为 `BOOTSTRAP_ADMIN_EMAIL` 和 `BOOTSTRAP_ADMIN_PASSWORD`；完整操作说明见 [`docs/ops/initial-admin-bootstrap.md`](docs/ops/initial-admin-bootstrap.md)。正式部署时不要继续使用本节测试种子，也不要将正式密码写入 README、脚本源码、环境文件或日志。
+
+隔离演示环境的 `demo-admin@example.invalid`、`demo-operator@example.invalid` 和 `demo-reviewer@example.invalid` 仍遵循“临时密码不入库”规则，详见 [`docs/demo/demo-runbook.md`](docs/demo/demo-runbook.md)。
+
 ## 常用命令
 
 ```powershell

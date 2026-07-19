@@ -4,7 +4,7 @@
 | --- | --- |
 | Design ID | `DES-SYSTEM-TEST-001` |
 | 来源 Spec | 所有 `AC-*`、`BR-*`、`NFR-*` |
-| 状态 | Proposed（测试计划已建立，完整隔离环境执行待完成） |
+| 状态 | Approved（测试计划、隔离环境执行、清理复核、回归门禁和缺陷闭环均已完成） |
 | 测试计划 | [`docs/testing/system-test-plan.md`](../../docs/testing/system-test-plan.md) |
 | 缺陷清单 | [`docs/testing/defect-log.md`](../../docs/testing/defect-log.md) |
 

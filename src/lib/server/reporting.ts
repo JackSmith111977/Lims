@@ -16,6 +16,7 @@ const REPORT_HISTORY_FIELDS = "id, report_id, from_status, to_status, operator_i
 
 type ReportRow = Database["public"]["Tables"]["experiment_report"]["Row"];
 type ReportHistoryRow = Database["public"]["Tables"]["experiment_report_history"]["Row"];
+type ReportSignatureRow = Database["public"]["Tables"]["experiment_report_signature"]["Row"];
 
 export type ReportHistoryView = {
   id: number;
@@ -25,6 +26,16 @@ export type ReportHistoryView = {
   operatorId: string;
   remark: string | null;
   occurredAt: string;
+};
+
+export type ReportSignatureView = {
+  id: number;
+  reportId: number;
+  signatureType: string;
+  signatureHash: string;
+  signedBy: string;
+  signedAt: string;
+  remark: string | null;
 };
 
 export type ReportView = {
@@ -40,6 +51,7 @@ export type ReportView = {
   publishedAt: string | null;
   archivedAt: string | null;
   history: ReportHistoryView[];
+  signature: ReportSignatureView | null;
 };
 
 function serializeHistory(row: ReportHistoryRow): ReportHistoryView {
@@ -54,7 +66,11 @@ function serializeHistory(row: ReportHistoryRow): ReportHistoryView {
   };
 }
 
-function serializeReport(row: ReportRow, history: ReportHistoryView[] = []): ReportView {
+function serializeSignature(row: ReportSignatureRow): ReportSignatureView {
+  return { id: row.id, reportId: row.report_id, signatureType: row.signature_type, signatureHash: row.signature_hash, signedBy: row.signed_by, signedAt: row.signed_at, remark: row.remark };
+}
+
+function serializeReport(row: ReportRow, history: ReportHistoryView[] = [], signature: ReportSignatureView | null = null): ReportView {
   return {
     id: row.id,
     reportCode: row.report_code,
@@ -68,6 +84,7 @@ function serializeReport(row: ReportRow, history: ReportHistoryView[] = []): Rep
     publishedAt: row.published_at,
     archivedAt: row.archived_at,
     history,
+    signature,
   };
 }
 
@@ -90,7 +107,7 @@ function mapReportError(error: { code?: string; message?: string }, fallbackCode
 
 export function buildReportTransitionRequest(bodyValue: unknown) {
   const body = requireObject(bodyValue ?? {});
-  for (const field of ["id", "reportCode", "taskId", "versionNo", "status", "reportPayload", "storagePath", "generatedBy", "generatedAt", "publishedAt", "archivedAt", "history"]) {
+  for (const field of ["id", "reportCode", "taskId", "versionNo", "status", "reportPayload", "storagePath", "generatedBy", "generatedAt", "publishedAt", "archivedAt", "history", "signatureId", "signatureType", "signatureHash", "signedBy", "signedAt"]) {
     if (body[field] !== undefined) throw new AdminApiError(400, "INVALID_REPORT_FIELD", `${field} 由服务端生成。`);
   }
   if (body.remark === undefined || body.remark === null || body.remark === "") return { remark: null };
@@ -125,6 +142,13 @@ async function loadReportHistories(supabase: SupabaseClient<Database>, reportIds
   return grouped;
 }
 
+async function loadReportSignatures(supabase: SupabaseClient<Database>, reportIds: number[]) {
+  if (reportIds.length === 0) return new Map<number, ReportSignatureView>();
+  const { data, error } = await supabase.from("experiment_report_signature").select("id, report_id, signature_type, signature_hash, signed_by, signed_at, remark").in("report_id", reportIds);
+  if (error) throw new AdminApiError(500, "REPORT_SIGNATURE_LOOKUP_FAILED", "无法读取报告签名。");
+  return new Map(((data ?? []) as unknown as ReportSignatureRow[]).map((row) => [row.report_id, serializeSignature(row)]));
+}
+
 export async function loadReports(supabase: SupabaseClient<Database>, filters: { status?: string | null; keyword?: string | null } = {}) {
   if (filters.status && !REPORT_STATUSES.includes(filters.status as ReportStatus)) {
     throw new AdminApiError(400, "INVALID_REPORT_STATUS", "报告状态不受支持。");
@@ -136,7 +160,8 @@ export async function loadReports(supabase: SupabaseClient<Database>, filters: {
   const keyword = filters.keyword?.trim().toLowerCase() ?? "";
   const rows = ((data ?? []) as unknown as ReportRow[]).filter((row) => !keyword || `${row.report_code} ${row.task_id} ${row.version_no}`.toLowerCase().includes(keyword));
   const histories = await loadReportHistories(supabase, rows.map((row) => row.id));
-  return rows.map((row) => serializeReport(row, histories.get(row.id) ?? []));
+  const signatures = await loadReportSignatures(supabase, rows.map((row) => row.id));
+  return rows.map((row) => serializeReport(row, histories.get(row.id) ?? [], signatures.get(row.id) ?? null));
 }
 
 export async function loadReportDetail(supabase: SupabaseClient<Database>, idValue: string) {
@@ -145,7 +170,8 @@ export async function loadReportDetail(supabase: SupabaseClient<Database>, idVal
   if (error) throw new AdminApiError(500, "REPORT_LOOKUP_FAILED", "无法读取报告。");
   if (!data) throw new AdminApiError(404, "REPORT_NOT_FOUND", "报告不存在。");
   const histories = await loadReportHistories(supabase, [id]);
-  return serializeReport(data as unknown as ReportRow, histories.get(id) ?? []);
+  const signatures = await loadReportSignatures(supabase, [id]);
+  return serializeReport(data as unknown as ReportRow, histories.get(id) ?? [], signatures.get(id) ?? null);
 }
 
 async function resolveRpcReport(supabase: SupabaseClient<Database>, data: Json | null, fallbackCode: string) {
@@ -180,4 +206,23 @@ export function publishReport(supabase: SupabaseClient<Database>, idValue: strin
 
 export function archiveReport(supabase: SupabaseClient<Database>, idValue: string, bodyValue: unknown) {
   return transitionReport(supabase, idValue, bodyValue, "archive");
+}
+
+export async function signReport(supabase: SupabaseClient<Database>, idValue: string, bodyValue: unknown) {
+  const reportId = requireId(idValue);
+  const { remark } = buildReportTransitionRequest(bodyValue);
+  const { data, error } = await supabase.rpc("sign_report", { _report_id: reportId, _remark: remark });
+  if (error) {
+    if (error.code === "42501") throw new AdminApiError(403, "REPORT_PERMISSION_DENIED", "当前用户没有签署报告的权限。");
+    if (error.code === "P0002") throw new AdminApiError(404, "REPORT_NOT_FOUND", "报告不存在。");
+    if (error.code === "23505") throw new AdminApiError(409, "REPORT_ALREADY_SIGNED", "报告已经完成电子签名。");
+    if (error.code === "55000") throw new AdminApiError(409, "REPORT_INVALID_SIGNATURE_STATE", "只有已发布报告可以签署。");
+    throw new AdminApiError(400, "REPORT_SIGN_FAILED", "报告签署失败。");
+  }
+  if (!data || typeof data !== "object" || Array.isArray(data)) throw new AdminApiError(500, "REPORT_SIGN_FAILED", "签署未返回有效回执。");
+  const value = data as Record<string, unknown>;
+  if (typeof value.id !== "number" || typeof value.reportId !== "number" || typeof value.signatureType !== "string" || typeof value.signatureHash !== "string" || typeof value.signedBy !== "string" || typeof value.signedAt !== "string") {
+    throw new AdminApiError(500, "REPORT_SIGN_FAILED", "签署回执结构无效。");
+  }
+  return { id: value.id, reportId: value.reportId, signatureType: value.signatureType, signatureHash: value.signatureHash, signedBy: value.signedBy, signedAt: value.signedAt, remark: typeof value.remark === "string" ? value.remark : null } satisfies ReportSignatureView;
 }

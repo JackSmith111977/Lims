@@ -40,6 +40,7 @@ export function ExperimentDataPanel({ initialTasks, canManage }: Props) {
   const [remark, setRemark] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [importBusy, setImportBusy] = useState(false);
   const [processingBusy, setProcessingBusy] = useState(false);
 
   const selectedTask = tasks.find((task) => String(task.id) === selectedTaskId) ?? null;
@@ -48,6 +49,7 @@ export function ExperimentDataPanel({ initialTasks, canManage }: Props) {
   const effectiveSourceId = selectedSource ? String(selectedSource.id) : visibleItems[0] ? String(visibleItems[0].id) : "";
   const effectiveRuleId = rules.some((rule) => String(rule.id) === selectedRuleId) ? selectedRuleId : rules[0] ? String(rules[0].id) : "";
   const processingLocked = selectedTask ? ["APPROVED", "ARCHIVED"].includes(selectedTask.status) : false;
+  const dataEntryLocked = selectedTask ? ["APPROVED", "ARCHIVED"].includes(selectedTask.status) : false;
 
   useEffect(() => {
     if (!selectedTaskId) return;
@@ -129,6 +131,33 @@ export function ExperimentDataPanel({ initialTasks, canManage }: Props) {
     }
   }
 
+  async function importFile(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!selectedTaskId || !canManage || dataEntryLocked) return;
+    const form = event.currentTarget;
+    const fileInput = form.elements.namedItem("file") as HTMLInputElement | null;
+    const file = fileInput?.files?.[0];
+    if (!file) {
+      setMessage("Choose a CSV or XLSX file first.");
+      return;
+    }
+    setImportBusy(true);
+    setMessage(null);
+    const body = new FormData();
+    body.append("file", file);
+    try {
+      const payload = await requestJson(`/api/v1/tasks/${selectedTaskId}/data/import`, { method: "POST", body });
+      setItems((current) => [...(payload.data as ExperimentDataView[]), ...current]);
+      setLoadedTaskId(selectedTaskId);
+      form.reset();
+      setMessage(`Imported ${payload.importedCount} immutable data record(s) from file.`);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Unable to import experiment data.");
+    } finally {
+      setImportBusy(false);
+    }
+  }
+
   async function processSelectedData() {
     if (!selectedTaskId || !canManage || !effectiveSourceId || !effectiveRuleId) return;
     setProcessingBusy(true);
@@ -191,8 +220,18 @@ export function ExperimentDataPanel({ initialTasks, canManage }: Props) {
             <label className="text-sm text-slate-600">Collected at<input className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2" type="datetime-local" value={collectedAt} onChange={(event) => setCollectedAt(event.target.value)} required /></label>
             <label className="text-sm text-slate-600 md:col-span-2">Remark<textarea className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2" value={remark} onChange={(event) => setRemark(event.target.value)} rows={2} /></label>
           </div>
-          <button disabled={busy || !selectedTask?.sampleIds.length} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50" type="submit">Record data</button>
+          <button disabled={busy || dataEntryLocked || !selectedTask?.sampleIds.length} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50" type="submit">Record data</button>
         </form> : <p className="rounded-xl bg-slate-50 p-4 text-sm text-slate-500">This account has read-only data access.</p>}
+
+        {canManage ? <form className="space-y-3 rounded-xl border border-violet-100 bg-violet-50/50 p-4" onSubmit={importFile}>
+          <div>
+            <h3 className="font-semibold">Import CSV or XLSX</h3>
+            <p className="mt-1 text-sm text-slate-500">Use the documented data columns. Imports are limited to 5 MiB and 500 rows.</p>
+          </div>
+          <input name="file" type="file" accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" disabled={dataEntryLocked || importBusy} className="block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm" />
+          <button disabled={importBusy || dataEntryLocked} className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50" type="submit">{importBusy ? "Importing..." : "Import file"}</button>
+          {dataEntryLocked ? <p className="text-xs text-amber-800">This task is locked after approval or archiving.</p> : null}
+        </form> : null}
 
         {canManage ? <section className="space-y-3 rounded-xl border border-amber-100 bg-amber-50/50 p-4">
           <div>

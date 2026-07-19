@@ -51,10 +51,14 @@ async function verifyCleanup() {
   const historyQuery = createdReportIds.length === 0
     ? Promise.resolve({ data: [] })
     : service.from("experiment_report_history").select("id").in("report_id", createdReportIds);
-  const [usersResult, reports, history, tasks, samples, projects, instruments, methods] = await Promise.all([
+  const signatureQuery = createdReportIds.length === 0
+    ? Promise.resolve({ data: [] })
+    : service.from("experiment_report_signature").select("id").in("report_id", createdReportIds);
+  const [usersResult, reports, history, signatures, tasks, samples, projects, instruments, methods] = await Promise.all([
     service.auth.admin.listUsers({ page: 1, perPage: 100 }),
     must(reportQuery, "verify reports"),
     must(historyQuery, "verify report history"),
+    must(signatureQuery, "verify report signatures"),
     must(service.from("experiment_task").select("id").like("task_code", "report_%"), "verify stale tasks"),
     must(service.from("sample").select("id").like("sample_code", "report_%"), "verify stale samples"),
     must(service.from("research_project").select("id").like("project_code", "report_%"), "verify stale projects"),
@@ -63,7 +67,7 @@ async function verifyCleanup() {
   ]);
   if (usersResult.error) throw new Error(`verify stale users failed: ${usersResult.error.message}`);
   const users = usersResult.data.users.filter((user) => user.email && testEmailPattern.test(user.email));
-  const counts = { users: users.length, reports: reports.length, history: history.length, tasks: tasks.length, samples: samples.length, projects: projects.length, instruments: instruments.length, methods: methods.length };
+  const counts = { users: users.length, reports: reports.length, history: history.length, signatures: signatures.length, tasks: tasks.length, samples: samples.length, projects: projects.length, instruments: instruments.length, methods: methods.length };
   assert(Object.values(counts).every((count) => count === 0), `temporary report resources remain: ${JSON.stringify(counts)}`);
   return counts;
 }
@@ -146,6 +150,7 @@ async function main() {
   assert(first.status === "DRAFT" && first.version_no === 1 && first.report_payload.task.id === approvedTask.id, "first report snapshot is incorrect");
   assert(first.report_payload.samples?.[0]?.id === sample.id && first.report_payload.data?.[0]?.id === approvedTask.dataId, "report sample/data snapshot is incomplete");
   assert(first.report_payload.reviews?.[0]?.result === "APPROVED", "report review snapshot is incomplete");
+  assert(first.report_payload.template?.fields?.includes("data"), "report template snapshot is incomplete");
   await verifyTraceRoute(first.id, manager, approvedTask.id, sample.id, approvedTask.dataId);
   await expectError(publisher.client.rpc("generate_report", { _task_id: approvedTask.id }), "publisher report generation");
   await expectError(reader.client.rpc("generate_report", { _task_id: approvedTask.id }), "reader report generation");
@@ -153,6 +158,14 @@ async function main() {
   assert(submitted.status === "REVIEW", "first report did not enter review");
   const published = await must(publisher.client.rpc("publish_report", { _report_id: first.id, _remark: "报告内容已确认" }), "publish first report");
   assert(published.status === "PUBLISHED" && published.published_at, "first report was not published");
+  const signature = await must(publisher.client.rpc("sign_report", { _report_id: first.id, _remark: "report electronic signature" }), "sign first report");
+  assert(signature.reportId === first.id && signature.signatureType === "ELECTRONIC_SHA256" && /^[a-f0-9]{64}$/.test(signature.signatureHash) && signature.signedBy === publisher.id && signature.signedAt, "first report signature receipt is invalid");
+  await expectError(publisher.client.rpc("sign_report", { _report_id: first.id, _remark: "duplicate" }), "duplicate report signature");
+  await expectError(reader.client.from("experiment_report_signature").insert({ report_id: first.id, signature_type: "ELECTRONIC_SHA256", signature_hash: "0".repeat(64), signed_by: reader.id }).select("id").single(), "direct signature insert");
+  await expectError(reader.client.from("experiment_report_signature").update({ remark: "forged" }).eq("id", signature.id).select("id").single(), "direct signature update");
+  await expectError(reader.client.from("experiment_report_signature").delete().eq("id", signature.id).select("id").single(), "direct signature delete");
+  const signatureAudit = await must(service.from("audit_log").select("object_id, action, operator_id").eq("object_type", "experiment_report_signature").eq("object_id", String(signature.id)).order("id"), "signature audit");
+  assert(signatureAudit.length === 1 && signatureAudit[0].action === "SIGN" && signatureAudit[0].operator_id === publisher.id, "signature audit is incomplete");
   const second = await must(manager.client.rpc("generate_report", { _task_id: approvedTask.id }), "generate second report");
   createdReportIds.push(second.id);
   assert(second.status === "DRAFT" && second.version_no === 2, "report version did not increment");
@@ -172,7 +185,7 @@ async function main() {
   assert(history.length === 8 && history.every((row) => row.operator_id === manager.id || row.operator_id === publisher.id), "report history is incomplete");
   const audit = await must(service.from("audit_log").select("object_id, action, operator_id").eq("object_type", "experiment_report").in("object_id", [String(first.id), String(second.id)]).order("id"), "report audit");
   assert(audit.length === 8 && audit.every((row) => row.operator_id === manager.id || row.operator_id === publisher.id), "report audit parity is incomplete");
-  console.log(JSON.stringify({ ok: true, checks: ["approved-task generation", "snapshot persistence", "version increment", "submit/publish/archive flow", "automatic previous-version archive", "publisher and reader execution denial", "direct write denial", "reader visibility", "history and audit parity"] }));
+  console.log(JSON.stringify({ ok: true, checks: ["approved-task generation", "snapshot persistence", "template snapshot persistence", "version increment", "submit/publish/archive flow", "electronic signature receipt", "duplicate signature denial", "signature immutability", "signature audit", "automatic previous-version archive", "publisher and reader execution denial", "direct write denial", "reader visibility", "history and audit parity"] }));
 }
 
 try {

@@ -58,6 +58,10 @@ Admin 页面（Server Component + Client Panel）
 - 停用自己或移除自己最后的 `SYSTEM_ADMIN` 管理能力时拒绝操作，避免管理员自锁。
 - 创建用户使用服务端密钥；未配置 `SUPABASE_SERVICE_ROLE_KEY` 时明确提示配置缺失，不降级为浏览器端敏感操作。
 
+## 首个系统管理员初始化
+
+应用不提供公开注册，也不能依赖 `/admin/users` 创建第一个管理员，因为该页面本身要求 `auth.user.manage`。正式项目第一次启用时，执行 [`docs/ops/initial-admin-bootstrap.md`](../../docs/ops/initial-admin-bootstrap.md) 中的受控脚本：通过 Supabase Auth Admin API 创建或复用指定用户，再使用 service role 幂等写入 `SYSTEM_ADMIN` 角色关联和 `BOOTSTRAP_ADMIN` 审计事件。脚本不重置已有密码、不删除既有角色、不输出凭据；初始化完成后，所有普通用户创建回到 `/admin/users`。
+
 ## 权限、安全和审计
 
 - 所有管理 API 先读取 Supabase Auth 会话，再检查 `sys_user.status` 和权限 RPC。

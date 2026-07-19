@@ -9,7 +9,7 @@
 
 ## 设计目标
 
-在用户与角色管理完成后，提供实验室组织结构、通用分类、计量单位和系统参数的统一管理能力。设计只覆盖 T-105B 的基础设置，不提前实现实验组业务成员分配、项目业务流程或报告模板。
+在用户与角色管理完成后，提供实验室组织结构、通用分类、计量单位、系统参数和报告模板的统一管理能力。报告模板的专门约束与报告快照边界见 [`design-report-template.md`](design-report-template.md)。
 
 ## 架构和模块边界
 
@@ -33,7 +33,7 @@
 - `lab_group`：实验组，字段为 `id`、`laboratory_id`、`code`、`name`、`leader_id`、`status`、时间字段；同一实验室内编码唯一。
 - `sys_category`：通用分类，字段为 `id`、`category_type`、`code`、`name`、`parent_id`、`description`、`sort_order`、`status`、时间字段；覆盖 `PROJECT`、`SAMPLE`、`TASK`、`INSTRUMENT`、`RESOURCE` 五类，类型与编码联合唯一。
 - `sys_unit`：计量单位，字段为 `id`、`code`、`name`、`symbol`、`dimension`、`sort_order`、`status`、时间字段；编码唯一。
-- `sys_parameter`：系统参数，字段为 `id`、`code`、`name`、`value_type`、`value_json`、`description`、`status`、时间字段；编码唯一。参数值使用 JSON 以支持字符串、数字、布尔和结构化配置，但不保存密码、密钥或令牌。
+- `sys_parameter`：系统参数和报告模板配置，字段为 `id`、`code`、`name`、`value_type`、`value_json`、`description`、`status`、时间字段；编码唯一。普通参数支持字符串、数字、布尔和 JSON；报告模板通过 `REPORT_TEMPLATE_` 编码前缀和独立 API 资源约束为 JSON，不保存密码、密钥或令牌。
 
 约束和迁移规则：
 

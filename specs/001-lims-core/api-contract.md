@@ -7,8 +7,8 @@
 | 契约格式 | OpenAPI 3.2 |
 | 基础路径 | `/api/v1` |
 | 认证方式 | Supabase Auth access token，使用 `Authorization: Bearer <token>` |
-| 状态 | Draft |
-| 更新时间 | 2026-07-11 |
+| 状态 | Approved（MVP 已实现范围） |
+| 更新时间 | 2026-07-19 |
 
 ## 1. 通用约定
 
@@ -88,6 +88,7 @@ HTTP 状态建议：`400` 参数错误、`401` 未认证、`403` 无权限、`40
 | POST | `/roles/{id}/permissions` | 系统管理员 | `FR-AUTH-004～006` |
 | GET/POST/PATCH | `/settings/laboratories`、`/settings/departments`、`/settings/groups` | 设置管理员 | `FR-SETTING-001` |
 | GET/POST/PATCH | `/settings/categories`、`/settings/units`、`/settings/parameters` | 设置管理员 | `FR-SETTING-002～003` |
+| GET/POST/PATCH | `/settings/report-templates`、`/settings/report-templates/{code}` | 设置管理员 | `FR-SETTING-004`、`FR-REPORT-001～006` |
 | GET | `/methods` | `resource.read` | `FR-METHOD-001～004` |
 | POST | `/methods` | `resource.manage` | `FR-METHOD-001～004` |
 | GET | `/methods/{id}` | `resource.read` | `FR-METHOD-001～004` |
@@ -97,6 +98,7 @@ HTTP 状态建议：`400` 参数错误、`401` 未认证、`403` 无权限、`40
 | POST | `/instruments` | `resource.manage` | `FR-EQUIP-001～003` |
 | GET | `/instruments/{id}` | `resource.read` | `FR-EQUIP-001～003、FR-EQUIP-006` |
 | PATCH | `/instruments/{id}` | `resource.manage` | `FR-EQUIP-001～003` |
+| POST | `/instruments/{id}/simulate-data` | `data.manage` | `FR-DATA-009` |
 | GET | `/instruments/{id}/maintenance` | `resource.read` | `FR-EQUIP-003～006` |
 | POST | `/instruments/{id}/maintenance` | `resource.manage` | `FR-EQUIP-003～004、006` |
 | GET | `/instruments/maintenance/reminders` | `resource.read` | `FR-EQUIP-005` |
@@ -173,10 +175,10 @@ HTTP 状态建议：`400` 参数错误、`401` 未认证、`403` 无权限、`40
 | --- | --- | --- | --- |
 | POST | `/tasks/{id}/data` | 实验人员 | `FR-DATA-001～005` |
 | GET | `/tasks/{id}/data` | 按权限 | `FR-DATA-005` |
+| POST | `/tasks/{id}/data/import` | 实验人员 | `FR-DATA-006` |
 | GET | `/processing-rules` | 按权限 | `FR-DATA-007～008` |
 | POST | `/tasks/{id}/data/process` | 实验人员 | `FR-DATA-007～008` |
 | GET | `/tasks/{id}/data/process-runs` | 按权限 | `FR-DATA-007～008` |
-| POST | `/tasks/{id}/data/import` | 实验人员 | `FR-DATA-006` |
 | POST | `/tasks/{id}/reviews` | `review.manage` | `FR-REVIEW-001～006` |
 | GET | `/tasks/{id}/reviews` | `review.read` | `FR-REVIEW-001～006` |
 | POST | `/tasks/{id}/reports` | `report.manage` | `FR-REPORT-001～002` |
@@ -186,8 +188,13 @@ HTTP 状态建议：`400` 参数错误、`401` 未认证、`403` 无权限、`40
 | POST | `/reports/{id}/submit-review` | `report.manage` | `FR-REPORT-004、006` |
 | POST | `/reports/{id}/publish` | `report.publish` | `FR-REPORT-004～006` |
 | POST | `/reports/{id}/archive` | `report.publish` | `FR-REPORT-004、006` |
+| POST | `/reports/{id}/sign` | `report.publish` | `FR-REPORT-007` |
 
 `POST /tasks/{id}/data` 只允许新增不可变数据记录。`dataType=RAW` 时必须提供 `rawValue` 且不得提供 `processedValue`；`dataType=PROCESSED/RESULT` 时必须提供 `processedValue` 且不得提供 `rawValue`。服务端从当前会话生成 `recordedBy` 和时间，并校验样品属于任务、方法版本来自任务及设备未处置。任务进入 `APPROVED` 或 `ARCHIVED` 后返回 `409 DATA_TASK_LOCKED`；不提供更新或删除数据接口。
+
+`POST /tasks/{id}/data/import` 接收 `multipart/form-data` 的 `file` 字段，仅支持不超过 5 MiB、最多 500 行的 CSV/XLSX 文件。第一行必须包含 `sampleId`、`dataType`、`metricName`、`rawValue`、`processedValue` 和 `collectedAt` 列；服务端逐行校验任务、样品、设备、数据类型和值形状，统一写入 `sourceType=FILE`，任一行失败时拒绝整次导入并返回行号摘要。成功响应返回 `importedCount` 和新增数据；操作审计只保存文件名、扩展名和数量摘要，不保存文件内容。
+
+`POST /instruments/{id}/simulate-data` 接收 JSON 的 `taskId`、`sampleId`、`dataType`、`metricName`、对应数值以及可选单位/采集时间/备注；设备必须为路径中的 `ACTIVE` 设备，服务端强制写入 `instrumentId` 和 `sourceType=INSTRUMENT`，拒绝客户端提供这两个字段。其余校验和不可变写入复用实验数据接口；任务锁定、样品未关联、设备非 ACTIVE、权限不足或伪造来源均拒绝且不得产生数据。
 
 `GET /processing-rules` 只返回活动规则的固定版本。`POST /tasks/{id}/data/process` 接收 `ruleId`、`sourceDataIds` 和 `executionMode`，按选定规则生成新的 `PROCESSED` 或 `RESULT` 数据记录，不覆盖输入数据；每次运行返回唯一 `runId`，并通过血缘记录关联输入、输出和规则版本。`ROUND` 支持 `HALF_UP` 修约，`THRESHOLD` 返回 `PASS` 或 `FAIL`；超出阈值时运行状态为 `FLAGGED` 并保留异常说明。`GET /tasks/{id}/data/process-runs` 返回运行状态、判定、异常和数据血缘。任务进入 `APPROVED` 或 `ARCHIVED` 后处理接口返回 `409 DATA_TASK_LOCKED`。
 
@@ -196,6 +203,8 @@ HTTP 状态建议：`400` 参数错误、`401` 未认证、`403` 无权限、`40
 `POST /instruments` 和 `PATCH /instruments/{id}` 只接受设备档案字段；设备编号、启用日期和校准日期不允许通过更新接口修改。设备状态为 `SCRAPPED` 后返回 `409 INSTRUMENT_SCRAPPED`，负责人必须为 ACTIVE 用户，所有写入由服务端 RPC 记录审计。
 
 `POST /instruments/{id}/maintenance` 只允许追加维护/维修/巡检/校准事件；校准必须提供 `cycleDays` 和 `nextDueOn`，服务端同步设备的 `nextCalibrationAt`。已报废设备和非法到期日期返回 `409`。
+
+`/settings/report-templates` 复用 `sys_parameter` 存储，但只接受 `REPORT_TEMPLATE_` 前缀和 JSON 对象；模板字段列表最多 64 项，停用代替删除并记录设置审计。报告生成时将 ACTIVE 的 `REPORT_TEMPLATE_DEFAULT` 写入报告不可变快照，后续模板修改不影响历史报告。
 
 `GET /tasks/{id}/reviews` 返回任务审核上下文、实验数据摘要、处理运行摘要、审核历史和最新有效审核。`POST /tasks/{id}/reviews` 只接收 `result`（`APPROVED`、`RETURNED` 或 `NEED_MORE`）及可选 `comment`；服务端从当前会话生成审核人和时间，并通过事务函数写入审核、任务状态历史和审计。`RETURNED`/`NEED_MORE` 必须填写意见，任务必须处于 `PENDING_REVIEW`，否则返回 `409 REVIEW_TASK_NOT_PENDING`；通过后任务进入 `APPROVED`，退回或要求补充后进入 `RETURNED`。
 
@@ -212,6 +221,8 @@ HTTP 状态建议：`400` 参数错误、`401` 未认证、`403` 无权限、`40
 `GET /audit-logs` 需要 `audit.read` 权限，支持 `objectType`、`action`、`operatorId`、`from`、`to` 和 `limit`（默认 100，最大 200）筛选，按 `occurredAt desc, id desc` 返回只读日志。
 
 `GET /trace/report/{id}` 需要 `report.read` 权限，以报告不可变快照为事实源返回报告、任务、样品、实验数据和审核记录；接口只读，不接受请求体或客户端覆盖字段。
+
+`POST /reports/{id}/sign` 只允许对 `PUBLISHED` 报告创建一条服务端电子签名回执，返回签名算法、SHA-256 快照哈希、签署人和时间；请求只接受可选 `remark`，重复签名或非发布状态返回 `409`，不提供撤销/修改/删除签名接口。
 
 `GET /dashboard/overview` 返回按权限分区的样品、任务、待审核任务、异常处理运行、设备状态和库存预警统计；未具备对应读取权限的分区为 `null`。支持 `projectId`、`personnelId`、`sampleStatus`、`taskStatus`、`from`、`to` 和 `inventoryDays` 筛选。时间范围为 ISO 8601，`from` 含、`to` 不含；人员筛选基于当前有效任务分配，要求 `task.read`。异常数据定义为处理运行 `FLAGGED` 或判定 `FAIL/REVIEW`，库存分区复用 `get_inventory_alerts`。
 

@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { LogoutButton } from "@/components/auth/logout-button";
 import { DashboardPanel } from "@/components/dashboard/dashboard-panel";
+import { DashboardNavigation, type DashboardNavigationGroup } from "@/components/dashboard/dashboard-navigation";
 import { getCurrentRoles, hasPermission, ROLE_NAMES } from "@/lib/auth/permissions";
 import { hasPublicSupabaseEnv } from "@/lib/env";
 import { loadDashboardOverview } from "@/lib/server/dashboard";
@@ -59,6 +59,51 @@ export default async function DashboardPage() {
   const initialOverview = (canReadSamples || canReadTasks || canReadData || canReadInstruments)
     ? await loadDashboardOverview(supabase, { inventoryDays: 30 }, { sampleRead: canReadSamples, taskRead: canReadTasks, dataRead: canReadData, resourceRead: canReadInstruments })
     : null;
+  const navigationGroups: DashboardNavigationGroup[] = [
+    {
+      id: "administration",
+      title: "管理与配置",
+      description: "账号、权限和系统记录",
+      items: [
+        ...(canManageUsers ? [{ href: "/admin/users", label: "用户管理" }] : []),
+        ...(canManageRoles ? [{ href: "/admin/roles", label: "角色与权限" }] : []),
+        ...(canManageSettings ? [{ href: "/admin/settings", label: "基础设置" }] : []),
+        ...(canReadAudit ? [{ href: "/admin/audit", label: "操作日志" }] : []),
+      ],
+    },
+    {
+      id: "workflow",
+      title: "实验流程",
+      description: "从项目到数据的执行链路",
+      items: [
+        ...(canReadProjects ? [{ href: "/projects", label: "科研项目" }] : []),
+        ...(canReadTasks ? [{ href: "/tasks", label: "实验任务" }] : []),
+        ...(canReadSamples ? [{ href: "/samples", label: "样品登记" }] : []),
+        ...(canReadMethods ? [{ href: "/methods", label: "实验方法" }] : []),
+        ...(canReadData ? [{ href: "/data", label: "实验数据" }] : []),
+      ],
+    },
+    {
+      id: "review-report",
+      title: "审核与报告",
+      description: "结果确认和报告交付",
+      items: [
+        ...(canReadReviews ? [{ href: "/reviews", label: "结果审核" }] : []),
+        ...(canReadReports ? [{ href: "/reports", label: "实验报告" }] : []),
+      ],
+    },
+    {
+      id: "resources",
+      title: "资源管理",
+      description: "人员、设备、库存和环境",
+      items: [
+        ...(canReadPersonnel ? [{ href: "/personnel", label: "人员档案" }] : []),
+        ...(canReadInstruments ? [{ href: "/instruments", label: "设备档案" }] : []),
+        ...(canReadInstruments ? [{ href: "/inventory", label: "试剂耗材" }] : []),
+        ...(canReadEnvironment ? [{ href: "/environment", label: "环境监测" }] : []),
+      ],
+    },
+  ].filter((group) => group.items.length > 0);
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
@@ -95,89 +140,7 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        <div className="mt-6 flex gap-4 text-sm">
-          <Link className="text-blue-600 hover:text-blue-700" href="/">
-            返回系统首页
-          </Link>
-          <Link className="text-blue-600 hover:text-blue-700" href="/login">
-            登录页
-          </Link>
-          {canManageUsers ? (
-            <Link className="text-blue-600 hover:text-blue-700" href="/admin/users">
-              用户管理
-            </Link>
-          ) : null}
-          {canManageRoles ? (
-            <Link className="text-blue-600 hover:text-blue-700" href="/admin/roles">
-              角色与权限
-            </Link>
-          ) : null}
-          {canManageSettings ? (
-            <Link className="text-blue-600 hover:text-blue-700" href="/admin/settings">
-              基础设置
-            </Link>
-          ) : null}
-          {canReadAudit ? (
-            <Link className="text-blue-600 hover:text-blue-700" href="/admin/audit">
-              操作日志
-            </Link>
-          ) : null}
-          {canReadPersonnel ? (
-            <Link className="text-blue-600 hover:text-blue-700" href="/personnel">
-              人员档案
-            </Link>
-          ) : null}
-          {canReadProjects ? (
-            <Link className="text-blue-600 hover:text-blue-700" href="/projects">
-              科研项目
-            </Link>
-          ) : null}
-          {canReadTasks ? (
-            <Link className="text-blue-600 hover:text-blue-700" href="/tasks">
-              实验任务
-            </Link>
-          ) : null}
-          {canReadSamples ? (
-            <Link className="text-blue-600 hover:text-blue-700" href="/samples">
-              样品登记
-            </Link>
-          ) : null}
-          {canReadMethods ? (
-            <Link className="text-blue-600 hover:text-blue-700" href="/methods">
-              实验方法
-            </Link>
-          ) : null}
-          {canReadData ? (
-            <Link className="text-blue-600 hover:text-blue-700" href="/data">
-              实验数据
-            </Link>
-          ) : null}
-          {canReadReviews ? (
-            <Link className="text-blue-600 hover:text-blue-700" href="/reviews">
-              结果审核
-            </Link>
-          ) : null}
-          {canReadReports ? (
-            <Link className="text-blue-600 hover:text-blue-700" href="/reports">
-              实验报告
-            </Link>
-          ) : null}
-          {canReadInstruments ? (
-            <Link className="text-blue-600 hover:text-blue-700" href="/instruments">
-              设备档案
-            </Link>
-          ) : null}
-          {canReadInstruments ? (
-            <Link className="text-blue-600 hover:text-blue-700" href="/inventory">
-              试剂耗材
-            </Link>
-          ) : null}
-          {canReadEnvironment ? (
-            <Link className="text-blue-600 hover:text-blue-700" href="/environment">
-              环境监测
-            </Link>
-          ) : null}
-        </div>
+        <DashboardNavigation groups={navigationGroups} />
         {initialOverview ? <DashboardPanel initialOverview={initialOverview} /> : <div className="mt-8 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-800">当前账号没有可用的看板读取权限。</div>}
       </section>
     </main>

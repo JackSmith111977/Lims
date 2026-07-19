@@ -28,6 +28,8 @@ test("unauthenticated users cannot open or call settings management", async ({ p
   await expect(response.json()).resolves.toEqual({
     error: { code: "AUTH_REQUIRED", message: "请先登录。" },
   });
+  const reportTemplatesResponse = await request.get("/api/v1/settings/report-templates");
+  expect(reportTemplatesResponse.status()).toBe(401);
 });
 
 test("unauthenticated users cannot open or call personnel management", async ({ page, request }) => {

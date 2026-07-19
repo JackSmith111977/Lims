@@ -12,6 +12,8 @@ test("unauthenticated users cannot open or call instrument management", async ({
   expect(createResponse.status()).toBe(401);
   const updateResponse = await request.patch("/api/v1/instruments/1", { data: {} });
   expect(updateResponse.status()).toBe(401);
+  const simulatedDataResponse = await request.post("/api/v1/instruments/1/simulate-data", { data: {} });
+  expect(simulatedDataResponse.status()).toBe(401);
   const maintenanceResponse = await request.get("/api/v1/instruments/1/maintenance");
   expect(maintenanceResponse.status()).toBe(401);
   const createMaintenanceResponse = await request.post("/api/v1/instruments/1/maintenance", { data: {} });

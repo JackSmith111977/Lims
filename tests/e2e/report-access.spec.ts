@@ -14,6 +14,8 @@ test("unauthenticated users cannot open or call report management", async ({ pag
     const response = await request.post(`/api/v1/reports/1${path}`, { data: {} });
     expect(response.status()).toBe(401);
   }
+  const signResponse = await request.post("/api/v1/reports/1/sign", { data: {} });
+  expect(signResponse.status()).toBe(401);
   const exportResponse = await request.get("/api/v1/reports/1/export");
   expect(exportResponse.status()).toBe(401);
 });

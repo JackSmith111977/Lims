@@ -58,4 +58,17 @@ describe("admin API validation", () => {
       value: "not-a-number",
     })).toThrowError(AdminApiError);
   });
+
+  it("validates report template resources as JSON with a reserved code prefix", () => {
+    expect(buildSettingPayload("report-templates", {
+      code: "REPORT_TEMPLATE_DEFAULT",
+      name: "默认报告模板",
+      value: JSON.stringify({ title: "实验报告", fields: ["task", "data"] }),
+    })).toMatchObject({ code: "REPORT_TEMPLATE_DEFAULT", value_type: "JSON", value_json: { fields: ["task", "data"] } });
+    expect(buildSettingPayload("report-templates", {
+      value: JSON.stringify({ title: "更新后的报告模板", fields: ["task", "samples", "data"] }),
+    }, true)).toMatchObject({ value_type: "JSON", value_json: { fields: ["task", "samples", "data"] } });
+    expect(() => buildSettingPayload("report-templates", { code: "OTHER", name: "bad", value: "{}" })).toThrowError(AdminApiError);
+    expect(() => buildSettingPayload("report-templates", { code: "REPORT_TEMPLATE_BAD", name: "bad", value: JSON.stringify({ fields: [] }) })).toThrowError(AdminApiError);
+  });
 });

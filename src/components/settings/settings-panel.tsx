@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
-type Resource = "laboratories" | "departments" | "groups" | "categories" | "units" | "parameters";
+type Resource = "laboratories" | "departments" | "groups" | "categories" | "units" | "parameters" | "report-templates";
 type SettingItem = { id: number; code: string; name: string; status: string; [key: string]: unknown };
 type FormState = Record<string, string>;
 
@@ -14,6 +14,7 @@ const resources: Array<{ key: Resource; label: string }> = [
   { key: "categories", label: "通用分类" },
   { key: "units", label: "计量单位" },
   { key: "parameters", label: "系统参数" },
+  { key: "report-templates", label: "报告模板" },
 ];
 
 const emptyForm: FormState = {
@@ -31,7 +32,7 @@ async function requestJson(url: string, init?: RequestInit) {
 export function SettingsPanel() {
   const [selectedResource, setSelectedResource] = useState<Resource>("laboratories");
   const [form, setForm] = useState<FormState>(emptyForm);
-  const [data, setData] = useState<Record<Resource, SettingItem[]>>({ laboratories: [], departments: [], groups: [], categories: [], units: [], parameters: [] });
+  const [data, setData] = useState<Record<Resource, SettingItem[]>>({ laboratories: [], departments: [], groups: [], categories: [], units: [], parameters: [], "report-templates": [] });
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -81,10 +82,11 @@ export function SettingsPanel() {
     if (selectedResource === "categories") return { ...base, categoryType: form.categoryType, parentId: form.parentId ? Number(form.parentId) : null, description: form.description };
     if (selectedResource === "units") return { ...base, symbol: form.symbol, dimension: form.dimension };
     let value: unknown = form.value;
-    if (form.valueType === "NUMBER") value = Number(form.value);
-    if (form.valueType === "BOOLEAN") value = form.value === "true";
-    if (form.valueType === "JSON") value = form.value;
-    return { ...base, valueType: form.valueType, value, description: form.description };
+    const valueType = selectedResource === "report-templates" ? "JSON" : form.valueType;
+    if (valueType === "NUMBER") value = Number(form.value);
+    if (valueType === "BOOLEAN") value = form.value === "true";
+    if (valueType === "JSON") value = form.value;
+    return { ...base, valueType, value, description: form.description };
   }
 
   async function createSetting(event: React.FormEvent<HTMLFormElement>) {
@@ -131,7 +133,7 @@ export function SettingsPanel() {
             {selectedResource === "laboratories" && <label className="text-sm text-slate-600">位置<input className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2" value={form.location} onChange={(event) => update("location", event.target.value)} /></label>}
             {selectedResource === "categories" && <label className="text-sm text-slate-600">分类类型<input required className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2" value={form.categoryType} onChange={(event) => update("categoryType", event.target.value)} /></label>}
             {selectedResource === "units" && <><label className="text-sm text-slate-600">符号<input className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2" value={form.symbol} onChange={(event) => update("symbol", event.target.value)} /></label><label className="text-sm text-slate-600">量纲<input className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2" value={form.dimension} onChange={(event) => update("dimension", event.target.value)} /></label></>}
-            {selectedResource === "parameters" && <><label className="text-sm text-slate-600">值类型<select className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2" value={form.valueType} onChange={(event) => update("valueType", event.target.value)}><option>STRING</option><option>NUMBER</option><option>BOOLEAN</option><option>JSON</option></select></label><label className="text-sm text-slate-600">参数值<input required className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2" value={form.value} onChange={(event) => update("value", event.target.value)} /></label></>}
+            {(selectedResource === "parameters" || selectedResource === "report-templates") && <><label className="text-sm text-slate-600">值类型{selectedResource === "report-templates" ? <span className="mt-1 block rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">JSON（模板）</span> : <select className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2" value={form.valueType} onChange={(event) => update("valueType", event.target.value)}><option>STRING</option><option>NUMBER</option><option>BOOLEAN</option><option>JSON</option></select>}</label><label className="text-sm text-slate-600">{selectedResource === "report-templates" ? "模板 JSON" : "参数值"}<input required className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2" value={form.value} onChange={(event) => update("value", event.target.value)} /></label></>}
             <label className="text-sm text-slate-600 md:col-span-2">说明<textarea className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2" value={form.description} onChange={(event) => update("description", event.target.value)} /></label>
             <div className="md:col-span-2 flex items-center gap-3"><button className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white" type="submit">创建{selectedLabel}</button>{message ? <span className="text-sm text-slate-600">{message}</span> : null}</div>
           </form>

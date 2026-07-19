@@ -21,6 +21,12 @@
 - [参考能力差距分析与下一阶段规划](docs/kb/LIMS-capability-gap-analysis.md)：汇总当前实现、未完成项、与 GB/T 40343—2021 及 Thermo Fisher 参考能力的对照、开发难度和候选路线图。
 - [GB/T 40343—2021 项目分析](docs/kb/GB-T-40343-2021-智能实验室信息管理系统功能要求-分析.md)
 
+## 开发与发布规范
+
+- [贡献与开发协作规范](CONTRIBUTING.md)
+- [SDD 版本管理、分支规约与发布清单](docs/sdd/versioning.md)
+- Pull Request 使用仓库内模板；提交前至少运行 lint、test、build、SDD 一致性、版本和当前分支检查。
+
 ## 环境要求
 
 - Git

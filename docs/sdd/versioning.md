@@ -32,6 +32,8 @@
 
 命名约束：使用小写英文、数字和连字符；禁止空格、中文、下划线和长期个人分支。示例：
 
+> 需求、验收、设计、任务和缺陷编号是可追踪标识，允许保留大写；其后的可读 slug 使用小写。`release` / `hotfix` 分支中的 SemVer 点号是版本格式的必要例外。
+
 ```text
 feature/FR-SAMPLE-001-register-sample
 fix/BR-005-block-archived-task
@@ -46,6 +48,16 @@ chore/update-supabase-cli
 3. `main` 禁止直接提交、强制推送和无审查合并。
 4. 合并前必须通过 lint、测试、构建、SDD 一致性检查和必要的对抗性审查。
 5. 合并后删除短期分支；发布分支和 tag 保留。
+
+### 2.1 分支名执行检查
+
+分支命名不是只靠人工记忆。创建分支后立即运行：
+
+```powershell
+npm run check:branch -- -BranchName (git branch --show-current)
+```
+
+同一检查会在面向 `main` 的 Pull Request 中自动运行。当前检查允许 `feature`、`fix`、`refactor`、`docs`、`chore`、`release` 和 `hotfix` 约定，并拒绝空格、中文、下划线、未关联标识的功能分支和不符合 SemVer 的发布分支。
 
 ## 3. 提交规范
 
@@ -130,3 +142,46 @@ release/v<semver>
 - 依赖升级必须说明原因、版本范围、兼容性、验证结果和回滚方式。
 - Supabase CLI、Next.js、Supabase SDK 等基础依赖的大版本升级必须先在独立分支验证。
 - 依赖安全问题按 P0/P1 处理，不延迟到毕业设计最后阶段。
+
+## 8. GitHub 仓库执行设置
+
+仓库文件可以提供 CI 和模板，但 `main` 的保护规则仍需要仓库管理员在 GitHub 设置中启用。建议设置如下：
+
+1. `main`：要求 Pull Request、禁止强制推送和删除、要求 conversation resolved，并将 CI 中实际出现的 `Quality gates` 检查设为合并前必需检查。
+2. `main`：采用 squash merge 或 rebase merge，保持线性历史；禁止直接向 `main` 推送。
+3. 有第二位维护者后：增加至少 1 个批准评审，并启用新提交后旧批准失效；单人维护阶段使用 Draft PR、PR 模板和对抗性审查清单，不把无法满足的自审批准伪装成质量证据。
+4. `release/v*` 和 `v*` tag：仅从已验证的 `main` 发布，禁止移动已发布 tag。
+5. 所有 PR 运行 `.github/workflows/quality-gates.yml`；该工作流只使用构建占位环境，不访问远程 Supabase 密钥或生产数据。
+
+GitHub 官方文档支持通过 branch protection / ruleset 要求 Pull Request、状态检查、线性历史、conversation resolution 和禁止强制推送；工作流文件应存放在 `.github/workflows/`，发布则以 Git tag 为基础创建 Release：[分支保护](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches)、[Rulesets](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets)、[Actions 工作流语法](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax)、[GitHub Releases](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases)。
+
+## 9. 可复现发布清单
+
+发布必须从干净的 `main` 开始，不能从普通功能分支直接打正式 tag：
+
+```powershell
+git fetch origin
+git switch main
+git pull --ff-only
+git status --short
+
+# 例：准备 0.2.0；此命令只更新 package.json / package-lock.json，不自动创建 tag
+npm version 0.2.0 --no-git-tag-version
+# 手动更新 CHANGELOG.md 的版本节、migration、环境变量、验证结果和回滚方式
+
+npm ci
+npm run lint
+npm run test
+npm run build
+.\scripts\sdd\check-consistency.ps1
+.\scripts\sdd\check-versioning.ps1
+
+git add package.json package-lock.json CHANGELOG.md
+git commit -m "chore(release): prepare v0.2.0"
+git tag -a v0.2.0 -m "Release v0.2.0"
+git push origin main
+git push origin v0.2.0
+gh release create v0.2.0 --title "v0.2.0" --generate-notes
+```
+
+发布后必须把 Release URL、验证结果、migration history、已知问题和回滚结果补充到发布记录；tag 一旦公开，不得复用同一版本号指向其他提交。
